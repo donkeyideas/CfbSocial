@@ -62,7 +62,15 @@ export function FollowButton({ userId, initialFollowing }: FollowButtonProps) {
         .from('follows')
         .insert({ follower_id: currentUserId, following_id: userId });
 
-      if (!error) setIsFollowing(true);
+      if (!error) {
+        setIsFollowing(true);
+        // Send follow notification
+        await supabase.from('notifications').insert({
+          recipient_id: userId,
+          actor_id: currentUserId,
+          type: 'FOLLOW',
+        });
+      }
     }
 
     setLoading(false);

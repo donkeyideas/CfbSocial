@@ -46,11 +46,14 @@ export function NotificationBell() {
       });
   }, [userId]);
 
-  // Track realtime notifications
+  // Track realtime notifications — use ref to compute delta so count doesn't inflate
+  const lastRealtimeUnread = useRef(0);
   useEffect(() => {
-    if (realtimeUnread > 0) {
-      setUnreadCount((prev) => prev + realtimeUnread);
+    const delta = realtimeUnread - lastRealtimeUnread.current;
+    if (delta > 0) {
+      setUnreadCount((prev) => prev + delta);
     }
+    lastRealtimeUnread.current = realtimeUnread;
   }, [realtimeUnread]);
 
   // Prepend realtime notifications to list when dropdown is open

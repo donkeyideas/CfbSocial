@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
@@ -37,14 +37,14 @@ export function PostActions({ postId, authorId, replyCount = 0, bookmarkCount = 
   }
 
   // Load existing bookmark/repost state
-  useState(() => {
+  useEffect(() => {
     if (!userId) return;
     const supabase = createClient();
     supabase.from('bookmarks').select('id').eq('post_id', postId).eq('user_id', userId).maybeSingle()
       .then(({ data }) => { if (data) setBookmarked(true); });
     supabase.from('reposts').select('id').eq('post_id', postId).eq('user_id', userId).maybeSingle()
       .then(({ data }) => { if (data) setReposted(true); });
-  });
+  }, [postId, userId]);
 
   async function handleBookmark() {
     if (!requireAuth() || !userId) return;

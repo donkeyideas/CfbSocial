@@ -18,6 +18,7 @@ interface Notification {
   recipient_id: string;
   actor_id: string | null;
   post_id: string | null;
+  challenge_id: string | null;
   is_read: boolean;
   created_at: string;
   data: Record<string, unknown> | null;
@@ -107,6 +108,7 @@ export default function NotificationsClient({
               actorDisplayName={notification.actor?.display_name}
               actorAvatarUrl={notification.actor?.avatar_url}
               postId={notification.post_id}
+              challengeId={notification.challenge_id}
               isRead={notification.is_read}
               createdAt={notification.created_at}
               data={notification.data}

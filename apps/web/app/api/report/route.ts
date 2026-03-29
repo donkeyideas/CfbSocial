@@ -33,6 +33,11 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Post not found' }, { status: 404 });
     }
 
+    // Prevent self-reporting
+    if (post.author_id === user.id) {
+      return NextResponse.json({ error: 'You cannot report your own post' }, { status: 400 });
+    }
+
     // Insert the report
     const { error: insertError } = await admin
       .from('reports')
@@ -60,12 +65,11 @@ export async function POST(req: NextRequest) {
       })
       .eq('id', postId);
 
-    // Notify post author their post was flagged
+    // Notify post author their post was flagged (hide reporter identity)
     await admin.from('notifications').insert({
       recipient_id: post.author_id,
       type: 'POST_FLAGGED',
       post_id: postId,
-      actor_id: user.id,
     });
 
     // Log moderation event

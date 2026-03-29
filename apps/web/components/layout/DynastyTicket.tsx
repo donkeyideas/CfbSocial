@@ -30,30 +30,26 @@ export function DynastyTicket() {
     STARTER: 'Starter',
     ALL_CONFERENCE: 'All-Conference',
     ALL_AMERICAN: 'All-American',
+    HALL_OF_FAME: 'Hall of Fame',
     HEISMAN: 'Heisman',
-    DYNASTY: 'Dynasty',
-  };
-
-  const tierLevel: Record<string, number> = {
-    WALK_ON: 1,
-    STARTER: 2,
-    ALL_CONFERENCE: 3,
-    ALL_AMERICAN: 4,
-    HEISMAN: 5,
-    DYNASTY: 6,
   };
 
   const dynastyTier = profile.dynasty_tier || 'WALK_ON';
-  const level = tierLevel[dynastyTier] || 1;
-  const xpForNext = level * 500;
+  const userLevel = profile.level ?? 1;
+  const xpForNext = userLevel * 500;
   const xpPct = Math.min((profile.xp / xpForNext) * 100, 100);
+
+  // Compute real prediction accuracy
+  const correct = profile.correct_predictions ?? 0;
+  const total = profile.prediction_count ?? 0;
+  const winRate = total > 0 ? Math.round((correct / total) * 100) : 0;
 
   return (
     <div className="ticket-stub">
       <div className="ticket-title">Dynasty Stats</div>
       <div className="ticket-stat">
         <span className="ticket-stat-label">Level</span>
-        <span className="ticket-stat-value">{level}</span>
+        <span className="ticket-stat-value">{userLevel}</span>
       </div>
       <div className="ticket-stat">
         <span className="ticket-stat-label">Total XP</span>
@@ -62,7 +58,7 @@ export function DynastyTicket() {
       <div className="ticket-stat">
         <span className="ticket-stat-label">Rank</span>
         <span className="ticket-stat-value">
-          {tierLabels[dynastyTier] || 'Walk-On'}
+          {tierLabels[dynastyTier] || dynastyTier}
         </span>
       </div>
       <div className="ticket-stat">
@@ -70,9 +66,9 @@ export function DynastyTicket() {
         <span className="ticket-stat-value">{profile.post_count}</span>
       </div>
       <div className="ticket-stat">
-        <span className="ticket-stat-label">Win Rate</span>
+        <span className="ticket-stat-label">Predictions</span>
         <span className="ticket-stat-value">
-          {profile.post_count > 0 ? '68%' : '0%'}
+          {total > 0 ? `${correct}/${total} (${winRate}%)` : '0'}
         </span>
       </div>
       <div className="xp-bar-track">

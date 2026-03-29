@@ -10,7 +10,10 @@ interface AuthProfile {
   school_id: string | null;
   dynasty_tier: string | null;
   xp: number;
+  level: number;
   post_count: number;
+  correct_predictions: number;
+  prediction_count: number;
 }
 
 interface AuthContextValue {
@@ -43,7 +46,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const supabase = createClient();
     const { data } = await supabase
       .from('profiles')
-      .select('id, username, avatar_url, school_id, dynasty_tier, xp, post_count')
+      .select('id, username, avatar_url, school_id, dynasty_tier, xp, level, post_count, correct_predictions, prediction_count')
       .eq('id', uid)
       .single();
 
@@ -55,7 +58,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         school_id: data.school_id ?? null,
         dynasty_tier: data.dynasty_tier ?? null,
         xp: data.xp ?? 0,
+        level: data.level ?? 1,
         post_count: data.post_count ?? 0,
+        correct_predictions: data.correct_predictions ?? 0,
+        prediction_count: data.prediction_count ?? 0,
       });
     }
   }, []);

@@ -38,20 +38,20 @@ function HofSkeleton() {
 
 const TIER_COLORS: Record<string, string> = {
   WALK_ON: '#556b2f',
-  STARTER: '#b8860b',
-  CAPTAIN: '#cc7722',
-  ALL_CONFERENCE: '#c41e3a',
-  ALL_AMERICAN: '#8b0000',
-  HEISMAN: '#ffd700',
+  STARTER: '#2d6a4f',
+  ALL_CONFERENCE: '#0077b6',
+  ALL_AMERICAN: '#7b2cbf',
+  HEISMAN: '#b8860b',
+  HALL_OF_FAME: '#8b0000',
 };
 
 const TIER_LABELS: Record<string, string> = {
   WALK_ON: 'Walk-On',
   STARTER: 'Starter',
-  CAPTAIN: 'Captain',
   ALL_CONFERENCE: 'All-Conference',
   ALL_AMERICAN: 'All-American',
   HEISMAN: 'Heisman',
+  HALL_OF_FAME: 'Hall of Fame',
 };
 
 async function HallOfFameContent() {

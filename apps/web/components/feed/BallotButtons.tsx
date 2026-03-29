@@ -18,6 +18,7 @@ export function BallotButtons({ postId, authorId, touchdownCount, fumbleCount }:
   const [tdCount, setTdCount] = useState(touchdownCount);
   const [fmCount, setFmCount] = useState(fumbleCount);
   const [voted, setVoted] = useState<'TOUCHDOWN' | 'FUMBLE' | null>(null);
+  const [voting, setVoting] = useState(false);
 
   // Load current user's existing reaction on mount
   useEffect(() => {
@@ -42,55 +43,69 @@ export function BallotButtons({ postId, authorId, touchdownCount, fumbleCount }:
       router.push('/login?redirect=' + encodeURIComponent(window.location.pathname));
       return;
     }
-    if (!userId) return;
+    if (!userId || voting) return;
+    setVoting(true);
 
     const supabase = createClient();
+    const prevVoted = voted;
+    const prevTd = tdCount;
+    const prevFm = fmCount;
 
-    if (voted === type) {
-      // Un-vote: remove reaction
-      if (type === 'TOUCHDOWN') setTdCount((c) => c - 1);
-      else setFmCount((c) => c - 1);
-      setVoted(null);
+    try {
+      if (voted === type) {
+        // Un-vote: remove reaction
+        if (type === 'TOUCHDOWN') setTdCount((c) => c - 1);
+        else setFmCount((c) => c - 1);
+        setVoted(null);
 
+        const { error } = await supabase
+          .from('reactions')
+          .delete()
+          .eq('user_id', userId)
+          .eq('post_id', postId);
+        if (error) throw error;
+        return;
+      }
+
+      // Optimistic update
+      if (voted) {
+        if (voted === 'TOUCHDOWN') setTdCount((c) => c - 1);
+        else setFmCount((c) => c - 1);
+      }
+      if (type === 'TOUCHDOWN') setTdCount((c) => c + 1);
+      else setFmCount((c) => c + 1);
+      setVoted(type);
+
+      // Delete existing then insert new (handles switching)
       await supabase
         .from('reactions')
         .delete()
         .eq('user_id', userId)
         .eq('post_id', postId);
-      return;
-    }
 
-    // Optimistic update
-    if (voted) {
-      // Switching vote
-      if (voted === 'TOUCHDOWN') setTdCount((c) => c - 1);
-      else setFmCount((c) => c - 1);
-    }
-    if (type === 'TOUCHDOWN') setTdCount((c) => c + 1);
-    else setFmCount((c) => c + 1);
-    setVoted(type);
-
-    // Delete existing then insert new (handles switching)
-    await supabase
-      .from('reactions')
-      .delete()
-      .eq('user_id', userId)
-      .eq('post_id', postId);
-
-    await supabase.from('reactions').insert({
-      post_id: postId,
-      user_id: userId,
-      reaction_type: type,
-    });
-
-    // Create notification for post author
-    if (authorId && authorId !== userId) {
-      await supabase.from('notifications').insert({
-        recipient_id: authorId,
-        actor_id: userId,
-        type: type === 'TOUCHDOWN' ? 'TOUCHDOWN' : 'FUMBLE',
+      const { error } = await supabase.from('reactions').insert({
         post_id: postId,
+        user_id: userId,
+        reaction_type: type,
       });
+      if (error) throw error;
+
+      // Create notification for post author
+      if (authorId && authorId !== userId) {
+        await supabase.from('notifications').insert({
+          recipient_id: authorId,
+          actor_id: userId,
+          type: type === 'TOUCHDOWN' ? 'TOUCHDOWN' : 'FUMBLE',
+          post_id: postId,
+        });
+      }
+    } catch {
+      // Rollback optimistic update
+      setVoted(prevVoted);
+      setTdCount(prevTd);
+      setFmCount(prevFm);
+    } finally {
+      setVoting(false);
     }
   }
 
