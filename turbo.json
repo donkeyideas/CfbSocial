@@ -8,7 +8,8 @@
         "NEXT_PUBLIC_SUPABASE_ANON_KEY",
         "SUPABASE_SERVICE_ROLE_KEY",
         "DEEPSEEK_API_KEY",
-        "OPENAI_API_KEY"
+        "OPENAI_API_KEY",
+        "CFBD_API_KEY"
       ],
       "outputs": [".next/**", "!.next/cache/**", "dist/**"]
     },
