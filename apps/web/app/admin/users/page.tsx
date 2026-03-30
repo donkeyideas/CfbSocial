@@ -25,7 +25,7 @@ export default async function UsersPage({
 
       {/* Filter bar */}
       <div className="admin-card p-4">
-        <form method="GET" action="/users" className="flex flex-wrap items-center gap-3">
+        <form method="GET" action="/admin/users" className="flex flex-wrap items-center gap-3">
           <input
             type="text"
             name="q"
@@ -74,7 +74,7 @@ export default async function UsersPage({
 
           {(params.q || params.role || params.status || (params.sort && params.sort !== 'newest')) && (
             <a
-              href="/users"
+              href="/admin/users"
               className="text-sm text-[var(--admin-text-muted)] hover:text-[var(--admin-text)]"
             >
               Clear filters
