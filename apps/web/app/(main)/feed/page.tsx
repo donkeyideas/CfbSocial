@@ -9,17 +9,20 @@ import { FeedListClient } from '@/components/feed/FeedListClient';
 export const dynamic = 'force-dynamic';
 
 export const metadata = {
-  title: 'The Feed | College Football Takes, Predictions & Debates',
-  description: 'The live college football social feed. Read the latest takes, predictions, receipts, and rivalry debates from CFB fans across 653 schools.',
+  title: 'College Football Fan Opinions & Takes | The Feed',
+  description: 'Read the latest college football fan opinions, hot takes, predictions, and rivalry debates from fans across 653 schools. The live CFB fan community feed — join the discussion.',
   openGraph: {
-    title: 'The Feed | CFB Social',
-    description: 'The live college football social feed. Latest takes, predictions, and rivalry debates.',
+    title: 'College Football Fan Opinions & Takes | CFB Social',
+    description: 'The live college football social feed. Fan opinions, takes, predictions, and rivalry debates.',
     type: 'website',
   },
   twitter: {
     card: 'summary_large_image' as const,
-    title: 'The Feed | CFB Social',
-    description: 'The live college football social feed. Latest takes, predictions, and rivalry debates.',
+    title: 'College Football Fan Opinions & Takes | CFB Social',
+    description: 'The live college football social feed. Fan opinions, takes, predictions, and rivalry debates.',
+  },
+  alternates: {
+    canonical: 'https://cfbsocial.com/feed',
   },
 };
 

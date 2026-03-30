@@ -7,11 +7,19 @@ import { RivalryTabs } from '@/components/rivalry/RivalryTabs';
 export const dynamic = 'force-dynamic';
 
 export const metadata = {
-  title: 'Rivalry Ring | College Football Rivalries & Debates',
-  description: 'Vote on the greatest college football rivalries. Pick sides in school-vs-school debates and issue challenges to other fans.',
+  title: 'CFB Fan Debates | College Football Rivalries & School vs School',
+  description: 'Debate college football rivalries and settle fan arguments once and for all. Pick sides in school-vs-school matchups, issue challenges, and let the community judge. The best CFB fan debates.',
   openGraph: {
-    title: 'Rivalry Ring | CFB Social',
-    description: 'Vote on college football rivalries. Pick sides. Issue challenges.',
+    title: 'CFB Fan Debates & Rivalry Ring | CFB Social',
+    description: 'Debate college football rivalries. Pick sides. Issue challenges. Let the community judge.',
+  },
+  twitter: {
+    card: 'summary_large_image' as const,
+    title: 'CFB Fan Debates & Rivalry Ring | CFB Social',
+    description: 'Debate college football rivalries. Pick sides. Issue challenges. Let the community judge.',
+  },
+  alternates: {
+    canonical: 'https://cfbsocial.com/rivalry',
   },
 };
 

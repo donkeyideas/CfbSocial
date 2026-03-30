@@ -1,16 +1,25 @@
 'use client';
 
 import { useState } from 'react';
+import dynamic from 'next/dynamic';
 import { Masthead } from '@/components/layout/Masthead';
-import { ScoresRibbon } from '@/components/layout/ScoresRibbon';
 import { Footer } from '@/components/layout/Footer';
 import { CorkboardNav } from '@/components/layout/CorkboardNav';
 import { DynastyTicket } from '@/components/layout/DynastyTicket';
 import { FeaturesBreakdown } from '@/components/layout/FeaturesBreakdown';
-import { PressBoxSidebar } from '@/components/layout/PressBoxSidebar';
 import { SchoolThemeProvider } from '@/components/layout/SchoolThemeProvider';
 import { AuthCtaBanner } from '@/components/layout/AuthCtaBanner';
 import { AuthProvider } from '@/components/auth/AuthProvider';
+
+// Lazy-load heavy sidebar + scores ribbon to improve LCP
+const ScoresRibbon = dynamic(
+  () => import('@/components/layout/ScoresRibbon').then((m) => m.ScoresRibbon),
+  { ssr: false },
+);
+const PressBoxSidebar = dynamic(
+  () => import('@/components/layout/PressBoxSidebar').then((m) => m.PressBoxSidebar),
+  { ssr: false },
+);
 
 export function MainShell({ children }: { children: React.ReactNode }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);

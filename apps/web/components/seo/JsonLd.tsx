@@ -42,10 +42,17 @@ export function OrganizationJsonLd() {
         '@context': 'https://schema.org',
         '@type': 'Organization',
         name: 'CFB Social',
+        alternateName: 'The Gridiron',
         url: 'https://cfbsocial.com',
         description:
-          'The social platform for college football fans across 653 schools.',
+          'The college football fan community. Debates, predictions, transfer portal tracking, and dynasty building across 653 schools.',
         foundingDate: '2026',
+        sameAs: [],
+        contactPoint: {
+          '@type': 'ContactPoint',
+          contactType: 'customer support',
+          url: 'https://cfbsocial.com/contact',
+        },
       }}
     />
   );

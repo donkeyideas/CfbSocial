@@ -1,11 +1,19 @@
 import { WarRoomClient } from './WarRoomClient';
 
 export const metadata = {
-  title: 'War Room | Live College Football Scores & Game Threads',
-  description: 'Live college football scores and game-day threads. Join the conversation during every CFB game with real-time chat and reactions.',
+  title: 'Live College Football Scores & Game Threads | War Room',
+  description: 'Live college football scores and real-time game-day threads. Join the conversation during every CFB game with live chat, quick reactions, and fan commentary. Your digital tailgate.',
   openGraph: {
-    title: 'War Room | CFB Social',
+    title: 'Live College Football Scores & Game Threads | CFB Social',
     description: 'Live college football scores and game-day threads. Real-time chat and reactions.',
+  },
+  twitter: {
+    card: 'summary_large_image' as const,
+    title: 'Live College Football Scores & Game Threads | CFB Social',
+    description: 'Live college football scores and game-day threads. Real-time chat and reactions.',
+  },
+  alternates: {
+    canonical: 'https://cfbsocial.com/war-room',
   },
 };
 

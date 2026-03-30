@@ -6,11 +6,19 @@ import { PredictionLeaderboard } from '@/components/predictions/PredictionLeader
 export const dynamic = 'force-dynamic';
 
 export const metadata = {
-  title: 'Predictions | College Football Takes & Receipts',
-  description: 'File your college football predictions and put your takes on record. See who has the best prediction track record across CFB.',
+  title: 'College Football Predictions | File Takes & Track Your Record',
+  description: 'Make college football predictions and put your takes on record. Track prediction accuracy, see the leaderboard, and collect receipts when you are right. The CFB predictions tracker.',
   openGraph: {
-    title: 'Predictions | CFB Social',
-    description: 'File college football predictions. Receipts or busts \u2014 history will judge.',
+    title: 'College Football Predictions | CFB Social',
+    description: 'File college football predictions and track your record. Receipts or busts — history will judge.',
+  },
+  twitter: {
+    card: 'summary_large_image' as const,
+    title: 'College Football Predictions | CFB Social',
+    description: 'File college football predictions and track your record. Receipts or busts — history will judge.',
+  },
+  alternates: {
+    canonical: 'https://cfbsocial.com/predictions',
   },
 };
 

@@ -22,8 +22,14 @@ export async function generateMetadata({ params }: PortalDetailProps) {
 
   if (!player) return { title: 'Player Not Found' };
 
+  const title = `${player.name} - ${player.position} | College Football Transfer Portal`;
+  const description = `Track ${player.name} (${player.position}) in the college football transfer portal. See school interest, fan predictions, and commitment status on CFB Social.`;
+
   return {
-    title: `${player.name} - ${player.position} | Portal Wire`,
+    title,
+    description,
+    openGraph: { title, description },
+    twitter: { card: 'summary' as const, title, description },
   };
 }
 

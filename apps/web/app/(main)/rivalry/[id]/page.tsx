@@ -20,7 +20,17 @@ export async function generateMetadata({ params }: RivalryPageProps) {
     .eq('id', id)
     .single();
 
-  return { title: data?.name ?? 'Rivalry' };
+  const title = data?.name ? `${data.name} | College Football Rivalry` : 'Rivalry';
+  const description = data?.name
+    ? `${data.name} — pick a side in this college football rivalry debate. Vote, comment, and see which fan base has the stronger argument.`
+    : 'College football rivalry debate on CFB Social.';
+
+  return {
+    title,
+    description,
+    openGraph: { title, description },
+    twitter: { card: 'summary' as const, title, description },
+  };
 }
 
 export default async function RivalryDetailPage({ params }: RivalryPageProps) {

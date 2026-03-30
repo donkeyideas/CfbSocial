@@ -25,26 +25,28 @@ const specialElite = Special_Elite({
 
 export const metadata: Metadata = {
   title: {
-    default: 'The Gridiron | CFB Social — College Football\'s Social Home',
+    default: 'CFB Social — College Football Fan Community | Debates, Predictions & Portal Tracker',
     template: '%s | CFB Social',
   },
   description:
-    'The Gridiron is the home for college football fans. Stake your claims, call your shots, debate rivalries, track the transfer portal, and build your dynasty across 653 schools.',
+    'CFB Social is the college football fan community. Debate rivalries, file predictions, track the transfer portal, and build your dynasty across 653 schools. The best college football forum for real fans.',
   keywords: [
-    'college football', 'CFB', 'college football social media', 'college football forum',
-    'CFB predictions', 'college football rivalry', 'transfer portal tracker',
-    'college football community', 'CFB debate', 'college football takes',
+    'college football fan community', 'best college football forums', 'CFB fan debates',
+    'college football predictions', 'college football forum', 'college football message boards',
+    'college football social media', 'college football fan opinions', 'transfer portal tracker',
+    'college football takes', 'top college football forums online', 'join college football discussion',
+    'real-time CFB fan reactions', 'college football fan content',
   ],
   openGraph: {
     type: 'website',
     siteName: 'CFB Social',
-    title: 'The Gridiron | CFB Social — College Football\'s Social Home',
-    description: 'The home for college football fans. Stake claims, debate rivalries, track the transfer portal, and build your dynasty.',
+    title: 'CFB Social — College Football Fan Community',
+    description: 'The college football fan community. Debate rivalries, file predictions, track the transfer portal, and build your dynasty.',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'The Gridiron | CFB Social',
-    description: 'College football\'s social home. Stakes. Receipts. Dynasty.',
+    title: 'CFB Social — College Football Fan Community',
+    description: 'The college football fan community. Debates. Predictions. Transfer Portal. Dynasty.',
   },
   robots: {
     index: true,
