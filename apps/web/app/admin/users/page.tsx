@@ -1,5 +1,6 @@
 import { Suspense } from 'react';
 import { getAllUsers } from '@/lib/admin/actions/users';
+import { createAdminClient } from '@/lib/admin/supabase/admin';
 import { UsersClient } from '@/components/admin/users/users-client';
 import { LoadingSkeleton } from '@/components/admin/shared/loading-skeleton';
 
@@ -139,10 +140,22 @@ async function UsersTableLoader({
     );
   }
 
+  // Fetch auth provider info for each user
+  const supabase = createAdminClient();
+  const { data: authData } = await supabase.auth.admin.listUsers({ perPage: 1000 });
+  const providerMap: Record<string, string> = {};
+  if (authData?.users) {
+    for (const au of authData.users) {
+      const provider = au.app_metadata?.provider || 'email';
+      providerMap[au.id] = provider;
+    }
+  }
+
   // Supabase returns joined relations as arrays; normalize school to single object
   const normalized = (users ?? []).map((u: Record<string, unknown>) => ({
     ...u,
     school: Array.isArray(u.school) ? (u.school[0] ?? null) : (u.school ?? null),
+    auth_provider: providerMap[u.id as string] || 'email',
   }));
 
   return <UsersClient users={normalized as Parameters<typeof UsersClient>[0]['users']} total={total} />;
