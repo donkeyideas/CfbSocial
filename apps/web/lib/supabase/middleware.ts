@@ -31,6 +31,17 @@ export async function updateSession(request: NextRequest) {
 
   const pathname = request.nextUrl.pathname;
 
+  // --- CATCH STRAY AUTH CODES ---
+  // If an OAuth code lands on any page other than /auth/callback, redirect it there.
+  // This happens when Supabase redirect URL allowlist is misconfigured.
+  const code = request.nextUrl.searchParams.get('code');
+  if (code && pathname !== '/auth/callback') {
+    const url = request.nextUrl.clone();
+    url.pathname = '/auth/callback';
+    // Preserve all query params (code, redirect, etc.)
+    return NextResponse.redirect(url);
+  }
+
   // --- ADMIN ROUTES ---
   if (pathname.startsWith('/admin')) {
     const isAdminLogin = pathname === '/admin/login';

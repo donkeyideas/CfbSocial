@@ -11,10 +11,13 @@ export function LoginForm() {
   const rawRedirect = searchParams?.get('redirect') || '/feed';
   // Prevent open redirect — only allow relative paths
   const redirectTo = rawRedirect.startsWith('/') && !rawRedirect.startsWith('//') ? rawRedirect : '/feed';
+  const callbackError = searchParams?.get('error');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(
+    callbackError === 'auth_callback_error' ? 'Google sign-in failed. Please try again.' : null
+  );
 
   async function handleEmailLogin(e: React.FormEvent) {
     e.preventDefault();
