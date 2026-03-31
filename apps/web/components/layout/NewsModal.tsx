@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 
 interface NewsModalProps {
   article: {
@@ -43,7 +44,7 @@ export function NewsModal({ article, onClose }: NewsModalProps) {
     fetchArticle();
   }, [article.articleUrl]);
 
-  return (
+  return createPortal(
     <div className="news-modal-overlay" onClick={onClose}>
       <div className="news-modal" onClick={(e) => e.stopPropagation()}>
         <button className="news-modal-close" onClick={onClose}>
@@ -96,6 +97,7 @@ export function NewsModal({ article, onClose }: NewsModalProps) {
           Read Full Story
         </a>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }
