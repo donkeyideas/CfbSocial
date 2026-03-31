@@ -11,7 +11,8 @@ interface MarkForAgingButtonProps {
 }
 
 export function MarkForAgingButton({ postId }: MarkForAgingButtonProps) {
-  const { userId } = useAuth();
+  const { profile } = useAuth();
+  const userId = profile?.id ?? null;
   const router = useRouter();
   const [expanded, setExpanded] = useState(false);
   const [days, setDays] = useState(30);

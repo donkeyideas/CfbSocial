@@ -13,9 +13,10 @@ export const metadata = {
 export default async function UsersPage({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string; role?: string; status?: string; sort?: string }>;
+  searchParams: Promise<{ q?: string; role?: string; status?: string; sort?: string; page?: string }>;
 }) {
   const params = await searchParams;
+  const currentPage = Math.max(1, parseInt(params.page ?? '1', 10) || 1);
 
   return (
     <div className="space-y-6">
@@ -95,22 +96,27 @@ export default async function UsersPage({
           role={params.role}
           status={params.status}
           sort={params.sort}
+          page={currentPage}
         />
       </Suspense>
     </div>
   );
 }
 
+const PAGE_SIZE = 50;
+
 async function UsersTableLoader({
   q,
   role,
   status,
   sort,
+  page,
 }: {
   q?: string;
   role?: string;
   status?: string;
   sort?: string;
+  page: number;
 }) {
   const sortMap: Record<string, { field: string; order: 'asc' | 'desc' }> = {
     newest: { field: 'created_at', order: 'desc' },
@@ -121,6 +127,7 @@ async function UsersTableLoader({
   };
 
   const sortConfig = sortMap[sort ?? 'newest'] ?? sortMap['newest'];
+  const offset = (page - 1) * PAGE_SIZE;
 
   const { users, total, error } = await getAllUsers({
     search: q,
@@ -128,8 +135,8 @@ async function UsersTableLoader({
     status: status || undefined,
     sort: sortConfig!.field,
     order: sortConfig!.order,
-    limit: 100,
-    offset: 0,
+    limit: PAGE_SIZE,
+    offset,
   });
 
   if (error) {
@@ -140,14 +147,15 @@ async function UsersTableLoader({
     );
   }
 
-  // Fetch auth provider info for each user
+  // Fetch auth provider + email for each user
   const supabase = createAdminClient();
   const { data: authData } = await supabase.auth.admin.listUsers({ perPage: 1000 });
   const providerMap: Record<string, string> = {};
+  const emailMap: Record<string, string> = {};
   if (authData?.users) {
     for (const au of authData.users) {
-      const provider = au.app_metadata?.provider || 'email';
-      providerMap[au.id] = provider;
+      providerMap[au.id] = au.app_metadata?.provider || 'email';
+      emailMap[au.id] = au.email || '';
     }
   }
 
@@ -156,7 +164,17 @@ async function UsersTableLoader({
     ...u,
     school: Array.isArray(u.school) ? (u.school[0] ?? null) : (u.school ?? null),
     auth_provider: providerMap[u.id as string] || 'email',
+    email: emailMap[u.id as string] || '',
   }));
 
-  return <UsersClient users={normalized as Parameters<typeof UsersClient>[0]['users']} total={total} />;
+  const totalPages = Math.ceil(total / PAGE_SIZE);
+
+  return (
+    <UsersClient
+      users={normalized as Parameters<typeof UsersClient>[0]['users']}
+      total={total}
+      currentPage={page}
+      totalPages={totalPages}
+    />
+  );
 }

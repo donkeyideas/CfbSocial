@@ -30,7 +30,8 @@ const POST_SELECT = `
   author:profiles!posts_author_id_fkey(
     id, username, display_name, avatar_url, dynasty_tier,
     school:schools!profiles_school_id_fkey(abbreviation, primary_color, slug)
-  )
+  ),
+  aging_takes(id, user_id, revisit_date, is_surfaced, community_verdict)
 `;
 
 // Sentinel item injected into the FlatList data to render the DynastyWidget inline
@@ -155,9 +156,10 @@ export default function FeedScreen() {
 
   // ------------------------------------------------------------------
   // Build query for the active tab
+  // receiptPostIds is passed in for the receipts tab (pre-queried from aging_takes)
   // ------------------------------------------------------------------
   const buildQuery = useCallback(
-    (offset: number) => {
+    (offset: number, receiptPostIds?: string[]) => {
       let query = supabase
         .from('posts')
         .select(POST_SELECT)
@@ -172,7 +174,12 @@ export default function FeedScreen() {
           query = query.order('touchdown_count', { ascending: false });
           break;
         case 'receipts':
-          query = query.in('post_type', ['RECEIPT', 'PREDICTION']);
+          // Match web: show RECEIPT posts + any post with aging_takes filed
+          if (receiptPostIds && receiptPostIds.length > 0) {
+            query = query.or(`post_type.eq.RECEIPT,id.in.(${receiptPostIds.join(',')})`);
+          } else {
+            query = query.eq('post_type', 'RECEIPT');
+          }
           query = query.order('created_at', { ascending: false });
           break;
         case 'following':
@@ -265,15 +272,97 @@ export default function FeedScreen() {
         offsetRef.current = 0;
       }
 
-      const { data, error } = await buildQuery(offsetRef.current);
+      // For receipts tab, pre-query aging_takes to get post IDs
+      let receiptPostIds: string[] | undefined;
+      if (activeTab === 'receipts') {
+        const { data: agingTakePosts } = await supabase
+          .from('aging_takes')
+          .select('post_id');
+        receiptPostIds = agingTakePosts?.map((a: { post_id: string }) => a.post_id) ?? [];
+      }
+
+      const { data, error } = await buildQuery(offsetRef.current, receiptPostIds);
 
       if (!error && data) {
         const typed = data as unknown as PostData[];
         const enriched = await enrichPostsWithUserStatus(typed);
+
+        // Fetch reposts and merge into feed (matching web behavior)
+        let merged: PostData[] = enriched.map((p) => ({
+          ...p,
+          _feedKey: `post-${p.id}`,
+        }));
+
+        if (activeTab === 'latest' || activeTab === 'following') {
+          // Step 1: Get recent reposts (just IDs + reposter info)
+          const { data: reposts } = await supabase
+            .from('reposts')
+            .select('id, created_at, user_id, post_id')
+            .order('created_at', { ascending: false })
+            .limit(10);
+
+          if (reposts && reposts.length > 0) {
+            const repostPostIds = reposts.map((r) => r.post_id);
+
+            // Step 2: Fetch reposter profiles and reposted posts in parallel
+            const [repostersRes, repostedPostsRes] = await Promise.all([
+              supabase
+                .from('profiles')
+                .select('id, username, display_name')
+                .in('id', reposts.map((r) => r.user_id)),
+              supabase
+                .from('posts')
+                .select(POST_SELECT)
+                .in('id', repostPostIds)
+                .in('status', ['PUBLISHED', 'FLAGGED'])
+                .is('parent_id', null),
+            ]);
+
+            const reposterMap = new Map<string, { username: string; display_name: string | null }>();
+            if (repostersRes.data) {
+              for (const p of repostersRes.data) {
+                reposterMap.set(p.id, { username: p.username ?? '', display_name: p.display_name });
+              }
+            }
+
+            const postMap = new Map<string, PostData>();
+            if (repostedPostsRes.data) {
+              for (const p of repostedPostsRes.data as unknown as PostData[]) {
+                postMap.set(p.id, p);
+              }
+            }
+
+            // Step 3: Build repost feed items
+            const repostItems: PostData[] = [];
+            for (const r of reposts) {
+              const post = postMap.get(r.post_id);
+              if (!post) continue;
+              const reposter = reposterMap.get(r.user_id) ?? null;
+              repostItems.push({
+                ...post,
+                _feedKey: `repost-${r.id}`,
+                _repostedBy: reposter,
+                created_at: r.created_at, // Use repost time for sorting
+              });
+            }
+
+            // Enrich repost items with user status
+            const enrichedReposts = await enrichPostsWithUserStatus(repostItems);
+
+            // Merge and sort by created_at descending
+            // Deduplicate: if a post appears as both original and repost, keep original
+            const existingPostIds = new Set(enriched.map((p) => p.id));
+            const uniqueReposts = enrichedReposts.filter((r) => !existingPostIds.has(r.id));
+
+            merged = [...merged, ...uniqueReposts]
+              .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+          }
+        }
+
         if (reset) {
-          setPosts(enriched);
+          setPosts(merged);
         } else {
-          setPosts((prev) => [...prev, ...enriched]);
+          setPosts((prev) => [...prev, ...merged]);
         }
         setHasMore(typed.length >= PAGE_SIZE);
         offsetRef.current += typed.length;
@@ -283,7 +372,7 @@ export default function FeedScreen() {
       setRefreshing(false);
       setLoadingMore(false);
     },
-    [buildQuery, enrichPostsWithUserStatus]
+    [activeTab, buildQuery, enrichPostsWithUserStatus]
   );
 
   useEffect(() => {
@@ -366,7 +455,7 @@ export default function FeedScreen() {
 
   const keyExtractor = useCallback((item: FeedItem) => {
     if (item === DYNASTY_SENTINEL) return 'dynasty-widget';
-    return item.id;
+    return item._feedKey ?? item.id;
   }, []);
 
   const ListFooter = loadingMore ? (

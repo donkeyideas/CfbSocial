@@ -22,6 +22,15 @@ export interface PostData {
   _userVote?: 'TD' | 'FUMBLE' | null;
   _userReposted?: boolean;
   _userSaved?: boolean;
+  _repostedBy?: { username: string; display_name: string | null } | null;
+  _feedKey?: string;
+  aging_takes?: {
+    id: string;
+    user_id: string;
+    revisit_date: string;
+    is_surfaced: boolean | null;
+    community_verdict: string | null;
+  }[];
   author?: {
     id: string;
     username: string | null;
@@ -44,6 +53,11 @@ export const PostCard = memo(function PostCard({ post }: PostCardProps) {
   // Flagged posts always render as penalty flag card
   if (post.status === 'FLAGGED') {
     return <PenaltyFlagCard post={post} />;
+  }
+
+  // Posts with aging_takes filed render as receipt cards
+  if (post.aging_takes && post.aging_takes.length > 0) {
+    return <NewspaperClippingCard post={post} isAgingReceipt />;
   }
 
   // Receipt and prediction posts render as newspaper clippings

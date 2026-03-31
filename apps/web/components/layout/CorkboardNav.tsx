@@ -39,23 +39,23 @@ export function CorkboardNav({ onNavigate }: CorkboardNavProps) {
 
     const supabase = createClient();
 
-    supabase
-      .from('notifications')
-      .select('*', { count: 'exact', head: true })
-      .eq('recipient_id', userId)
-      .eq('is_read', false)
-      .then(({ count }) => {
-        setBadges((prev) => ({ ...prev, notifications: count ?? 0 }));
+    Promise.all([
+      supabase
+        .from('notifications')
+        .select('*', { count: 'exact', head: true })
+        .eq('recipient_id', userId)
+        .eq('is_read', false),
+      supabase
+        .from('challenges')
+        .select('*', { count: 'exact', head: true })
+        .eq('challenged_id', userId)
+        .eq('status', 'PENDING'),
+    ]).then(([notifResult, rivalryResult]) => {
+      setBadges({
+        notifications: notifResult.count ?? 0,
+        rivalry: rivalryResult.count ?? 0,
       });
-
-    supabase
-      .from('challenges')
-      .select('*', { count: 'exact', head: true })
-      .eq('challenged_id', userId)
-      .eq('status', 'PENDING')
-      .then(({ count }) => {
-        setBadges((prev) => ({ ...prev, rivalry: count ?? 0 }));
-      });
+    });
   }, [userId]);
 
   return (

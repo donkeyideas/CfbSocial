@@ -20,7 +20,8 @@ interface PostActionsProps {
 
 export function PostActions({ postId, authorId, replyCount = 0, bookmarkCount = 0, repostCount = 0 }: PostActionsProps) {
   const router = useRouter();
-  const { isLoggedIn, userId } = useAuth();
+  const { isLoggedIn, profile } = useAuth();
+  const profileId = profile?.id ?? null;
   const [showReport, setShowReport] = useState(false);
   const [showChallenge, setShowChallenge] = useState(false);
   const [showFactCheck, setShowFactCheck] = useState(false);
@@ -35,7 +36,7 @@ export function PostActions({ postId, authorId, replyCount = 0, bookmarkCount = 
   const [editSaving, setEditSaving] = useState(false);
   const [deleted, setDeleted] = useState(false);
 
-  const isOwner = userId && authorId && userId === authorId;
+  const isOwner = profileId && authorId && profileId === authorId;
 
   function requireAuth(): boolean {
     if (isLoggedIn === false) {
@@ -47,46 +48,53 @@ export function PostActions({ postId, authorId, replyCount = 0, bookmarkCount = 
 
   // Load existing bookmark/repost state
   useEffect(() => {
-    if (!userId) return;
+    if (!profileId) return;
     const supabase = createClient();
-    supabase.from('bookmarks').select('id').eq('post_id', postId).eq('user_id', userId).maybeSingle()
-      .then(({ data }) => { if (data) setBookmarked(true); });
-    supabase.from('reposts').select('id').eq('post_id', postId).eq('user_id', userId).maybeSingle()
-      .then(({ data }) => { if (data) setReposted(true); });
-  }, [postId, userId]);
+    Promise.all([
+      supabase.from('bookmarks').select('id').eq('post_id', postId).eq('user_id', profileId).maybeSingle(),
+      supabase.from('reposts').select('id').eq('post_id', postId).eq('user_id', profileId).maybeSingle(),
+    ]).then(([bmResult, rpResult]) => {
+      if (bmResult.data) setBookmarked(true);
+      if (rpResult.data) setReposted(true);
+    });
+  }, [postId, profileId]);
 
   async function handleBookmark() {
-    if (!requireAuth() || !userId) return;
+    if (!requireAuth() || !profileId) return;
     const supabase = createClient();
     if (bookmarked) {
       setBookmarked(false);
       setBmCount((c) => c - 1);
-      await supabase.from('bookmarks').delete().eq('user_id', userId).eq('post_id', postId);
+      await supabase.from('bookmarks').delete().eq('user_id', profileId).eq('post_id', postId);
     } else {
       setBookmarked(true);
       setBmCount((c) => c + 1);
-      await supabase.from('bookmarks').insert({ user_id: userId, post_id: postId });
+      await supabase.from('bookmarks').insert({ user_id: profileId, post_id: postId });
     }
   }
 
   async function handleRepost() {
-    if (!requireAuth() || !userId) return;
+    if (!requireAuth() || !profileId) return;
     const supabase = createClient();
     if (reposted) {
       setReposted(false);
       setRpCount((c) => c - 1);
-      const { error } = await supabase.from('reposts').delete().eq('user_id', userId).eq('post_id', postId);
+      const { error } = await supabase.from('reposts').delete().eq('user_id', profileId).eq('post_id', postId);
       if (error) {
         setReposted(true);
         setRpCount((c) => c + 1);
+      } else {
+        router.refresh();
       }
     } else {
       setReposted(true);
       setRpCount((c) => c + 1);
-      const { error } = await supabase.from('reposts').insert({ user_id: userId, post_id: postId });
+      const { error } = await supabase.from('reposts').insert({ user_id: profileId, post_id: postId });
       if (error) {
         setReposted(false);
         setRpCount((c) => c - 1);
+      } else {
+        router.refresh();
       }
     }
   }
@@ -97,14 +105,14 @@ export function PostActions({ postId, authorId, replyCount = 0, bookmarkCount = 
   }
 
   async function handleChallengeSubmit() {
-    if (!challengeTopic.trim() || challengeSubmitting || !userId) return;
-    if (!authorId || userId === authorId) return;
+    if (!challengeTopic.trim() || challengeSubmitting || !profileId) return;
+    if (!authorId || profileId === authorId) return;
 
     setChallengeSubmitting(true);
     const supabase = createClient();
 
     const { data, error } = await supabase.from('challenges').insert({
-      challenger_id: userId,
+      challenger_id: profileId,
       challenged_id: authorId,
       post_id: postId,
       topic: challengeTopic.trim(),
@@ -170,16 +178,14 @@ export function PostActions({ postId, authorId, replyCount = 0, bookmarkCount = 
         </button>
         <MarkForAgingButton postId={postId} />
         <button
-          className="post-action"
+          className={`post-action${reposted ? ' post-action-active' : ''}`}
           onClick={handleRepost}
-          style={reposted ? { color: 'var(--crimson)' } : undefined}
         >
-          REPOST{rpCount > 0 ? ` (${rpCount})` : ''}
+          {reposted ? 'REPOSTED' : 'REPOST'}{rpCount > 0 ? ` (${rpCount})` : ''}
         </button>
         <button
-          className="post-action"
+          className={`post-action${bookmarked ? ' post-action-active' : ''}`}
           onClick={handleBookmark}
-          style={bookmarked ? { color: 'var(--crimson)' } : undefined}
         >
           {bookmarked ? 'SAVED' : 'SAVE'}{bmCount > 0 ? ` (${bmCount})` : ''}
         </button>

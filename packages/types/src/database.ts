@@ -1114,6 +1114,7 @@ export type Database = {
           is_bot: boolean | null
           last_active_at: string | null
           level: number | null
+          owner_id: string
           post_count: number | null
           prediction_count: number | null
           role: string
@@ -1148,6 +1149,7 @@ export type Database = {
           is_bot?: boolean | null
           last_active_at?: string | null
           level?: number | null
+          owner_id: string
           post_count?: number | null
           prediction_count?: number | null
           role?: string
@@ -1182,6 +1184,7 @@ export type Database = {
           is_bot?: boolean | null
           last_active_at?: string | null
           level?: number | null
+          owner_id?: string
           post_count?: number | null
           prediction_count?: number | null
           role?: string

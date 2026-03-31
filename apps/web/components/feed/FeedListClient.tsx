@@ -13,7 +13,8 @@ interface FeedListClientProps {
 }
 
 export function FeedListClient({ tab, cursor: initialCursor, userSchoolId }: FeedListClientProps) {
-  const { userId } = useAuth();
+  const { profile } = useAuth();
+  const profileId = profile?.id ?? null;
   const [posts, setPosts] = useState<Array<Record<string, unknown>>>([]);
   const [cursor, setCursor] = useState(initialCursor);
   const [loading, setLoading] = useState(false);
@@ -76,11 +77,11 @@ export function FeedListClient({ tab, cursor: initialCursor, userSchoolId }: Fee
         break;
       }
       case 'following': {
-        if (userId) {
+        if (profileId) {
           const { data: follows } = await supabase
             .from('follows')
             .select('following_id')
-            .eq('follower_id', userId);
+            .eq('follower_id', profileId);
           const ids = follows?.map((f) => f.following_id) ?? [];
           if (ids.length > 0) {
             query = query.in('author_id', ids);
@@ -102,22 +103,99 @@ export function FeedListClient({ tab, cursor: initialCursor, userSchoolId }: Fee
 
     const { data, error } = await query.limit(20);
 
+    // Also fetch reposts for merging
+    let repostItems: Array<Record<string, unknown>> = [];
+    {
+      const { data: reposts } = await supabase
+        .from('reposts')
+        .select(`
+          id,
+          created_at,
+          user_id,
+          post_id,
+          reposter:profiles!reposts_user_id_fkey(
+            username,
+            display_name
+          ),
+          post:posts!reposts_post_id_fkey(
+            *,
+            author:profiles!posts_author_id_fkey(
+              id,
+              username,
+              display_name,
+              avatar_url,
+              school_id,
+              dynasty_tier
+            ),
+            school:schools!posts_school_id_fkey(
+              id,
+              name,
+              abbreviation,
+              primary_color,
+              secondary_color,
+              logo_url,
+              slug
+            ),
+            aging_takes(
+              id,
+              user_id,
+              revisit_date,
+              is_surfaced,
+              community_verdict
+            )
+          )
+        `)
+        .lt('created_at', cursor)
+        .order('created_at', { ascending: false })
+        .limit(10);
+
+      if (reposts) {
+        repostItems = reposts
+          .filter((r) => {
+            const post = (Array.isArray(r.post) ? r.post[0] : r.post) as Record<string, unknown> | null;
+            return post && (post.status === 'PUBLISHED' || post.status === 'FLAGGED') && !post.parent_id;
+          })
+          .map((r) => {
+            const post = (Array.isArray(r.post) ? r.post[0] : r.post) as Record<string, unknown>;
+            const raw = Array.isArray(r.reposter) ? r.reposter[0] : r.reposter;
+            const reposter = raw as { username: string; display_name: string | null } | null;
+            return {
+              ...post,
+              _feedKey: `repost-${r.id}`,
+              _feedTime: r.created_at as string,
+              _repostedBy: reposter ?? null,
+            };
+          });
+      }
+    }
+
     if (!error && data) {
-      setPosts((prev) => [...prev, ...data]);
+      const postItems = data.map((p) => ({
+        ...p,
+        _feedKey: `post-${p.id}`,
+        _feedTime: p.created_at as string,
+        _repostedBy: null as { username: string; display_name: string | null } | null,
+      }));
+
+      // Merge and sort
+      const merged = [...postItems, ...repostItems]
+        .sort((a, b) => new Date(b._feedTime as string).getTime() - new Date(a._feedTime as string).getTime());
+
+      setPosts((prev) => [...prev, ...merged]);
       setHasMore(data.length === 20);
-      if (data.length > 0) {
-        const last = data[data.length - 1];
-        setCursor(last?.created_at ?? null);
+      if (merged.length > 0) {
+        const last = merged[merged.length - 1];
+        setCursor((last?._feedTime as string) ?? null);
       }
     }
 
     setLoading(false);
-  }, [cursor, loading, hasMore, tab, userSchoolId, userId]);
+  }, [cursor, loading, hasMore, tab, userSchoolId, profileId]);
 
   return (
     <>
       {posts.map((post) => (
-        <PostCard key={post.id as string} post={post as never} />
+        <PostCard key={(post._feedKey ?? post.id) as string} post={post as never} />
       ))}
       {hasMore && (
         <div style={{ textAlign: 'center', padding: '16px 0' }}>

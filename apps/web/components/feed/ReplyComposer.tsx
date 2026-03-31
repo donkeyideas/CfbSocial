@@ -12,13 +12,13 @@ interface ReplyComposerProps {
 
 export function ReplyComposer({ parentId, parentAuthorId }: ReplyComposerProps) {
   const router = useRouter();
-  const { userId, profile } = useAuth();
+  const { profile } = useAuth();
   const [content, setContent] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!content.trim() || submitting || !userId) return;
+    if (!content.trim() || submitting || !profile?.id) return;
 
     setSubmitting(true);
 
@@ -27,8 +27,8 @@ export function ReplyComposer({ parentId, parentAuthorId }: ReplyComposerProps) 
     const { error } = await supabase.from('posts').insert({
       content: content.trim(),
       post_type: 'STANDARD',
-      author_id: userId,
-      school_id: profile?.school_id ?? null,
+      author_id: profile.id,
+      school_id: profile.school_id ?? null,
       parent_id: parentId,
       root_id: parentId,
       status: 'PUBLISHED',
@@ -37,10 +37,10 @@ export function ReplyComposer({ parentId, parentAuthorId }: ReplyComposerProps) 
     if (!error) {
       setContent('');
       // Notify the parent post author
-      if (parentAuthorId && parentAuthorId !== userId) {
+      if (parentAuthorId && parentAuthorId !== profile.id) {
         await supabase.from('notifications').insert({
           recipient_id: parentAuthorId,
-          actor_id: userId,
+          actor_id: profile.id,
           type: 'REPLY',
           post_id: parentId,
         });

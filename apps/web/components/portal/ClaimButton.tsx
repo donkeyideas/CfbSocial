@@ -19,7 +19,8 @@ interface ClaimButtonProps {
 }
 
 export function ClaimButton({ playerId, playerStatus, schools, existingClaim }: ClaimButtonProps) {
-  const { userId } = useAuth();
+  const { profile } = useAuth();
+  const userId = profile?.id ?? null;
   const [expanded, setExpanded] = useState(false);
   const [selectedSchool, setSelectedSchool] = useState('');
   const [confidence, setConfidence] = useState(50);

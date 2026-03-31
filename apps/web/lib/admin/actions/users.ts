@@ -16,6 +16,7 @@ export async function getAllUsers(params: {
   let query = supabase
     .from('profiles')
     .select('id, username, display_name, role, status, dynasty_tier, xp, level, post_count, follower_count, following_count, touchdown_count, fumble_count, created_at, last_active_at, school:schools!profiles_school_id_fkey(id, name, abbreviation, conference)', { count: 'exact' })
+    .or('is_bot.is.null,is_bot.eq.false')
     .order(sort, { ascending: order === 'asc' })
     .range(offset, offset + limit - 1);
 

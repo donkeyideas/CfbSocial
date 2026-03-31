@@ -39,7 +39,7 @@ export function MenuOverlay({ visible, onClose }: MenuOverlayProps) {
   const colors = useColors();
   const router = useRouter();
   const { dark } = useSchoolTheme();
-  const { userId } = useAuth();
+  const { userId, profile } = useAuth();
   const translateY = useRef(new Animated.Value(SCREEN_HEIGHT)).current;
   const opacity = useRef(new Animated.Value(0)).current;
   const [rendered, setRendered] = useState(false);
@@ -140,6 +140,12 @@ export function MenuOverlay({ visible, onClose }: MenuOverlayProps) {
     (item) => !item.authRequired || userId
   );
 
+  // Build dynamic items (profile link needs username)
+  const dynamicItems: { label: string; route: string }[] = [];
+  if (userId && profile?.username) {
+    dynamicItems.push({ label: 'My Profile', route: `/profile/${profile.username}` });
+  }
+
   return (
     <View style={StyleSheet.absoluteFill} pointerEvents="box-none">
       <Animated.View style={[styles.backdrop, { opacity }]}>
@@ -155,6 +161,15 @@ export function MenuOverlay({ visible, onClose }: MenuOverlayProps) {
         <Text style={styles.title}>CFB SOCIAL</Text>
         <View style={styles.divider} />
         <ScrollView showsVerticalScrollIndicator={false}>
+          {dynamicItems.map((item) => (
+            <Pressable
+              key={item.route}
+              onPress={() => handleNavigate(item.route)}
+              style={styles.menuItem}
+            >
+              <Text style={[styles.menuText, { fontFamily: typography.sansSemiBold }]}>{item.label}</Text>
+            </Pressable>
+          ))}
           {filteredItems.map((item) => (
             <Pressable
               key={item.route}

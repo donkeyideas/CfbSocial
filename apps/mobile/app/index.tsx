@@ -34,10 +34,12 @@ export default function SplashScreen() {
       backgroundColor: colors.paper,
       paddingHorizontal: 32,
     },
-    logo: {
-      width: 220,
-      height: 220,
-      marginBottom: 8,
+    title: {
+      fontFamily: typography.serifBold,
+      fontSize: 42,
+      color: colors.ink,
+      textAlign: 'center',
+      marginBottom: 4,
     },
     ornament: {
       fontFamily: typography.mono,
@@ -110,12 +112,8 @@ export default function SplashScreen() {
 
   return (
     <View style={styles.container}>
-      {/* Logo */}
-      <Image
-        source={require('../assets/icon.png')}
-        style={styles.logo}
-        resizeMode="contain"
-      />
+      {/* Title */}
+      <Text style={styles.title}>CFB Social</Text>
 
       {/* Subtitle */}
       <Text style={styles.subtitle}>COLLEGE FOOTBALL SOCIAL</Text>

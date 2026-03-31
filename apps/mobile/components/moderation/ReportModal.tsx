@@ -29,10 +29,11 @@ const REASONS = [
 interface ReportModalProps {
   visible: boolean;
   postId: string;
+  postAuthorId: string;
   onClose: () => void;
 }
 
-export function ReportModal({ visible, postId, onClose }: ReportModalProps) {
+export function ReportModal({ visible, postId, postAuthorId, onClose }: ReportModalProps) {
   const colors = useColors();
   const { dark } = useSchoolTheme();
   const [reason, setReason] = useState('');
@@ -196,6 +197,32 @@ export function ReportModal({ visible, postId, onClose }: ReportModalProps) {
         setError(insertError.message);
         return;
       }
+
+      // Flag the post
+      await supabase
+        .from('posts')
+        .update({ status: 'FLAGGED', flagged_at: new Date().toISOString() })
+        .eq('id', postId);
+
+      // Create notification for the post author
+      if (postAuthorId && postAuthorId !== userId) {
+        await supabase.from('notifications').insert({
+          recipient_id: postAuthorId,
+          type: 'POST_FLAGGED',
+          post_id: postId,
+        });
+      }
+
+      // Log moderation event
+      const combinedReason = `${reason}${description ? ': ' + description : ''}`;
+      await supabase.from('moderation_events').insert({
+        post_id: postId,
+        user_id: postAuthorId,
+        moderator_id: userId,
+        event_type: 'USER_REPORT',
+        action_taken: 'FLAG',
+        reason: combinedReason,
+      });
 
       setSubmitted(true);
     } catch {

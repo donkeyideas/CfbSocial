@@ -29,6 +29,7 @@ interface UserRow {
   id: string;
   username: string;
   display_name: string | null;
+  email: string;
   role: string;
   status: string;
   dynasty_tier: string | null;
@@ -48,6 +49,8 @@ interface UserRow {
 interface UsersClientProps {
   users: UserRow[];
   total: number;
+  currentPage: number;
+  totalPages: number;
 }
 
 function getRoleBadgeVariant(role: string): 'purple' | 'warning' | 'muted' {
@@ -82,7 +85,7 @@ function formatTier(tier: string | null): string {
     .join(' ');
 }
 
-export function UsersClient({ users, total }: UsersClientProps) {
+export function UsersClient({ users, total, currentPage, totalPages }: UsersClientProps) {
   const router = useRouter();
   const [selectedUser, setSelectedUser] = useState<UserRow | null>(null);
   const [detailOpen, setDetailOpen] = useState(false);
@@ -280,6 +283,24 @@ export function UsersClient({ users, total }: UsersClientProps) {
     }
   }
 
+  function buildPageUrl(page: number): string {
+    const params = new URLSearchParams(window.location.search);
+    params.set('page', String(page));
+    return `/admin/users?${params.toString()}`;
+  }
+
+  function getPageNumbers(current: number, total: number): (number | '...')[] {
+    if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
+    const pages: (number | '...')[] = [1];
+    if (current > 3) pages.push('...');
+    const start = Math.max(2, current - 1);
+    const end = Math.min(total - 1, current + 1);
+    for (let i = start; i <= end; i++) pages.push(i);
+    if (current < total - 2) pages.push('...');
+    pages.push(total);
+    return pages;
+  }
+
   if (users.length === 0) {
     return (
       <EmptyState
@@ -301,6 +322,7 @@ export function UsersClient({ users, total }: UsersClientProps) {
           <thead>
             <tr>
               <th>User</th>
+              <th>Email</th>
               <th>School</th>
               <th>Role</th>
               <th>Status</th>
@@ -336,6 +358,9 @@ export function UsersClient({ users, total }: UsersClientProps) {
                       @{user.username}
                     </p>
                   </div>
+                </td>
+                <td className="text-xs text-[var(--admin-text-muted)]" style={{ maxWidth: 180, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  {user.email || '-'}
                 </td>
                 <td className="text-sm text-[var(--admin-text-secondary)]">
                   {user.school?.abbreviation ?? '-'}
@@ -472,6 +497,52 @@ export function UsersClient({ users, total }: UsersClientProps) {
           </tbody>
         </table>
       </div>
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between">
+          <span className="text-sm text-[var(--admin-text-muted)]">
+            Page {currentPage} of {totalPages}
+          </span>
+          <div className="flex items-center gap-2">
+            {currentPage > 1 && (
+              <a
+                href={buildPageUrl(currentPage - 1)}
+                className="rounded-md border border-[var(--admin-border)] px-3 py-1.5 text-sm text-[var(--admin-text-secondary)] hover:bg-[var(--admin-surface-raised)]"
+              >
+                Previous
+              </a>
+            )}
+            {getPageNumbers(currentPage, totalPages).map((p, i) =>
+              p === '...' ? (
+                <span key={`ellipsis-${i}`} className="px-2 text-sm text-[var(--admin-text-muted)]">...</span>
+              ) : (
+                <a
+                  key={p}
+                  href={buildPageUrl(p as number)}
+                  className="rounded-md border px-3 py-1.5 text-sm"
+                  style={{
+                    borderColor: p === currentPage ? 'var(--admin-accent)' : 'var(--admin-border)',
+                    background: p === currentPage ? 'var(--admin-accent)' : 'transparent',
+                    color: p === currentPage ? '#fff' : 'var(--admin-text-secondary)',
+                    fontWeight: p === currentPage ? 700 : 400,
+                  }}
+                >
+                  {p}
+                </a>
+              ),
+            )}
+            {currentPage < totalPages && (
+              <a
+                href={buildPageUrl(currentPage + 1)}
+                className="rounded-md border border-[var(--admin-border)] px-3 py-1.5 text-sm text-[var(--admin-text-secondary)] hover:bg-[var(--admin-surface-raised)]"
+              >
+                Next
+              </a>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Confirm dialog */}
       <ConfirmDialog

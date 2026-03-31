@@ -12,7 +12,8 @@ export function LoginForm() {
   // Prevent open redirect — only allow relative paths
   const redirectTo = rawRedirect.startsWith('/') && !rawRedirect.startsWith('//') ? rawRedirect : '/feed';
   const callbackError = searchParams?.get('error');
-  const [email, setEmail] = useState('');
+  const prefillEmail = searchParams?.get('email') || '';
+  const [email, setEmail] = useState(prefillEmail);
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(

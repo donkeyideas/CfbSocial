@@ -85,9 +85,9 @@ async function ProfileContent({ username }: { username: string }) {
     notFound();
   }
 
-  // Check if viewing own profile
+  // Check if viewing own profile (works for primary + alt profiles via owner_id)
   const { data: { user: authUser } } = await supabase.auth.getUser();
-  const isOwnProfile = authUser?.id === user.id;
+  const isOwnProfile = !!authUser && (authUser.id === user.id || authUser.id === user.owner_id);
 
   // Fetch user's posts with author + school joins (same shape as feed)
   const { data: posts } = await supabase

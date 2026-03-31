@@ -129,6 +129,7 @@ export function ScoresRibbon() {
 
   useEffect(() => {
     let mounted = true;
+    let interval: ReturnType<typeof setInterval> | null = null;
 
     async function fetchScores() {
       try {
@@ -144,12 +145,34 @@ export function ScoresRibbon() {
       }
     }
 
-    fetchScores();
-    const interval = setInterval(fetchScores, 60_000);
+    function startPolling() {
+      fetchScores();
+      interval = setInterval(fetchScores, 60_000);
+    }
+
+    function stopPolling() {
+      if (interval) {
+        clearInterval(interval);
+        interval = null;
+      }
+    }
+
+    // Only poll when tab is visible
+    function handleVisibility() {
+      if (document.hidden) {
+        stopPolling();
+      } else {
+        startPolling();
+      }
+    }
+
+    startPolling();
+    document.addEventListener('visibilitychange', handleVisibility);
 
     return () => {
       mounted = false;
-      clearInterval(interval);
+      stopPolling();
+      document.removeEventListener('visibilitychange', handleVisibility);
     };
   }, []);
 

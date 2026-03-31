@@ -10,7 +10,8 @@ interface FollowButtonProps {
 }
 
 export function FollowButton({ userId, initialFollowing }: FollowButtonProps) {
-  const { userId: currentUserId } = useAuth();
+  const { profile } = useAuth();
+  const currentUserId = profile?.id ?? null;
   const [isFollowing, setIsFollowing] = useState(initialFollowing ?? false);
   const [loading, setLoading] = useState(!initialFollowing && initialFollowing === undefined);
 

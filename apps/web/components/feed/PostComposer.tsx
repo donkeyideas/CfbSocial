@@ -9,7 +9,7 @@ import type { PostType } from '@cfb-social/types';
 
 export function PostComposer() {
   const router = useRouter();
-  const { isLoggedIn, userId, profile } = useAuth();
+  const { isLoggedIn, profile } = useAuth();
   const [content, setContent] = useState('');
   const [postType, setPostType] = useState<PostType>('STANDARD' as PostType);
   const [submitting, setSubmitting] = useState(false);
@@ -39,7 +39,7 @@ export function PostComposer() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!content.trim() || submitting || !userId) return;
+    if (!content.trim() || submitting || !profile?.id) return;
 
     setSubmitting(true);
 
@@ -48,7 +48,7 @@ export function PostComposer() {
     const insertData: Record<string, unknown> = {
       content: content.trim(),
       post_type: postType,
-      author_id: userId,
+      author_id: profile.id,
       school_id: profile?.school_id ?? null,
       status: 'PUBLISHED',
     };

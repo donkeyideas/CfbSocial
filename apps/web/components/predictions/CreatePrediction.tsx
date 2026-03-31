@@ -16,7 +16,7 @@ const categories = [
 
 export function CreatePrediction() {
   const router = useRouter();
-  const { userId, profile } = useAuth();
+  const { profile } = useAuth();
   const [expanded, setExpanded] = useState(false);
   const [text, setText] = useState('');
   const [category, setCategory] = useState('GAME_OUTCOME');
@@ -53,17 +53,17 @@ export function CreatePrediction() {
     setSubmitting(true);
 
     try {
-      if (!userId) return;
+      if (!profile?.id) return;
       const supabase = createClient();
 
       // Create the post
       const { data: post, error: postError } = await supabase
         .from('posts')
         .insert({
-          author_id: userId,
+          author_id: profile.id,
           content: text.trim(),
           post_type: 'PREDICTION',
-          school_id: profile?.school_id ?? null,
+          school_id: profile.school_id ?? null,
         })
         .select()
         .single();
@@ -74,7 +74,7 @@ export function CreatePrediction() {
       const { error: predError } = await supabase
         .from('predictions')
         .insert({
-          user_id: userId,
+          user_id: profile.id,
           post_id: post.id,
           prediction_text: text.trim(),
           category,

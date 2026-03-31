@@ -1,22 +1,34 @@
-import { memo, useMemo } from 'react';
+import { memo, useMemo, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { PostHeader } from './PostHeader';
 import { PostEngagement } from './PostEngagement';
 import { BallotButtons } from './BallotButtons';
 import { PostActions } from './PostActions';
+import { ReportModal } from '../moderation/ReportModal';
 import { useColors } from '@/lib/theme/ThemeProvider';
 import { typography } from '@/lib/theme/typography';
+import { withAlpha } from '@/lib/theme/utils';
 import type { PostData } from './PostCard';
 
 interface NewspaperClippingCardProps {
   post: PostData;
+  isAgingReceipt?: boolean;
 }
 
-export const NewspaperClippingCard = memo(function NewspaperClippingCard({ post }: NewspaperClippingCardProps) {
+export const NewspaperClippingCard = memo(function NewspaperClippingCard({ post, isAgingReceipt }: NewspaperClippingCardProps) {
   const colors = useColors();
   const router = useRouter();
   const isReceipt = post.post_type === 'RECEIPT';
+  const hasAgingTake = isAgingReceipt || (post.aging_takes && post.aging_takes.length > 0);
+  const [reportVisible, setReportVisible] = useState(false);
+
+  // Format the revisit date from the first aging take
+  const receiptDate = hasAgingTake && post.aging_takes?.[0]
+    ? new Date(post.aging_takes[0].revisit_date).toLocaleDateString('en-US', {
+        month: 'short', day: 'numeric', year: 'numeric',
+      })
+    : null;
 
   const styles = useMemo(() => StyleSheet.create({
     card: {
@@ -27,6 +39,10 @@ export const NewspaperClippingCard = memo(function NewspaperClippingCard({ post 
       padding: 14,
       marginHorizontal: 12,
       marginVertical: 6,
+    },
+    receiptCard: {
+      backgroundColor: withAlpha('#d4a574', 0.06),
+      borderColor: withAlpha('#c0392b', 0.3),
     },
     sectionLabelWrap: {
       marginVertical: 10,
@@ -68,11 +84,83 @@ export const NewspaperClippingCard = memo(function NewspaperClippingCard({ post 
       paddingVertical: 6,
       borderRadius: 3,
     },
+    receiptStamp: {
+      borderWidth: 2,
+      borderColor: colors.crimson,
+      backgroundColor: 'transparent',
+      paddingHorizontal: 16,
+      paddingVertical: 6,
+      borderRadius: 3,
+      transform: [{ rotate: '-2deg' }],
+    },
     stampText: {
       fontFamily: typography.mono,
       fontSize: 11,
       color: colors.paper,
       letterSpacing: 2,
+    },
+    receiptStampText: {
+      fontFamily: typography.mono,
+      fontSize: 11,
+      color: colors.crimson,
+      letterSpacing: 2,
+    },
+    // Receipt seal badge (top-right circle)
+    sealContainer: {
+      position: 'absolute',
+      top: 10,
+      right: 10,
+      zIndex: 1,
+    },
+    seal: {
+      width: 52,
+      height: 52,
+      borderRadius: 26,
+      backgroundColor: colors.crimson,
+      justifyContent: 'center',
+      alignItems: 'center',
+      shadowColor: '#000',
+      shadowOffset: { width: 1, height: 2 },
+      shadowOpacity: 0.2,
+      shadowRadius: 3,
+      elevation: 3,
+      transform: [{ rotate: '12deg' }],
+    },
+    sealText: {
+      fontFamily: typography.serifBold,
+      fontSize: 7,
+      color: 'rgba(255,255,255,0.9)',
+      textAlign: 'center',
+      lineHeight: 10,
+      textTransform: 'uppercase',
+    },
+    repostStamp: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 4,
+      borderWidth: 1.5,
+      borderColor: colors.crimson,
+      borderRadius: 3,
+      paddingVertical: 2,
+      paddingHorizontal: 8,
+      alignSelf: 'flex-start',
+      marginBottom: 6,
+      transform: [{ rotate: '-1.5deg' }],
+      opacity: 0.7,
+    },
+    repostStampText: {
+      fontFamily: typography.mono,
+      fontSize: 8,
+      fontWeight: '800',
+      letterSpacing: 2,
+      color: colors.crimson,
+      textTransform: 'uppercase',
+    },
+    repostStampUser: {
+      fontFamily: typography.mono,
+      fontSize: 8,
+      fontWeight: '600',
+      color: colors.crimson,
     },
   }), [colors]);
 
@@ -86,7 +174,27 @@ export const NewspaperClippingCard = memo(function NewspaperClippingCard({ post 
   const body = headline ? post.content.slice(dotIdx + 1).trim() : post.content;
 
   return (
-    <View style={styles.card}>
+    <View style={[styles.card, hasAgingTake && styles.receiptCard]}>
+      {/* Repost stamp */}
+      {post._repostedBy && (
+        <Pressable
+          style={styles.repostStamp}
+          onPress={() => router.push(`/profile/${post._repostedBy!.username}` as never)}
+        >
+          <Text style={styles.repostStampText}>REPOSTED</Text>
+          <Text style={styles.repostStampUser}>@{post._repostedBy.username}</Text>
+        </Pressable>
+      )}
+
+      {/* Receipt seal badge */}
+      {hasAgingTake && (
+        <View style={styles.sealContainer}>
+          <View style={styles.seal}>
+            <Text style={styles.sealText}>{'Receipt\nFiled'}</Text>
+          </View>
+        </View>
+      )}
+
       <PostHeader
         author={post.author ?? null}
         createdAt={post.created_at}
@@ -95,7 +203,9 @@ export const NewspaperClippingCard = memo(function NewspaperClippingCard({ post 
       {/* Section label with rules */}
       <View style={styles.sectionLabelWrap}>
         <View style={styles.ruleLine} />
-        <Text style={styles.sectionLabel}>THE SATURDAY EDITION</Text>
+        <Text style={styles.sectionLabel}>
+          {hasAgingTake ? 'RECEIPT FILED' : 'THE SATURDAY EDITION'}
+        </Text>
         <View style={[styles.ruleLine, { backgroundColor: colors.crimson, height: 2 }]} />
       </View>
 
@@ -108,8 +218,17 @@ export const NewspaperClippingCard = memo(function NewspaperClippingCard({ post 
         ) : null}
       </Pressable>
 
-      {/* Receipt stamp at bottom */}
-      {isReceipt && (
+      {/* Receipt stamp with date for aging takes */}
+      {hasAgingTake && receiptDate && (
+        <View style={styles.stampWrap}>
+          <View style={styles.receiptStamp}>
+            <Text style={styles.receiptStampText}>RECEIPT FILED — Review {receiptDate}</Text>
+          </View>
+        </View>
+      )}
+
+      {/* Receipt stamp for RECEIPT post type */}
+      {isReceipt && !hasAgingTake && (
         <View style={styles.stampWrap}>
           <View style={styles.stamp}>
             <Text style={styles.stampText}>RECEIPT FILED</Text>
@@ -130,7 +249,22 @@ export const NewspaperClippingCard = memo(function NewspaperClippingCard({ post 
         prefetchedVote={post._userVote}
       />
 
-      <PostActions postId={post.id} postAuthorId={post.author_id} prefetchedReposted={post._userReposted} prefetchedSaved={post._userSaved} />
+      <PostActions
+        postId={post.id}
+        postAuthorId={post.author_id}
+        postContent={post.content}
+        prefetchedReposted={post._userReposted}
+        prefetchedSaved={post._userSaved}
+        repostCount={post.repost_count}
+        onReport={() => setReportVisible(true)}
+      />
+
+      <ReportModal
+        visible={reportVisible}
+        postId={post.id}
+        postAuthorId={post.author_id}
+        onClose={() => setReportVisible(false)}
+      />
     </View>
   );
 });

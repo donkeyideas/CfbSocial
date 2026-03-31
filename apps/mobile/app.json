@@ -22,10 +22,7 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#f4efe4"
       },
-      "package": "com.cfbsocial.app",
-      "permissions": [
-        "android.permission.RECORD_AUDIO"
-      ]
+      "package": "com.cfbsocial.app"
     },
     "web": {
       "bundler": "metro",

@@ -5,6 +5,8 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { NotificationPreferences } from '@/components/notifications/NotificationPreferences';
+import { CreateProfileModal } from '@/components/profiles/CreateProfileModal';
+import { useAuth } from '@/components/auth/AuthProvider';
 
 interface School {
   id: string;
@@ -16,6 +18,7 @@ interface School {
 export function SettingsClient() {
   const router = useRouter();
   const supabase = createClient();
+  const { profile: activeProfile, profiles, switchProfile, refreshProfiles } = useAuth();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [username, setUsername] = useState('');
@@ -28,17 +31,26 @@ export function SettingsClient() {
   const [bannerFile, setBannerFile] = useState<File | null>(null);
   const [bannerPreview, setBannerPreview] = useState<string | null>(null);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
+  // Re-load form fields when the active profile changes
   useEffect(() => {
     async function loadProfile() {
-      const { data: { user: authUser } } = await supabase.auth.getUser();
-      if (!authUser) {
-        router.push('/login');
-        return;
+      if (!activeProfile) {
+        // Wait for auth context to load
+        const { data: { user: authUser } } = await supabase.auth.getUser();
+        if (!authUser) {
+          router.push('/login');
+          return;
+        }
       }
 
+      const editId = activeProfile?.id;
+      if (!editId) return;
+
       const [profileResult, schoolsResult] = await Promise.all([
-        supabase.from('profiles').select('*').eq('id', authUser.id).single(),
+        supabase.from('profiles').select('*').eq('id', editId).single(),
         supabase.from('schools').select('id, name, primary_color, secondary_color').eq('is_active', true).order('name'),
       ]);
 
@@ -47,23 +59,22 @@ export function SettingsClient() {
         setDisplayName(profileResult.data.display_name ?? '');
         setBio(profileResult.data.bio ?? '');
         setSchoolId(profileResult.data.school_id ?? '');
-        if (profileResult.data.banner_url) {
-          setBannerPreview(profileResult.data.banner_url);
-        }
-        if (profileResult.data.avatar_url) {
-          setAvatarPreview(profileResult.data.avatar_url);
-        }
+        setBannerPreview(profileResult.data.banner_url ?? null);
+        setAvatarPreview(profileResult.data.avatar_url ?? null);
+        setBannerFile(null);
+        setAvatarFile(null);
       }
 
       if (schoolsResult.data) {
         setSchools(schoolsResult.data);
       }
 
+      setMessage(null);
       setLoading(false);
     }
 
     loadProfile();
-  }, [supabase, router]);
+  }, [supabase, router, activeProfile]);
 
   // Get current school colors for preview
   const selectedSchool = schools.find((s) => s.id === schoolId);
@@ -78,14 +89,22 @@ export function SettingsClient() {
     setSaving(true);
     setMessage(null);
 
-    const { data: { user: authUser } } = await supabase.auth.getUser();
-    if (!authUser) return;
+    const editId = activeProfile?.id;
+    const ownerId = activeProfile?.owner_id;
+    if (!editId || !ownerId) {
+      setSaving(false);
+      return;
+    }
+
+    // Storage paths use owner_id (auth user ID) as base so RLS passes,
+    // with profile ID subfolder for alt profiles
+    const storageBase = editId === ownerId ? ownerId : `${ownerId}/${editId}`;
 
     // Upload avatar if selected
     let avatarUrl: string | undefined;
     if (avatarFile) {
-      const fileExt = avatarFile.name.split('.').pop();
-      const filePath = `${authUser.id}/avatar.${fileExt}`;
+      // Use a fixed filename (no extension variation) to avoid stale cached URLs
+      const filePath = `${storageBase}/avatar`;
 
       const { error: uploadError } = await supabase.storage
         .from('avatars')
@@ -98,14 +117,14 @@ export function SettingsClient() {
       }
 
       const { data: urlData } = supabase.storage.from('avatars').getPublicUrl(filePath);
-      avatarUrl = urlData.publicUrl;
+      // Append cache-bust param so browsers pick up the new image
+      avatarUrl = `${urlData.publicUrl}?v=${Date.now()}`;
     }
 
     // Upload banner if selected
     let bannerUrl: string | undefined;
     if (bannerFile) {
-      const fileExt = bannerFile.name.split('.').pop();
-      const filePath = `${authUser.id}/banner.${fileExt}`;
+      const filePath = `${storageBase}/banner`;
 
       const { error: uploadError } = await supabase.storage
         .from('avatars')
@@ -118,7 +137,7 @@ export function SettingsClient() {
       }
 
       const { data: urlData } = supabase.storage.from('avatars').getPublicUrl(filePath);
-      bannerUrl = urlData.publicUrl;
+      bannerUrl = `${urlData.publicUrl}?v=${Date.now()}`;
     }
 
     const updatePayload: Record<string, unknown> = {
@@ -136,23 +155,37 @@ export function SettingsClient() {
     if (bannerUrl) {
       updatePayload.banner_url = bannerUrl;
     } else if (!bannerPreview) {
-      // User cleared banner — reset to school colors
       updatePayload.banner_url = null;
     }
 
     const { error } = await supabase
       .from('profiles')
       .update(updatePayload)
-      .eq('id', authUser.id);
+      .eq('id', editId);
 
     if (error) {
       setMessage({ type: 'error', text: error.message });
     } else {
       setMessage({ type: 'success', text: 'Settings saved successfully.' });
+      await refreshProfiles();
       router.refresh();
     }
 
     setSaving(false);
+  }
+
+  async function handleDeleteProfile(profileId: string) {
+    setDeletingId(profileId);
+    const res = await fetch(`/api/profiles/${profileId}`, { method: 'DELETE' });
+    if (res.ok) {
+      await refreshProfiles();
+      // If we deleted the active profile, switch to primary
+      if (activeProfile?.id === profileId) {
+        const primary = profiles.find((p) => p.id === p.owner_id);
+        if (primary) switchProfile(primary.id);
+      }
+    }
+    setDeletingId(null);
   }
 
   if (loading) {
@@ -170,13 +203,17 @@ export function SettingsClient() {
     );
   }
 
+  const altProfiles = profiles.filter((p) => p.id !== p.owner_id);
+
   return (
     <div className="space-y-6">
       <h1 className="font-serif text-3xl font-bold">Settings</h1>
 
       {/* Profile */}
       <div className="gridiron-card p-6">
-        <h2 className="mb-4 font-serif text-lg font-semibold">Profile</h2>
+        <h2 className="mb-4 font-serif text-lg font-semibold">
+          Profile{activeProfile && activeProfile.id !== activeProfile.owner_id ? ` — @${activeProfile.username}` : ''}
+        </h2>
 
         {message && (
           <div
@@ -333,6 +370,86 @@ export function SettingsClient() {
         </form>
       </div>
 
+      {/* Your Profiles */}
+      <div className="gridiron-card p-6">
+        <h2 className="mb-3 font-serif text-lg font-semibold">Your Profiles</h2>
+        <p className="mb-4 text-sm text-[var(--text-muted)]">
+          Create alternate profiles to post with different personas. All profiles share one login.
+        </p>
+        <div className="space-y-3">
+          {profiles.map((p) => {
+            const isPrimary = p.id === p.owner_id;
+            const isActive = p.id === activeProfile?.id;
+            return (
+              <div
+                key={p.id}
+                className="flex items-center gap-3 rounded-md p-3"
+                style={{
+                  border: `1px solid ${isActive ? 'var(--crimson)' : 'var(--border)'}`,
+                  background: isActive ? 'var(--crimson-faint, rgba(139,26,26,0.05))' : 'transparent',
+                }}
+              >
+                <div
+                  style={{
+                    width: 36, height: 36, borderRadius: '50%', overflow: 'hidden',
+                    background: 'var(--surface)', flexShrink: 0,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    fontFamily: 'var(--serif)', fontWeight: 700, fontSize: '0.9rem',
+                    color: 'var(--text-secondary)',
+                  }}
+                >
+                  {p.avatar_url ? (
+                    <img src={p.avatar_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  ) : (
+                    (p.username?.[0] ?? '?').toUpperCase()
+                  )}
+                </div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <p className="text-sm font-semibold" style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    @{p.username}{isPrimary ? ' (Primary)' : ''}
+                  </p>
+                  {p.display_name && (
+                    <p className="text-xs text-[var(--text-muted)]" style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {p.display_name}
+                    </p>
+                  )}
+                </div>
+                {isActive ? (
+                  <span className="shrink-0 rounded-md px-2 py-1 text-xs font-semibold" style={{ background: 'var(--crimson)', color: '#fff' }}>
+                    Active
+                  </span>
+                ) : (
+                  <div className="flex shrink-0 gap-2">
+                    <button
+                      onClick={() => switchProfile(p.id)}
+                      className="rounded-md border border-[var(--border)] px-3 py-1 text-xs font-semibold text-[var(--text-secondary)] transition-colors hover:bg-[var(--surface)]"
+                    >
+                      Switch
+                    </button>
+                    {!isPrimary && (
+                      <button
+                        onClick={() => handleDeleteProfile(p.id)}
+                        disabled={deletingId === p.id}
+                        className="rounded-md px-2 py-1 text-xs text-[var(--text-muted)] transition-colors hover:text-[var(--error)]"
+                        title="Delete profile"
+                      >
+                        {deletingId === p.id ? '...' : 'X'}
+                      </button>
+                    )}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+        <button
+          onClick={() => setShowCreateModal(true)}
+          className="mt-4 text-sm font-semibold text-crimson hover:underline"
+        >
+          + Create new profile
+        </button>
+      </div>
+
       {/* Appearance */}
       <div className="gridiron-card p-6">
         <h2 className="mb-3 font-serif text-lg font-semibold">Appearance</h2>
@@ -407,6 +524,11 @@ export function SettingsClient() {
           </Link>
         </div>
       </div>
+
+      <CreateProfileModal
+        open={showCreateModal}
+        onClose={() => setShowCreateModal(false)}
+      />
     </div>
   );
 }

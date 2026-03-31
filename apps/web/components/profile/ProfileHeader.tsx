@@ -93,7 +93,7 @@ export function ProfileHeader({ user, isOwnProfile = false }: ProfileHeaderProps
                     textDecoration: 'none',
                   }}
                 >
-                  Settings
+                  Edit Profile
                 </Link>
                 <SignOutButton />
               </>

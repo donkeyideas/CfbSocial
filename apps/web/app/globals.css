@@ -1045,6 +1045,116 @@ h1, h2, h3, h4, h5, h6,
 }
 
 /* ============================================================
+   ACCOUNT SWITCHER DROPDOWN
+   ============================================================ */
+
+.account-switcher-dropdown {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 8px);
+  z-index: 50;
+  width: 260px;
+  background: var(--surface-raised);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  padding: 6px 0;
+  font-family: var(--sans);
+}
+
+html.dark .account-switcher-dropdown {
+  background: #2a2520;
+  border-color: #4a4035;
+}
+
+.account-switcher-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 8px 12px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  text-decoration: none;
+  color: var(--ink);
+  transition: background 0.15s;
+}
+
+.account-switcher-item:hover {
+  background: var(--surface);
+}
+
+html.dark .account-switcher-item:hover {
+  background: #3a3530;
+}
+
+.account-switcher-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: var(--surface);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--serif);
+  font-weight: 700;
+  font-size: 0.8rem;
+  color: var(--faded-ink);
+  flex-shrink: 0;
+}
+
+.account-switcher-name {
+  font-size: 0.8rem;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.account-switcher-email {
+  font-size: 0.7rem;
+  color: var(--faded-ink);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.account-switcher-active {
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: #fff;
+  background: var(--crimson);
+  padding: 2px 6px;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+
+.account-switcher-switch {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--crimson);
+  flex-shrink: 0;
+}
+
+.account-switcher-divider {
+  height: 1px;
+  background: var(--border);
+  margin: 4px 0;
+}
+
+html.dark .account-switcher-divider {
+  background: #4a4035;
+}
+
+.account-switcher-add {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--crimson);
+}
+
+/* ============================================================
    SCORES RIBBON
    ============================================================ */
 
@@ -1921,6 +2031,63 @@ html.dark .sideline-field {
 
 .post-action:hover {
   color: var(--crimson);
+}
+
+.post-action-active {
+  color: var(--crimson) !important;
+  font-weight: 700;
+}
+
+/* --- Repost Stamp (rubber-stamp style inside card) --- */
+.post-card {
+  position: relative;
+}
+
+.repost-stamp {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: fit-content;
+  padding: 4px 12px;
+  margin-bottom: 8px;
+  border: 2px solid var(--crimson);
+  border-radius: 3px;
+  text-decoration: none;
+  opacity: 0.7;
+  transform: rotate(-1.5deg);
+  transition: opacity 0.15s;
+}
+
+.repost-stamp:hover {
+  opacity: 1;
+  text-decoration: none;
+}
+
+.repost-stamp-label {
+  font-family: var(--mono);
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--crimson);
+  line-height: 1;
+}
+
+.repost-stamp-user {
+  font-family: var(--mono);
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: var(--crimson);
+  line-height: 1;
+}
+
+html.dark .repost-stamp {
+  border-color: #c4705a;
+}
+
+html.dark .repost-stamp-label,
+html.dark .repost-stamp-user {
+  color: #c4705a;
 }
 
 /* --- Inline Challenge Form --- */
@@ -5343,5 +5510,111 @@ html.dark .fact-check-claim {
 html.dark .fact-check-evidence {
   color: #a09888;
   border-left-color: #504a42;
+}
+
+/* ── Create Profile Modal ── */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: rgba(0,0,0,0.5);
+}
+
+.modal-container {
+  position: fixed;
+  z-index: 1001;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 90%;
+  max-width: 420px;
+  background: var(--warm-white, #faf8f0);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px 12px;
+  border-bottom: 1px solid var(--border);
+}
+
+.modal-title {
+  font-family: var(--serif);
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+.modal-close {
+  background: none;
+  border: none;
+  font-family: var(--sans);
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 4px 8px;
+}
+
+.modal-close:hover {
+  color: var(--ink);
+}
+
+.modal-error {
+  margin: 12px 20px 0;
+  padding: 8px 12px;
+  background: rgba(139,26,26,0.08);
+  color: var(--crimson);
+  font-family: var(--sans);
+  font-size: 0.8rem;
+  border-radius: 2px;
+}
+
+.modal-body {
+  padding: 16px 20px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.modal-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.modal-label {
+  font-family: var(--sans);
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.modal-hint {
+  font-family: var(--sans);
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+html.dark .modal-container {
+  background: var(--dark-surface, #2a2520);
+  border-color: var(--dark-border, #504a42);
+}
+
+html.dark .modal-header {
+  border-bottom-color: var(--dark-border, #504a42);
+}
+
+html.dark .modal-close:hover {
+  color: #ddd8ce;
+}
+
+html.dark .modal-error {
+  background: rgba(200,60,60,0.15);
 }
 

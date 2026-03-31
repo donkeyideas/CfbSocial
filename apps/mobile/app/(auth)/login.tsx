@@ -176,7 +176,7 @@ export default function LoginScreen() {
     setError(null);
 
     try {
-      const redirectTo = makeRedirectUri();
+      const redirectTo = makeRedirectUri({ scheme: 'cfbsocial' });
 
       const { data, error: oauthError } = await supabase.auth.signInWithOAuth({
         provider: 'google',

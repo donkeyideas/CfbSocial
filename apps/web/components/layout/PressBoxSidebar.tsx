@@ -198,12 +198,15 @@ export function PressBoxSidebar() {
       } catch { /* CFBD unavailable */ }
     }
 
-    loadNews();
-    loadPortal();
-    loadClaims();
-    loadLeaders();
-    loadRecruits();
-    loadTransfers();
+    // Fire all data loads in parallel
+    Promise.all([
+      loadNews(),
+      loadPortal(),
+      loadClaims(),
+      loadLeaders(),
+      loadRecruits(),
+      loadTransfers(),
+    ]);
   }, []);
 
   function handleArticleClick(article: ESPNArticle) {

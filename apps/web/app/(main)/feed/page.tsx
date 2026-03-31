@@ -234,6 +234,7 @@ async function FeedList({ tab }: { tab: FeedTab }) {
   const { data: posts, error } = await query.limit(20);
 
   if (error) {
+    console.error('[FeedList] Query error:', error.message, error.code, error.details, error.hint);
     return (
       <div className="content-card" style={{ textAlign: 'center', padding: 24 }}>
         <p style={{ color: 'var(--faded-ink)' }}>Unable to load posts right now. Please try again later.</p>
@@ -254,18 +255,104 @@ async function FeedList({ tab }: { tab: FeedTab }) {
     );
   }
 
+  // Fetch reposts to merge into the feed
+  // Get reposts from users the current user follows (or all for latest tab)
+  let repostItems: Array<Record<string, unknown>> = [];
+  {
+    let repostQuery = supabase
+      .from('reposts')
+      .select(`
+        id,
+        created_at,
+        user_id,
+        post_id,
+        reposter:profiles!reposts_user_id_fkey(
+          username,
+          display_name
+        ),
+        post:posts!reposts_post_id_fkey(
+          *,
+          author:profiles!posts_author_id_fkey(
+            id,
+            username,
+            display_name,
+            avatar_url,
+            school_id,
+            dynasty_tier
+          ),
+          school:schools!posts_school_id_fkey(
+            id,
+            name,
+            abbreviation,
+            primary_color,
+            secondary_color,
+            logo_url,
+            slug
+          ),
+          aging_takes(
+            id,
+            user_id,
+            revisit_date,
+            is_surfaced,
+            community_verdict
+          )
+        )
+      `)
+      .order('created_at', { ascending: false })
+      .limit(10);
+
+    if (tab === 'following' && followingIds.length > 0) {
+      repostQuery = repostQuery.in('user_id', followingIds);
+    }
+
+    const { data: reposts } = await repostQuery;
+
+    if (reposts) {
+      repostItems = reposts
+        .filter((r) => {
+          const post = (Array.isArray(r.post) ? r.post[0] : r.post) as Record<string, unknown> | null;
+          return post && (post.status === 'PUBLISHED' || post.status === 'FLAGGED') && !post.parent_id;
+        })
+        .map((r) => {
+          const post = (Array.isArray(r.post) ? r.post[0] : r.post) as Record<string, unknown>;
+          const raw = Array.isArray(r.reposter) ? r.reposter[0] : r.reposter;
+          const reposter = raw as { username: string; display_name: string | null } | null;
+          return {
+            ...post,
+            _feedKey: `repost-${r.id}`,
+            _feedTime: r.created_at as string,
+            _repostedBy: reposter ?? null,
+          };
+        });
+    }
+  }
+
+  // Merge posts and reposts into a single timeline
+  const postItems = posts.map((p) => ({
+    ...p,
+    _feedKey: `post-${p.id}`,
+    _feedTime: p.created_at as string,
+    _repostedBy: null as { username: string; display_name: string | null } | null,
+  }));
+
+  // Merge and sort by feed time (descending)
+  // Reposts appear at the time they were reposted, originals at their created_at
+  const merged = [...postItems, ...repostItems]
+    .sort((a, b) => new Date(b._feedTime as string).getTime() - new Date(a._feedTime as string).getTime())
+    .slice(0, 25);
+
   const { PostCard } = await import('@/components/feed/PostCard');
 
-  // Get last post's created_at for cursor pagination
-  const lastPost = posts[posts.length - 1];
-  const nextCursor = lastPost?.created_at ?? null;
+  // Get last item's feed time for cursor pagination
+  const lastItem = merged[merged.length - 1];
+  const nextCursor = lastItem?._feedTime ?? null;
   const hasMore = posts.length === 20;
 
   return (
     <>
       <div>
-        {posts.map((post) => (
-          <PostCard key={post.id} post={post} />
+        {merged.map((item) => (
+          <PostCard key={item._feedKey as string} post={item as never} />
         ))}
       </div>
       {hasMore && (

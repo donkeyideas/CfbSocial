@@ -1,10 +1,10 @@
 'use client';
 
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback } from 'react';
 import { PRESET_LIST } from '@/lib/admin/bots/personalities';
 import type { BotRow } from '@/lib/admin/actions/bots';
 import { StatCard } from '@/components/admin/shared/stat-card';
-import { Bot, Power, Zap, MessageSquare, BarChart3, Plus, Search, Pencil, Trash2, Play, Upload } from 'lucide-react';
+import { Bot, Power, Zap, MessageSquare, BarChart3, Plus, Search, Pencil, Trash2, Play } from 'lucide-react';
 
 interface School {
   id: string;
@@ -55,8 +55,7 @@ export function BotsClient({ bots: initialBots, globalActive: initialGlobalActiv
   const [editAvatarPreview, setEditAvatarPreview] = useState('');
   const [editBannerFile, setEditBannerFile] = useState<File | null>(null);
   const [editBannerPreview, setEditBannerPreview] = useState('');
-  const avatarRef = useRef<HTMLInputElement>(null);
-  const bannerRef = useRef<HTMLInputElement>(null);
+  // refs removed - using label wrapping for file inputs
 
   // Seed
   const [seeding, setSeeding] = useState(false);
@@ -187,15 +186,6 @@ export function BotsClient({ bots: initialBots, globalActive: initialGlobalActiv
     setEditPersonality((p?.type as string) || 'homer');
   }
 
-  function handleFileSelect(file: File, setFile: (f: File) => void, setPreview: (s: string) => void) {
-    if (!file.type.startsWith('image/')) { showError('Select an image file'); return; }
-    if (file.size > 5 * 1024 * 1024) { showError('Image must be under 5MB'); return; }
-    setFile(file);
-    const reader = new FileReader();
-    reader.onload = (e) => setPreview(e.target?.result as string);
-    reader.readAsDataURL(file);
-  }
-
   async function uploadImage(botId: string, file: File, type: 'avatar' | 'banner'): Promise<string | null> {
     const reader = new FileReader();
     const base64 = await new Promise<string>((resolve) => {
@@ -218,8 +208,14 @@ export function BotsClient({ bots: initialBots, globalActive: initialGlobalActiv
     setSaving(true);
     try {
       // Upload images if selected
-      if (editAvatarFile) await uploadImage(editBot.id, editAvatarFile, 'avatar');
-      if (editBannerFile) await uploadImage(editBot.id, editBannerFile, 'banner');
+      if (editAvatarFile) {
+        const avatarUrl = await uploadImage(editBot.id, editAvatarFile, 'avatar');
+        if (!avatarUrl) showError('Avatar upload failed');
+      }
+      if (editBannerFile) {
+        const bannerUrl = await uploadImage(editBot.id, editBannerFile, 'banner');
+        if (!bannerUrl) showError('Banner upload failed');
+      }
 
       const res = await fetch(`/api/admin/bots/${editBot.id}`, {
         method: 'PATCH',
@@ -240,7 +236,7 @@ export function BotsClient({ bots: initialBots, globalActive: initialGlobalActiv
         const data = await res.json();
         showError(data.error || 'Update failed');
       }
-    } catch { showError('Update failed'); }
+    } catch (err) { showError('Update failed: ' + (err instanceof Error ? err.message : String(err))); }
     setSaving(false);
   }
 
@@ -648,24 +644,28 @@ export function BotsClient({ bots: initialBots, globalActive: initialGlobalActiv
               {/* Avatar Upload */}
               <div>
                 <label className="block text-sm font-medium mb-1">Profile Picture</label>
-                <div className="flex items-center gap-3">
-                  <div style={{ width: 48, height: 48, borderRadius: '50%', overflow: 'hidden', background: 'var(--admin-surface-raised)', flexShrink: 0 }}>
-                    {editAvatarPreview ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img src={editAvatarPreview} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                    ) : (
-                      <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                        <Bot className="h-5 w-5" style={{ color: 'var(--admin-text-muted)' }} />
-                      </div>
-                    )}
-                  </div>
-                  <input ref={avatarRef} type="file" accept="image/*" className="hidden" onChange={(e) => {
-                    const f = e.target.files?.[0]; if (f) handleFileSelect(f, setEditAvatarFile, setEditAvatarPreview);
-                  }} />
-                  <button type="button" onClick={() => avatarRef.current?.click()} className="btn-admin text-xs" style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                    <Upload className="h-3 w-3" /> Upload Avatar
-                  </button>
+                <div style={{
+                  width: 64, height: 64, borderRadius: '50%', overflow: 'hidden',
+                  background: 'var(--admin-surface-raised)',
+                  marginBottom: 8,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                }}>
+                  {editAvatarPreview ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={editAvatarPreview} alt="Avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  ) : (
+                    <Bot className="h-6 w-6" style={{ color: 'var(--admin-text-muted)' }} />
+                  )}
                 </div>
+                <input type="file" accept="image/*" onChange={(e) => {
+                  const f = e.target.files?.[0];
+                  if (!f) return;
+                  if (!f.type.startsWith('image/')) { showError('Select an image file'); return; }
+                  if (f.size > 5 * 1024 * 1024) { showError('Image must be under 5MB'); return; }
+                  setEditAvatarFile(f);
+                  const url = URL.createObjectURL(f);
+                  setEditAvatarPreview(url);
+                }} style={{ fontSize: '0.75rem' }} />
               </div>
 
               {/* Banner Upload */}
@@ -673,16 +673,25 @@ export function BotsClient({ bots: initialBots, globalActive: initialGlobalActiv
                 <label className="block text-sm font-medium mb-1">Banner</label>
                 <div style={{
                   width: '100%', height: 80, borderRadius: 4, overflow: 'hidden',
-                  background: editBannerPreview ? `url(${editBannerPreview}) center/cover` : editBannerColor || 'var(--admin-surface-raised)',
+                  background: editBannerColor || 'var(--admin-surface-raised)',
                   marginBottom: 8,
-                }} />
+                  position: 'relative',
+                }}>
+                  {editBannerPreview && (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={editBannerPreview} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  )}
+                </div>
                 <div className="flex items-center gap-3">
-                  <input ref={bannerRef} type="file" accept="image/*" className="hidden" onChange={(e) => {
-                    const f = e.target.files?.[0]; if (f) handleFileSelect(f, setEditBannerFile, setEditBannerPreview);
-                  }} />
-                  <button type="button" onClick={() => bannerRef.current?.click()} className="btn-admin text-xs" style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                    <Upload className="h-3 w-3" /> Upload Banner
-                  </button>
+                  <input type="file" accept="image/*" onChange={(e) => {
+                    const f = e.target.files?.[0];
+                    if (!f) return;
+                    if (!f.type.startsWith('image/')) { showError('Select an image file'); return; }
+                    if (f.size > 5 * 1024 * 1024) { showError('Image must be under 5MB'); return; }
+                    setEditBannerFile(f);
+                    const url = URL.createObjectURL(f);
+                    setEditBannerPreview(url);
+                  }} style={{ fontSize: '0.75rem' }} />
                   <input type="color" value={editBannerColor || '#8b1a1a'} onChange={(e) => setEditBannerColor(e.target.value)} style={{ width: 32, height: 32, cursor: 'pointer', border: 'none' }} title="Banner color" />
                 </div>
               </div>

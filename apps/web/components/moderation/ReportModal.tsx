@@ -19,7 +19,7 @@ interface ReportModalProps {
 }
 
 export function ReportModal({ postId, onClose }: ReportModalProps) {
-  const { userId } = useAuth();
+  const { profile } = useAuth();
   const [reason, setReason] = useState('');
   const [description, setDescription] = useState('');
   const [submitting, setSubmitting] = useState(false);
@@ -32,7 +32,7 @@ export function ReportModal({ postId, onClose }: ReportModalProps) {
     setError('');
 
     try {
-      if (!userId) throw new Error('Not authenticated');
+      if (!profile?.id) throw new Error('Not authenticated');
 
       const res = await fetch('/api/report', {
         method: 'POST',

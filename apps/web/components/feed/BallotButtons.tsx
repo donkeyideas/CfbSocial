@@ -14,7 +14,8 @@ interface BallotButtonsProps {
 
 export function BallotButtons({ postId, authorId, touchdownCount, fumbleCount }: BallotButtonsProps) {
   const router = useRouter();
-  const { isLoggedIn, userId } = useAuth();
+  const { isLoggedIn, profile } = useAuth();
+  const profileId = profile?.id ?? null;
   const [tdCount, setTdCount] = useState(touchdownCount);
   const [fmCount, setFmCount] = useState(fumbleCount);
   const [voted, setVoted] = useState<'TOUCHDOWN' | 'FUMBLE' | null>(null);
@@ -22,28 +23,28 @@ export function BallotButtons({ postId, authorId, touchdownCount, fumbleCount }:
 
   // Load current user's existing reaction on mount
   useEffect(() => {
-    if (!userId) return;
+    if (!profileId) return;
 
     const supabase = createClient();
     supabase
       .from('reactions')
       .select('reaction_type')
       .eq('post_id', postId)
-      .eq('user_id', userId)
+      .eq('user_id', profileId)
       .maybeSingle()
       .then(({ data }) => {
         if (data) {
           setVoted(data.reaction_type as 'TOUCHDOWN' | 'FUMBLE');
         }
       });
-  }, [postId, userId]);
+  }, [postId, profileId]);
 
   async function handleVote(type: 'TOUCHDOWN' | 'FUMBLE') {
     if (isLoggedIn === false) {
       router.push('/login?redirect=' + encodeURIComponent(window.location.pathname));
       return;
     }
-    if (!userId || voting) return;
+    if (!profileId || voting) return;
     setVoting(true);
 
     const supabase = createClient();
@@ -61,7 +62,7 @@ export function BallotButtons({ postId, authorId, touchdownCount, fumbleCount }:
         const { error } = await supabase
           .from('reactions')
           .delete()
-          .eq('user_id', userId)
+          .eq('user_id', profileId)
           .eq('post_id', postId);
         if (error) throw error;
         return;
@@ -80,21 +81,21 @@ export function BallotButtons({ postId, authorId, touchdownCount, fumbleCount }:
       await supabase
         .from('reactions')
         .delete()
-        .eq('user_id', userId)
+        .eq('user_id', profileId)
         .eq('post_id', postId);
 
       const { error } = await supabase.from('reactions').insert({
         post_id: postId,
-        user_id: userId,
+        user_id: profileId,
         reaction_type: type,
       });
       if (error) throw error;
 
       // Create notification for post author
-      if (authorId && authorId !== userId) {
+      if (authorId && authorId !== profileId) {
         await supabase.from('notifications').insert({
           recipient_id: authorId,
-          actor_id: userId,
+          actor_id: profileId,
           type: type === 'TOUCHDOWN' ? 'TOUCHDOWN' : 'FUMBLE',
           post_id: postId,
         });

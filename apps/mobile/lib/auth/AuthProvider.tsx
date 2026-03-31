@@ -90,7 +90,17 @@ export function AuthProvider({ children }: PropsWithChildren) {
   }, []);
 
   useEffect(() => {
-    supabase.auth.getSession().then(async ({ data: { session: initialSession } }) => {
+    supabase.auth.getSession().then(async ({ data: { session: initialSession }, error }) => {
+      if (error) {
+        // Refresh token expired/invalid — clear session and start fresh
+        console.warn('Auth session error, signing out:', error.message);
+        await supabase.auth.signOut();
+        setSession(null);
+        setProfile(null);
+        userIdRef.current = null;
+        setLoading(false);
+        return;
+      }
       setSession(initialSession);
       if (initialSession?.user) {
         userIdRef.current = initialSession.user.id;

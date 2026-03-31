@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback, useMemo } from 'react';
 import {
   View,
   Text,
+  Image,
   FlatList,
   StyleSheet,
   RefreshControl,
@@ -32,6 +33,7 @@ interface ProfileData {
   username: string;
   display_name: string | null;
   avatar_url: string | null;
+  banner_url: string | null;
   bio: string | null;
   xp: number;
   level: number;
@@ -83,7 +85,7 @@ export default function ProfileScreen() {
       color: colors.crimson,
     },
     banner: {
-      height: 80,
+      height: 140,
     },
     profileSection: {
       paddingHorizontal: 16,
@@ -164,7 +166,7 @@ export default function ProfileScreen() {
     const { data, error } = await supabase
       .from('profiles')
       .select(`
-        id, username, display_name, avatar_url, bio,
+        id, username, display_name, avatar_url, banner_url, bio,
         xp, level, dynasty_tier,
         post_count, touchdown_count, fumble_count,
         follower_count, following_count,
@@ -248,6 +250,11 @@ export default function ProfileScreen() {
     await fetchProfile();
   }
 
+  const renderItem = useCallback(
+    ({ item }: { item: PostData }) => <PostCard post={item} />,
+    []
+  );
+
   if (loading && !profile) {
     return <LoadingScreen />;
   }
@@ -271,11 +278,6 @@ export default function ProfileScreen() {
     return <LoadingScreen />;
   }
 
-  const renderItem = useCallback(
-    ({ item }: { item: PostData }) => <PostCard post={item} />,
-    []
-  );
-
   const displayName = profile.display_name || profile.username;
   const schoolColor = profile.school?.primary_color;
 
@@ -286,13 +288,21 @@ export default function ProfileScreen() {
         <Text style={[styles.backText, { color: dark }]}>Back</Text>
       </Pressable>
 
-      {/* School color banner */}
-      <View
-        style={[
-          styles.banner,
-          { backgroundColor: schoolColor || colors.crimson },
-        ]}
-      />
+      {/* Banner */}
+      {profile.banner_url ? (
+        <Image
+          source={{ uri: profile.banner_url }}
+          style={[styles.banner, { backgroundColor: schoolColor || colors.crimson }]}
+          resizeMode="cover"
+        />
+      ) : (
+        <View
+          style={[
+            styles.banner,
+            { backgroundColor: schoolColor || colors.crimson },
+          ]}
+        />
+      )}
 
       {/* Portrait + Info */}
       <View style={styles.profileSection}>
