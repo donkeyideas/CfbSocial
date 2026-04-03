@@ -23,6 +23,8 @@ const specialElite = Special_Elite({
   display: 'swap',
 });
 
+export const metadataBase = new URL('https://cfbsocial.com');
+
 export const metadata: Metadata = {
   title: {
     default: 'CFB Social — College Football Fan Community | Debates, Predictions & Portal Tracker',

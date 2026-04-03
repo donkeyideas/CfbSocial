@@ -15,11 +15,13 @@ export const metadata = {
     title: 'College Football Fan Opinions & Takes | CFB Social',
     description: 'The live college football social feed. Fan opinions, takes, predictions, and rivalry debates.',
     type: 'website',
+    images: [{ url: 'https://cfbsocial.com/logo.png', width: 256, height: 256, alt: 'CFB Social Logo' }],
   },
   twitter: {
-    card: 'summary_large_image' as const,
+    card: 'summary' as const,
     title: 'College Football Fan Opinions & Takes | CFB Social',
     description: 'The live college football social feed. Fan opinions, takes, predictions, and rivalry debates.',
+    images: ['https://cfbsocial.com/logo.png'],
   },
   alternates: {
     canonical: 'https://cfbsocial.com/feed',
