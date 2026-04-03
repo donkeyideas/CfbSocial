@@ -184,7 +184,7 @@ function PostBottom({ post }: { post: Post }) {
    POST 1 — Classic Take (STANDARD / PREDICTION / AGING_TAKE)
    ============================================= */
 
-function ClassicPost({ post }: { post: Post }) {
+const ClassicPost = memo(function ClassicPost({ post }: { post: Post }) {
   const schoolStyle = post.school?.primary_color
     ? { '--post-school-color': post.school.primary_color } as React.CSSProperties
     : undefined;
@@ -225,13 +225,13 @@ function ClassicPost({ post }: { post: Post }) {
       <PostBottom post={post} />
     </article>
   );
-}
+});
 
 /* =============================================
    POST 2 — Receipt / Newspaper Clipping
    ============================================= */
 
-function ReceiptPost({ post }: { post: Post }) {
+const ReceiptPost = memo(function ReceiptPost({ post }: { post: Post }) {
   const schoolStyle = post.school?.primary_color
     ? { '--post-school-color': post.school.primary_color } as React.CSSProperties
     : undefined;
@@ -250,13 +250,13 @@ function ReceiptPost({ post }: { post: Post }) {
       <PostBottom post={post} />
     </article>
   );
-}
+});
 
 /* =============================================
    POST 3 — Penalty Flag (FLAGGED status)
    ============================================= */
 
-function PenaltyPost({ post }: { post: Post }) {
+const PenaltyPost = memo(function PenaltyPost({ post }: { post: Post }) {
   return (
     <article className="post-card post-penalty">
       <div className="penalty-header">
@@ -276,13 +276,13 @@ function PenaltyPost({ post }: { post: Post }) {
       <AppealForm postId={post.id} />
     </article>
   );
-}
+});
 
 /* =============================================
    POST 4 — Sideline Report / Press Box
    ============================================= */
 
-function PressBoxPost({ post }: { post: Post }) {
+const PressBoxPost = memo(function PressBoxPost({ post }: { post: Post }) {
   const timeStr = new Date(post.created_at).toLocaleTimeString('en-US', {
     hour: '2-digit',
     minute: '2-digit',
@@ -326,13 +326,13 @@ function PressBoxPost({ post }: { post: Post }) {
       </div>
     </article>
   );
-}
+});
 
 /* =============================================
    POST 5 — Rivalry Ring / Fight Card
    ============================================= */
 
-function RivalryPost({ post }: { post: Post }) {
+const RivalryPost = memo(function RivalryPost({ post }: { post: Post }) {
   const schoolStyle = post.school?.primary_color
     ? { '--post-school-color': post.school.primary_color } as React.CSSProperties
     : undefined;
@@ -353,13 +353,13 @@ function RivalryPost({ post }: { post: Post }) {
       </div>
     </article>
   );
-}
+});
 
 /* =============================================
    POST 6 — Prediction / Poll
    ============================================= */
 
-function PredictionPost({ post }: { post: Post }) {
+const PredictionPost = memo(function PredictionPost({ post }: { post: Post }) {
   const schoolStyle = post.school?.primary_color
     ? { '--post-school-color': post.school.primary_color } as React.CSSProperties
     : undefined;
@@ -382,13 +382,13 @@ function PredictionPost({ post }: { post: Post }) {
       </div>
     </article>
   );
-}
+});
 
 /* =============================================
    POST 7 — Aging Take / Challenge
    ============================================= */
 
-function AgingTakePost({ post }: { post: Post }) {
+const AgingTakePost = memo(function AgingTakePost({ post }: { post: Post }) {
   const dateStr = new Date(post.created_at).toLocaleDateString('en-US', {
     month: 'short',
     day: 'numeric',
@@ -418,7 +418,7 @@ function AgingTakePost({ post }: { post: Post }) {
       </div>
     </article>
   );
-}
+});
 
 /* =============================================
    Utility

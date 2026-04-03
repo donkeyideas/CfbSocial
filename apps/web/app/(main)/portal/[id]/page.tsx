@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { ClaimButton } from '@/components/portal/ClaimButton';
 import { SchoolInterestBar } from '@/components/portal/SchoolInterestBar';
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 60;
 
 interface PortalDetailProps {
   params: Promise<{ id: string }>;

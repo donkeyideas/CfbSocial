@@ -5,7 +5,7 @@ import { PostCard } from '@/components/feed/PostCard';
 import { ReplyComposer } from '@/components/feed/ReplyComposer';
 import { DiscussionPostJsonLd } from '@/components/seo/JsonLd';
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 30;
 
 interface PostPageProps {
   params: Promise<{ id: string }>;

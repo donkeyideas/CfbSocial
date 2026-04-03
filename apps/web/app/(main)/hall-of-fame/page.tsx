@@ -1,7 +1,7 @@
 import { Suspense } from 'react';
 import Link from 'next/link';
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 300;
 
 export const metadata = {
   title: 'Hall of Fame',

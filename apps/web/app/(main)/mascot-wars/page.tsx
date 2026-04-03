@@ -1,6 +1,6 @@
 import { MascotWarsClient } from './MascotWarsClient';
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 60;
 
 export const metadata = {
   title: 'Mascot Wars | College Football Mascot Tournament Bracket',
@@ -34,26 +34,28 @@ export default async function MascotWarsPage() {
   let userVotes: Array<Record<string, unknown>> = [];
 
   if (bracket) {
-    // Get current round matchups with school joins
-    const { data: m } = await supabase
-      .from('mascot_matchups')
-      .select(`
-        *,
-        school_1:schools!mascot_matchups_school_1_id_fkey(
-          id, name, abbreviation, slug, primary_color, secondary_color, mascot
-        ),
-        school_2:schools!mascot_matchups_school_2_id_fkey(
-          id, name, abbreviation, slug, primary_color, secondary_color, mascot
-        )
-      `)
-      .eq('bracket_id', bracket.id)
-      .eq('round', bracket.current_round)
-      .order('position');
+    // Fetch matchups and user in PARALLEL
+    const [matchupsRes, userRes] = await Promise.all([
+      supabase
+        .from('mascot_matchups')
+        .select(`
+          *,
+          school_1:schools!mascot_matchups_school_1_id_fkey(
+            id, name, abbreviation, slug, primary_color, secondary_color, mascot
+          ),
+          school_2:schools!mascot_matchups_school_2_id_fkey(
+            id, name, abbreviation, slug, primary_color, secondary_color, mascot
+          )
+        `)
+        .eq('bracket_id', bracket.id)
+        .eq('round', bracket.current_round)
+        .order('position'),
+      supabase.auth.getUser(),
+    ]);
 
-    matchups = m ?? [];
+    matchups = matchupsRes.data ?? [];
 
-    // Get user votes
-    const { data: { user } } = await supabase.auth.getUser();
+    const user = userRes.data?.user;
     if (user) {
       const matchupIds = matchups.map((m) => m.id as string);
       if (matchupIds.length > 0) {

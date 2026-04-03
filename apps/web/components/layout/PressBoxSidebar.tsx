@@ -96,12 +96,16 @@ export function PressBoxSidebar() {
   useEffect(() => {
     const supabase = createClient();
 
-    // Load ESPN news
+    // Load ESPN news (with 5s timeout)
     async function loadNews() {
       try {
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 5000);
         const res = await fetch(
-          'https://site.api.espn.com/apis/site/v2/sports/football/college-football/news?limit=5'
+          'https://site.api.espn.com/apis/site/v2/sports/football/college-football/news?limit=5',
+          { signal: controller.signal }
         );
+        clearTimeout(timeout);
         if (!res.ok) throw new Error('ESPN fetch failed');
         const data = await res.json();
         const clickCounts = getClickCounts();
@@ -167,10 +171,13 @@ export function PressBoxSidebar() {
       if (data) setLeaders(data as unknown as LeaderboardEntry[]);
     }
 
-    // Load CFBD recruiting commits
+    // Load CFBD recruiting commits (with 5s timeout)
     async function loadRecruits() {
       try {
-        const res = await fetch('/api/cfbd?type=recruiting');
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 5000);
+        const res = await fetch('/api/cfbd?type=recruiting', { signal: controller.signal });
+        clearTimeout(timeout);
         if (!res.ok) return;
         const json = await res.json();
         const data = (json.data ?? []) as CFBDRecruit[];
@@ -183,10 +190,13 @@ export function PressBoxSidebar() {
       } catch { /* CFBD unavailable */ }
     }
 
-    // Load CFBD transfer portal entries
+    // Load CFBD transfer portal entries (with 5s timeout)
     async function loadTransfers() {
       try {
-        const res = await fetch('/api/cfbd?type=portal');
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 5000);
+        const res = await fetch('/api/cfbd?type=portal', { signal: controller.signal });
+        clearTimeout(timeout);
         if (!res.ok) return;
         const json = await res.json();
         const data = (json.data ?? []) as CFBDTransfer[];
@@ -198,8 +208,8 @@ export function PressBoxSidebar() {
       } catch { /* CFBD unavailable */ }
     }
 
-    // Fire all data loads in parallel
-    Promise.all([
+    // Fire all data loads in parallel — allSettled so one failure doesn't block others
+    Promise.allSettled([
       loadNews(),
       loadPortal(),
       loadClaims(),

@@ -3,7 +3,7 @@ import { PredictionCard } from '@/components/predictions/PredictionCard';
 import { CreatePrediction } from '@/components/predictions/CreatePrediction';
 import { PredictionLeaderboard } from '@/components/predictions/PredictionLeaderboard';
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 60;
 
 export const metadata = {
   title: 'College Football Predictions | File Takes & Track Your Record',

@@ -1,7 +1,7 @@
 import { Suspense } from 'react';
 import Link from 'next/link';
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 60;
 
 export const metadata = {
   title: 'My Receipts | CFB Social',

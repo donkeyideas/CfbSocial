@@ -1,6 +1,6 @@
 import { RecruitingClient } from './RecruitingClient';
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 300; // revalidate every 5 minutes
 
 export const metadata = {
   title: 'College Football Recruiting | Transfer Portal Activity by School',
@@ -23,22 +23,26 @@ export default async function RecruitingPage() {
   const { createClient } = await import('@/lib/supabase/server');
   const supabase = await createClient();
 
-  // Get all FBS schools
-  const { data: schools } = await supabase
-    .from('schools')
-    .select('id, name, abbreviation, slug, primary_color, secondary_color, conference, mascot')
-    .eq('is_fbs', true)
-    .order('name');
+  // Fetch all data in PARALLEL with limits (was 3 sequential unbounded queries)
+  const [schoolsRes, portalPlayersRes, claimsRes] = await Promise.all([
+    supabase
+      .from('schools')
+      .select('id, name, abbreviation, slug, primary_color, secondary_color, conference, mascot')
+      .eq('is_fbs', true)
+      .order('name'),
+    supabase
+      .from('portal_players')
+      .select('previous_school_id, committed_school_id, star_rating, status')
+      .limit(2000),
+    supabase
+      .from('roster_claims')
+      .select('school_id')
+      .limit(5000),
+  ]);
 
-  // Get portal players for aggregation
-  const { data: portalPlayers } = await supabase
-    .from('portal_players')
-    .select('previous_school_id, committed_school_id, star_rating, status');
-
-  // Get roster claims
-  const { data: claims } = await supabase
-    .from('roster_claims')
-    .select('school_id');
+  const schools = schoolsRes.data;
+  const portalPlayers = portalPlayersRes.data;
+  const claims = claimsRes.data;
 
   // Build aggregation maps
   const lostMap = new Map<string, number>();

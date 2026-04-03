@@ -4,7 +4,7 @@ import { ChallengeCard } from '@/components/rivalry/ChallengeCard';
 import { CreateChallenge } from '@/components/rivalry/CreateChallenge';
 import { RivalryTabs } from '@/components/rivalry/RivalryTabs';
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 60;
 
 export const metadata = {
   title: 'CFB Fan Debates | College Football Rivalries & School vs School',

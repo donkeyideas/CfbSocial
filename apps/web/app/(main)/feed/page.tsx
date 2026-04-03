@@ -6,7 +6,7 @@ import { PostComposer } from '@/components/feed/PostComposer';
 import { NewPostsBanner } from '@/components/feed/NewPostsBanner';
 import { FeedListClient } from '@/components/feed/FeedListClient';
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 30; // revalidate feed every 30 seconds
 
 export const metadata = {
   title: 'College Football Fan Opinions & Takes | The Feed',
@@ -80,28 +80,22 @@ async function FeedList({ tab }: { tab: FeedTab }) {
   const { createClient } = await import('@/lib/supabase/server');
   const supabase = await createClient();
 
-  // Get current user for school/following filters
+  // Get current user + tab-specific data in parallel
   const { data: { user } } = await supabase.auth.getUser();
   let userSchoolId: string | null = null;
   let followingIds: string[] = [];
 
-  if (user) {
-    if (tab === 'my-school') {
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('school_id')
-        .eq('id', user.id)
-        .single();
-      userSchoolId = profile?.school_id ?? null;
-    }
-
-    if (tab === 'following') {
-      const { data: follows } = await supabase
-        .from('follows')
-        .select('following_id')
-        .eq('follower_id', user.id);
-      followingIds = follows?.map((f) => f.following_id) ?? [];
-    }
+  if (user && (tab === 'my-school' || tab === 'following')) {
+    const [profileRes, followsRes] = await Promise.all([
+      tab === 'my-school'
+        ? supabase.from('profiles').select('school_id').eq('id', user.id).single()
+        : Promise.resolve({ data: null }),
+      tab === 'following'
+        ? supabase.from('follows').select('following_id').eq('follower_id', user.id)
+        : Promise.resolve({ data: null }),
+    ]);
+    userSchoolId = profileRes.data?.school_id ?? null;
+    followingIds = (followsRes.data as Array<{ following_id: string }> | null)?.map((f) => f.following_id) ?? [];
   }
 
   // Build query based on active tab
@@ -231,7 +225,59 @@ async function FeedList({ tab }: { tab: FeedTab }) {
       break;
   }
 
-  const { data: posts, error } = await query.limit(20);
+  // Fetch posts and reposts in PARALLEL (not sequential)
+  let repostQuery = supabase
+    .from('reposts')
+    .select(`
+      id,
+      created_at,
+      user_id,
+      post_id,
+      reposter:profiles!reposts_user_id_fkey(
+        username,
+        display_name
+      ),
+      post:posts!reposts_post_id_fkey(
+        *,
+        author:profiles!posts_author_id_fkey(
+          id,
+          username,
+          display_name,
+          avatar_url,
+          school_id,
+          dynasty_tier
+        ),
+        school:schools!posts_school_id_fkey(
+          id,
+          name,
+          abbreviation,
+          primary_color,
+          secondary_color,
+          logo_url,
+          slug
+        ),
+        aging_takes(
+          id,
+          user_id,
+          revisit_date,
+          is_surfaced,
+          community_verdict
+        )
+      )
+    `)
+    .order('created_at', { ascending: false })
+    .limit(10);
+
+  if (tab === 'following' && followingIds.length > 0) {
+    repostQuery = repostQuery.in('user_id', followingIds);
+  }
+
+  const [postsResult, repostsResult] = await Promise.all([
+    query.limit(20),
+    repostQuery,
+  ]);
+
+  const { data: posts, error } = postsResult;
 
   if (error) {
     console.error('[FeedList] Query error:', error.message, error.code, error.details, error.hint);
@@ -255,76 +301,25 @@ async function FeedList({ tab }: { tab: FeedTab }) {
     );
   }
 
-  // Fetch reposts to merge into the feed
-  // Get reposts from users the current user follows (or all for latest tab)
   let repostItems: Array<Record<string, unknown>> = [];
-  {
-    let repostQuery = supabase
-      .from('reposts')
-      .select(`
-        id,
-        created_at,
-        user_id,
-        post_id,
-        reposter:profiles!reposts_user_id_fkey(
-          username,
-          display_name
-        ),
-        post:posts!reposts_post_id_fkey(
-          *,
-          author:profiles!posts_author_id_fkey(
-            id,
-            username,
-            display_name,
-            avatar_url,
-            school_id,
-            dynasty_tier
-          ),
-          school:schools!posts_school_id_fkey(
-            id,
-            name,
-            abbreviation,
-            primary_color,
-            secondary_color,
-            logo_url,
-            slug
-          ),
-          aging_takes(
-            id,
-            user_id,
-            revisit_date,
-            is_surfaced,
-            community_verdict
-          )
-        )
-      `)
-      .order('created_at', { ascending: false })
-      .limit(10);
-
-    if (tab === 'following' && followingIds.length > 0) {
-      repostQuery = repostQuery.in('user_id', followingIds);
-    }
-
-    const { data: reposts } = await repostQuery;
-
-    if (reposts) {
-      repostItems = reposts
-        .filter((r) => {
-          const post = (Array.isArray(r.post) ? r.post[0] : r.post) as Record<string, unknown> | null;
-          return post && (post.status === 'PUBLISHED' || post.status === 'FLAGGED') && !post.parent_id;
-        })
-        .map((r) => {
-          const post = (Array.isArray(r.post) ? r.post[0] : r.post) as Record<string, unknown>;
-          const raw = Array.isArray(r.reposter) ? r.reposter[0] : r.reposter;
-          const reposter = raw as { username: string; display_name: string | null } | null;
-          return {
-            ...post,
-            _feedKey: `repost-${r.id}`,
-            _feedTime: r.created_at as string,
-            _repostedBy: reposter ?? null,
-          };
-        });
-    }
+  const reposts = repostsResult.data;
+  if (reposts) {
+    repostItems = reposts
+      .filter((r) => {
+        const post = (Array.isArray(r.post) ? r.post[0] : r.post) as Record<string, unknown> | null;
+        return post && (post.status === 'PUBLISHED' || post.status === 'FLAGGED') && !post.parent_id;
+      })
+      .map((r) => {
+        const post = (Array.isArray(r.post) ? r.post[0] : r.post) as Record<string, unknown>;
+        const raw = Array.isArray(r.reposter) ? r.reposter[0] : r.reposter;
+        const reposter = raw as { username: string; display_name: string | null } | null;
+        return {
+          ...post,
+          _feedKey: `repost-${r.id}`,
+          _feedTime: r.created_at as string,
+          _repostedBy: reposter ?? null,
+        };
+      });
   }
 
   // Merge posts and reposts into a single timeline

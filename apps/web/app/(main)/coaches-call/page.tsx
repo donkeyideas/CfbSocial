@@ -1,7 +1,5 @@
 import { Suspense } from 'react';
 
-export const dynamic = 'force-dynamic';
-
 export const metadata = {
   title: "Coach's Call",
 };

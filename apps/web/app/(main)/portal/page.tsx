@@ -2,7 +2,7 @@ import { Suspense } from 'react';
 import { PortalCard } from '@/components/portal/PortalCard';
 import { PortalFilters } from '@/components/portal/PortalFilters';
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 60;
 
 export const metadata = {
   title: 'College Football Transfer Portal Tracker | Portal Wire',

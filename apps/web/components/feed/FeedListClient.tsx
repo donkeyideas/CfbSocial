@@ -101,12 +101,10 @@ export function FeedListClient({ tab, cursor: initialCursor, userSchoolId }: Fee
         break;
     }
 
-    const { data, error } = await query.limit(20);
-
-    // Also fetch reposts for merging
-    let repostItems: Array<Record<string, unknown>> = [];
-    {
-      const { data: reposts } = await supabase
+    // Fetch posts and reposts in PARALLEL (was sequential)
+    const [postsResult, repostsResult] = await Promise.all([
+      query.limit(20),
+      supabase
         .from('reposts')
         .select(`
           id,
@@ -147,26 +145,30 @@ export function FeedListClient({ tab, cursor: initialCursor, userSchoolId }: Fee
         `)
         .lt('created_at', cursor)
         .order('created_at', { ascending: false })
-        .limit(10);
+        .limit(10),
+    ]);
 
-      if (reposts) {
-        repostItems = reposts
-          .filter((r) => {
-            const post = (Array.isArray(r.post) ? r.post[0] : r.post) as Record<string, unknown> | null;
-            return post && (post.status === 'PUBLISHED' || post.status === 'FLAGGED') && !post.parent_id;
-          })
-          .map((r) => {
-            const post = (Array.isArray(r.post) ? r.post[0] : r.post) as Record<string, unknown>;
-            const raw = Array.isArray(r.reposter) ? r.reposter[0] : r.reposter;
-            const reposter = raw as { username: string; display_name: string | null } | null;
-            return {
-              ...post,
-              _feedKey: `repost-${r.id}`,
-              _feedTime: r.created_at as string,
-              _repostedBy: reposter ?? null,
-            };
-          });
-      }
+    const { data, error } = postsResult;
+
+    let repostItems: Array<Record<string, unknown>> = [];
+    const reposts = repostsResult.data;
+    if (reposts) {
+      repostItems = reposts
+        .filter((r) => {
+          const post = (Array.isArray(r.post) ? r.post[0] : r.post) as Record<string, unknown> | null;
+          return post && (post.status === 'PUBLISHED' || post.status === 'FLAGGED') && !post.parent_id;
+        })
+        .map((r) => {
+          const post = (Array.isArray(r.post) ? r.post[0] : r.post) as Record<string, unknown>;
+          const raw = Array.isArray(r.reposter) ? r.reposter[0] : r.reposter;
+          const reposter = raw as { username: string; display_name: string | null } | null;
+          return {
+            ...post,
+            _feedKey: `repost-${r.id}`,
+            _feedTime: r.created_at as string,
+            _repostedBy: reposter ?? null,
+          };
+        });
     }
 
     if (!error && data) {

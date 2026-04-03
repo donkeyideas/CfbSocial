@@ -3,7 +3,7 @@ import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { RivalryDetail } from '@/components/rivalry/RivalryDetail';
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 60;
 
 interface RivalryPageProps {
   params: Promise<{ id: string }>;

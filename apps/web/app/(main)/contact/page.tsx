@@ -1,7 +1,5 @@
 import { ContactForm } from './ContactForm';
 
-export const dynamic = 'force-dynamic';
-
 export const metadata = {
   title: 'Contact Us | CFB Social',
   description: 'Get in touch with The Gridiron. Report bugs, request features, ask questions, or explore partnership opportunities.',

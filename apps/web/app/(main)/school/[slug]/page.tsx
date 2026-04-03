@@ -2,7 +2,7 @@ import { notFound } from 'next/navigation';
 import { SchoolHub } from './SchoolHub';
 import { SportsTeamJsonLd, BreadcrumbJsonLd } from '@/components/seo/JsonLd';
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 60;
 
 interface SchoolPageProps {
   params: Promise<{ slug: string }>;
@@ -39,7 +39,7 @@ export default async function SchoolPage({ params }: SchoolPageProps) {
   const { createClient } = await import('@/lib/supabase/server');
   const supabase = await createClient();
 
-  // Fetch school
+  // Fetch school first (needed for dependent queries)
   const { data: school, error } = await supabase
     .from('schools')
     .select('*')
@@ -48,49 +48,49 @@ export default async function SchoolPage({ params }: SchoolPageProps) {
 
   if (error || !school) notFound();
 
-  // Fetch fan count
-  const { count: fanCount } = await supabase
-    .from('profiles')
-    .select('id', { count: 'exact', head: true })
-    .eq('school_id', school.id);
+  // Fetch all remaining data in PARALLEL (was 5 sequential queries)
+  const [fanCountRes, postCountRes, postsRes, topFansRes, portalCountRes] = await Promise.all([
+    supabase
+      .from('profiles')
+      .select('id', { count: 'exact', head: true })
+      .eq('school_id', school.id),
+    supabase
+      .from('posts')
+      .select('id', { count: 'exact', head: true })
+      .eq('school_id', school.id)
+      .eq('status', 'PUBLISHED'),
+    supabase
+      .from('posts')
+      .select(`
+        *,
+        author:profiles!posts_author_id_fkey(
+          id, username, display_name, avatar_url, school_id, dynasty_tier
+        ),
+        school:schools!posts_school_id_fkey(
+          id, name, abbreviation, primary_color, secondary_color, logo_url, slug
+        )
+      `)
+      .eq('school_id', school.id)
+      .eq('status', 'PUBLISHED')
+      .order('created_at', { ascending: false })
+      .limit(20),
+    supabase
+      .from('profiles')
+      .select('username, display_name, xp, dynasty_tier, post_count')
+      .eq('school_id', school.id)
+      .order('xp', { ascending: false })
+      .limit(10),
+    supabase
+      .from('portal_players')
+      .select('id', { count: 'exact', head: true })
+      .or(`previous_school_id.eq.${school.id},committed_school_id.eq.${school.id}`),
+  ]);
 
-  // Fetch post count
-  const { count: postCount } = await supabase
-    .from('posts')
-    .select('id', { count: 'exact', head: true })
-    .eq('school_id', school.id)
-    .eq('status', 'PUBLISHED');
-
-  // Fetch recent posts
-  const { data: posts } = await supabase
-    .from('posts')
-    .select(`
-      *,
-      author:profiles!posts_author_id_fkey(
-        id, username, display_name, avatar_url, school_id, dynasty_tier
-      ),
-      school:schools!posts_school_id_fkey(
-        id, name, abbreviation, primary_color, secondary_color, logo_url, slug
-      )
-    `)
-    .eq('school_id', school.id)
-    .eq('status', 'PUBLISHED')
-    .order('created_at', { ascending: false })
-    .limit(20);
-
-  // Fetch top fans by XP
-  const { data: topFans } = await supabase
-    .from('profiles')
-    .select('username, display_name, xp, dynasty_tier, post_count')
-    .eq('school_id', school.id)
-    .order('xp', { ascending: false })
-    .limit(10);
-
-  // Fetch portal players for this school
-  const { count: portalCount } = await supabase
-    .from('portal_players')
-    .select('id', { count: 'exact', head: true })
-    .or(`previous_school_id.eq.${school.id},committed_school_id.eq.${school.id}`);
+  const fanCount = fanCountRes.count;
+  const postCount = postCountRes.count;
+  const posts = postsRes.data;
+  const topFans = topFansRes.data;
+  const portalCount = portalCountRes.count;
 
   return (
     <>
