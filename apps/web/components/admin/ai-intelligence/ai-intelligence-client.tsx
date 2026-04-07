@@ -1,10 +1,11 @@
 'use client';
 
-import { useState, Fragment } from 'react';
+import { useState, useMemo, Fragment } from 'react';
 import { TabNav } from '@/components/admin/shared/tab-nav';
 import { StatCard } from '@/components/admin/shared/stat-card';
 import { EmptyState } from '@/components/admin/shared/empty-state';
 import { ChartWrapper } from '@/components/admin/shared/chart-wrapper';
+import { useSortableTable, SortableHeader } from '@/components/admin/shared/sortable-header';
 import {
   AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell,
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend,
@@ -92,6 +93,41 @@ export function AIIntelligenceClient({ summary, interactions, usageByFeature, pr
 
   const maxFeatureCost = Math.max(...usageByFeature.map((f) => f.cost), 0.0001);
 
+  // Knowledge Base sort
+  const kbAccessors = useMemo(() => ({
+    date: (r: Interaction) => r.created_at,
+    feature: (r: Interaction) => r.feature,
+    subType: (r: Interaction) => r.sub_type ?? '',
+    provider: (r: Interaction) => r.provider,
+    tokens: (r: Interaction) => r.tokens_used ?? 0,
+    cost: (r: Interaction) => r.cost ?? 0,
+    time: (r: Interaction) => r.response_time_ms ?? 0,
+    status: (r: Interaction) => r.success ? 1 : 0,
+  }), []);
+  const { sorted: sortedInteractions, sortConfig: kbSortConfig, requestSort: requestKbSort } = useSortableTable(interactions.interactions, kbAccessors);
+
+  // Feature Breakdown sort
+  const featureAccessors = useMemo(() => ({
+    feature: (f: FeatureUsage) => f.feature,
+    calls: (f: FeatureUsage) => f.calls,
+    tokens: (f: FeatureUsage) => f.tokens,
+    avgMs: (f: FeatureUsage) => f.avgLatency,
+    success: (f: FeatureUsage) => f.successRate,
+  }), []);
+  const { sorted: sortedFeatures, sortConfig: featureSortConfig, requestSort: requestFeatureSort } = useSortableTable(usageByFeature, featureAccessors);
+
+  // Provider Performance sort
+  const provAccessors = useMemo(() => ({
+    provider: (p: ProviderStats) => p.provider,
+    calls: (p: ProviderStats) => p.calls,
+    cost: (p: ProviderStats) => p.cost,
+    avgLatency: (p: ProviderStats) => p.avgLatency,
+    successRate: (p: ProviderStats) => p.successRate,
+    errors: (p: ProviderStats) => p.errors,
+    tokens: (p: ProviderStats) => p.tokens,
+  }), []);
+  const { sorted: sortedProviders, sortConfig: provSortConfig, requestSort: requestProvSort } = useSortableTable(providerPerformance, provAccessors);
+
   return (
     <div className="space-y-6">
       {/* Summary Stat Cards */}
@@ -145,19 +181,19 @@ export function AIIntelligenceClient({ summary, interactions, usageByFeature, pr
               <table className="admin-table">
                 <thead>
                   <tr>
-                    <th>Date</th>
-                    <th>Feature</th>
-                    <th>Sub Type</th>
-                    <th>Provider</th>
-                    <th>Tokens</th>
-                    <th>Cost</th>
-                    <th>Time</th>
-                    <th>Status</th>
+                    <SortableHeader label="Date" sortKey="date" sortConfig={kbSortConfig} onSort={requestKbSort} />
+                    <SortableHeader label="Feature" sortKey="feature" sortConfig={kbSortConfig} onSort={requestKbSort} />
+                    <SortableHeader label="Sub Type" sortKey="subType" sortConfig={kbSortConfig} onSort={requestKbSort} />
+                    <SortableHeader label="Provider" sortKey="provider" sortConfig={kbSortConfig} onSort={requestKbSort} />
+                    <SortableHeader label="Tokens" sortKey="tokens" sortConfig={kbSortConfig} onSort={requestKbSort} />
+                    <SortableHeader label="Cost" sortKey="cost" sortConfig={kbSortConfig} onSort={requestKbSort} />
+                    <SortableHeader label="Time" sortKey="time" sortConfig={kbSortConfig} onSort={requestKbSort} />
+                    <SortableHeader label="Status" sortKey="status" sortConfig={kbSortConfig} onSort={requestKbSort} />
                     <th className="w-10"></th>
                   </tr>
                 </thead>
                 <tbody>
-                  {interactions.interactions
+                  {sortedInteractions
                     .filter((row) => {
                       if (!searchQuery) return true;
                       const q = searchQuery.toLowerCase();
@@ -315,15 +351,15 @@ export function AIIntelligenceClient({ summary, interactions, usageByFeature, pr
                   <table className="admin-table">
                     <thead>
                       <tr>
-                        <th>Feature</th>
-                        <th>Calls</th>
-                        <th>Tokens</th>
-                        <th>Avg ms</th>
-                        <th>Success</th>
+                        <SortableHeader label="Feature" sortKey="feature" sortConfig={featureSortConfig} onSort={requestFeatureSort} />
+                        <SortableHeader label="Calls" sortKey="calls" sortConfig={featureSortConfig} onSort={requestFeatureSort} />
+                        <SortableHeader label="Tokens" sortKey="tokens" sortConfig={featureSortConfig} onSort={requestFeatureSort} />
+                        <SortableHeader label="Avg ms" sortKey="avgMs" sortConfig={featureSortConfig} onSort={requestFeatureSort} />
+                        <SortableHeader label="Success" sortKey="success" sortConfig={featureSortConfig} onSort={requestFeatureSort} />
                       </tr>
                     </thead>
                     <tbody>
-                      {usageByFeature.map((row) => (
+                      {sortedFeatures.map((row) => (
                         <tr key={row.feature}>
                           <td className="font-medium">{row.feature.replace(/_/g, ' ')}</td>
                           <td>{row.calls.toLocaleString()}</td>
@@ -355,17 +391,17 @@ export function AIIntelligenceClient({ summary, interactions, usageByFeature, pr
               <table className="admin-table">
                 <thead>
                   <tr>
-                    <th>Provider</th>
-                    <th>Calls</th>
-                    <th>Total Cost</th>
-                    <th>Avg Latency</th>
-                    <th>Success Rate</th>
-                    <th>Errors</th>
-                    <th>Total Tokens</th>
+                    <SortableHeader label="Provider" sortKey="provider" sortConfig={provSortConfig} onSort={requestProvSort} />
+                    <SortableHeader label="Calls" sortKey="calls" sortConfig={provSortConfig} onSort={requestProvSort} />
+                    <SortableHeader label="Total Cost" sortKey="cost" sortConfig={provSortConfig} onSort={requestProvSort} />
+                    <SortableHeader label="Avg Latency" sortKey="avgLatency" sortConfig={provSortConfig} onSort={requestProvSort} />
+                    <SortableHeader label="Success Rate" sortKey="successRate" sortConfig={provSortConfig} onSort={requestProvSort} />
+                    <SortableHeader label="Errors" sortKey="errors" sortConfig={provSortConfig} onSort={requestProvSort} />
+                    <SortableHeader label="Total Tokens" sortKey="tokens" sortConfig={provSortConfig} onSort={requestProvSort} />
                   </tr>
                 </thead>
                 <tbody>
-                  {providerPerformance.map((row) => (
+                  {sortedProviders.map((row) => (
                     <tr key={row.provider}>
                       <td>
                         <span className="text-xs font-bold uppercase">

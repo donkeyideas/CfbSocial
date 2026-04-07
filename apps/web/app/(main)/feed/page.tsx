@@ -140,9 +140,12 @@ async function FeedList({ tab }: { tab: FeedTab }) {
       break;
     case 'receipts': {
       // Show RECEIPT-type posts AND any post that has a receipt filed (aging_takes)
+      // Limit to recent aging takes to avoid unbounded query
       const { data: agingTakePosts } = await supabase
         .from('aging_takes')
-        .select('post_id');
+        .select('post_id')
+        .order('created_at', { ascending: false })
+        .limit(200);
       const receiptPostIds = agingTakePosts?.map((a) => a.post_id) ?? [];
       if (receiptPostIds.length > 0) {
         query = query.or(`post_type.eq.RECEIPT,id.in.(${receiptPostIds.join(',')})`);

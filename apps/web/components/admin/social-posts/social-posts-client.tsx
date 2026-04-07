@@ -1,8 +1,9 @@
 'use client';
 
-import { useState, useCallback, type Dispatch, type SetStateAction } from 'react';
+import { useState, useCallback, useMemo, type Dispatch, type SetStateAction } from 'react';
 import { TabNav } from '@/components/admin/shared/tab-nav';
 import { EmptyState } from '@/components/admin/shared/empty-state';
+import { useSortableTable, SortableHeader } from '@/components/admin/shared/sortable-header';
 import { timeAgo } from '@/lib/admin/utils/formatters';
 import {
   Share2, FileText, Key, PenTool, Loader2, Copy, Trash2,
@@ -387,20 +388,37 @@ function QueueTab({ posts, setPosts }: { posts: SocialMediaPost[]; setPosts: Dis
       {filtered.length === 0 ? (
         <EmptyState icon={FileText} title="No Posts in Queue" description="Generate content from the Generator tab to populate the queue." />
       ) : (
+        <QueueTable filtered={filtered} onPublish={handlePublish} onDelete={handleDelete} />
+      )}
+    </div>
+  );
+}
+
+function QueueTable({ filtered, onPublish, onDelete }: { filtered: SocialMediaPost[]; onPublish: (id: string) => void; onDelete: (id: string) => void }) {
+  const accessors = useMemo(() => ({
+    platform: (p: SocialMediaPost) => p.platform,
+    content: (p: SocialMediaPost) => p.content,
+    status: (p: SocialMediaPost) => p.status,
+    scheduled: (p: SocialMediaPost) => p.scheduled_at ?? '',
+    created: (p: SocialMediaPost) => p.created_at,
+  }), []);
+  const { sorted, sortConfig, requestSort } = useSortableTable(filtered, accessors);
+
+  return (
         <div className="admin-card overflow-hidden overflow-x-auto">
           <table className="admin-table">
             <thead>
               <tr>
-                <th>Platform</th>
-                <th>Content</th>
-                <th>Status</th>
-                <th>Scheduled</th>
-                <th>Created</th>
+                <SortableHeader label="Platform" sortKey="platform" sortConfig={sortConfig} onSort={requestSort} />
+                <SortableHeader label="Content" sortKey="content" sortConfig={sortConfig} onSort={requestSort} />
+                <SortableHeader label="Status" sortKey="status" sortConfig={sortConfig} onSort={requestSort} />
+                <SortableHeader label="Scheduled" sortKey="scheduled" sortConfig={sortConfig} onSort={requestSort} />
+                <SortableHeader label="Created" sortKey="created" sortConfig={sortConfig} onSort={requestSort} />
                 <th>Actions</th>
               </tr>
             </thead>
             <tbody>
-              {filtered.map((p) => (
+              {sorted.map((p) => (
                 <tr key={p.id}>
                   <td>
                     <span className="text-xs font-semibold uppercase">
@@ -417,7 +435,7 @@ function QueueTab({ posts, setPosts }: { posts: SocialMediaPost[]; setPosts: Dis
                     <div className="flex gap-1">
                       {(p.status === 'draft' || p.status === 'scheduled') && (
                         <button
-                          onClick={() => handlePublish(p.id)}
+                          onClick={() => onPublish(p.id)}
                           className="rounded p-1 text-[var(--admin-accent)] hover:bg-[var(--admin-surface-raised)]"
                           title="Publish now"
                         >
@@ -425,7 +443,7 @@ function QueueTab({ posts, setPosts }: { posts: SocialMediaPost[]; setPosts: Dis
                         </button>
                       )}
                       <button
-                        onClick={() => handleDelete(p.id)}
+                        onClick={() => onDelete(p.id)}
                         className="rounded p-1 text-[var(--admin-text-muted)] hover:text-[var(--admin-error)]"
                         title="Delete"
                       >
@@ -438,8 +456,6 @@ function QueueTab({ posts, setPosts }: { posts: SocialMediaPost[]; setPosts: Dis
             </tbody>
           </table>
         </div>
-      )}
-    </div>
   );
 }
 
@@ -483,17 +499,32 @@ function PublishedTab({ posts }: { posts: SocialMediaPost[] }) {
       {filtered.length === 0 ? (
         <EmptyState icon={Share2} title="No Published Posts" description="Posts will appear here once they are published to social media platforms." />
       ) : (
+        <PublishedTable filtered={filtered} />
+      )}
+    </div>
+  );
+}
+
+function PublishedTable({ filtered }: { filtered: SocialMediaPost[] }) {
+  const accessors = useMemo(() => ({
+    platform: (p: SocialMediaPost) => p.platform,
+    content: (p: SocialMediaPost) => p.content,
+    published: (p: SocialMediaPost) => p.published_at ?? '',
+  }), []);
+  const { sorted, sortConfig, requestSort } = useSortableTable(filtered, accessors);
+
+  return (
         <div className="admin-card overflow-hidden overflow-x-auto">
           <table className="admin-table">
             <thead>
               <tr>
-                <th>Platform</th>
-                <th>Content</th>
-                <th>Published</th>
+                <SortableHeader label="Platform" sortKey="platform" sortConfig={sortConfig} onSort={requestSort} />
+                <SortableHeader label="Content" sortKey="content" sortConfig={sortConfig} onSort={requestSort} />
+                <SortableHeader label="Published" sortKey="published" sortConfig={sortConfig} onSort={requestSort} />
               </tr>
             </thead>
             <tbody>
-              {filtered.map((p) => (
+              {sorted.map((p) => (
                 <tr key={p.id}>
                   <td>
                     <span className="text-xs font-semibold uppercase">
@@ -509,8 +540,6 @@ function PublishedTab({ posts }: { posts: SocialMediaPost[] }) {
             </tbody>
           </table>
         </div>
-      )}
-    </div>
   );
 }
 

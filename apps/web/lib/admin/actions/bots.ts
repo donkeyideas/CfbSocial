@@ -21,6 +21,12 @@ export interface BotRow {
   last_active_at: string | null;
   created_at: string | null;
   status: string;
+  bot_mood: number | null;
+  bot_mood_expires_at: string | null;
+  bot_region: string | null;
+  bot_age_bracket: string | null;
+  bot_post_count_today: number | null;
+  bot_last_post_at: string | null;
   school: {
     id: string;
     name: string;
@@ -40,7 +46,7 @@ export async function getAllBots(): Promise<{ bots: BotRow[]; error?: string }> 
   const supabase = createAdminClient();
   const { data, error } = await supabase
     .from('profiles')
-    .select('id, username, display_name, bio, avatar_url, banner_url, banner_color, is_bot, bot_active, bot_personality, school_id, post_count, last_active_at, created_at, status, school:schools!profiles_school_id_fkey(id, name, abbreviation, mascot, conference, primary_color, secondary_color, slug)')
+    .select('id, username, display_name, bio, avatar_url, banner_url, banner_color, is_bot, bot_active, bot_personality, school_id, post_count, last_active_at, created_at, status, bot_mood, bot_mood_expires_at, bot_region, bot_age_bracket, bot_post_count_today, bot_last_post_at, school:schools!profiles_school_id_fkey(id, name, abbreviation, mascot, conference, primary_color, secondary_color, slug)')
     .eq('is_bot', true)
     .order('created_at', { ascending: false });
 
@@ -247,6 +253,65 @@ export async function triggerBotPost(botId: string): Promise<{ postId?: string; 
   const { postBotTake } = await import('@/lib/admin/bots/engine');
   const result = await postBotTake(botId);
   return { postId: result.postId, error: result.error };
+}
+
+/**
+ * Diversify bot personalities, regions, and age brackets.
+ */
+export async function diversifyBots(): Promise<{ updated: number; errors: string[] }> {
+  const { diversifyBotPersonalities } = await import('@/lib/admin/bots/seed');
+  return diversifyBotPersonalities();
+}
+
+/**
+ * Seed bots for all uncovered Power 5 schools.
+ */
+export async function seedPowerFive(): Promise<{ created: number; skipped: number; errors: string[] }> {
+  const { seedPowerFiveBots } = await import('@/lib/admin/bots/seed');
+  return seedPowerFiveBots();
+}
+
+/**
+ * Seed local knowledge for top schools.
+ */
+export async function seedKnowledge(): Promise<{ inserted: number; error?: string }> {
+  const { seedLocalKnowledge } = await import('@/lib/admin/bots/seed-local-knowledge');
+  return seedLocalKnowledge();
+}
+
+/**
+ * Get active event queue items.
+ */
+export async function getEventQueue(limit = 30): Promise<{ events: Record<string, unknown>[]; error?: string }> {
+  const supabase = createAdminClient();
+  const { data, error } = await supabase
+    .from('bot_event_queue')
+    .select('*')
+    .eq('is_active', true)
+    .order('created_at', { ascending: false })
+    .limit(limit);
+
+  return { events: (data ?? []) as Record<string, unknown>[], error: error?.message };
+}
+
+/**
+ * Get personality distribution of bots.
+ */
+export async function getPersonalityDistribution(): Promise<Record<string, number>> {
+  const supabase = createAdminClient();
+  const { data } = await supabase
+    .from('profiles')
+    .select('bot_personality')
+    .eq('is_bot', true)
+    .eq('status', 'ACTIVE');
+
+  const dist: Record<string, number> = {};
+  for (const b of data ?? []) {
+    const p = b.bot_personality as Record<string, unknown> | null;
+    const type = (p?.type as string) || 'unknown';
+    dist[type] = (dist[type] || 0) + 1;
+  }
+  return dist;
 }
 
 /**

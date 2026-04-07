@@ -4,6 +4,7 @@
 
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { ChallengeRow, ChallengeVoteRow } from '@cfb-social/types';
+import { createNotification } from './notifications';
 
 /**
  * Create a new challenge against another user.
@@ -37,7 +38,7 @@ export async function createChallenge(
   if (error) throw error;
 
   // Notify the challenged user
-  await client.from('notifications').insert({
+  await createNotification(client, {
     recipient_id: challengedId,
     actor_id: user.id,
     type: 'CHALLENGE',
@@ -109,7 +110,7 @@ export async function respondToChallenge(
   const otherUserId = challenge.challenger_id === user.id
     ? challenge.challenged_id
     : challenge.challenger_id;
-  await client.from('notifications').insert({
+  await createNotification(client, {
     recipient_id: otherUserId,
     actor_id: user.id,
     type: 'CHALLENGE_RESPONSE',
@@ -198,10 +199,16 @@ export async function resolveChallenge(
   const loserId = winnerId === challenge.challenger_id
     ? challenge.challenged_id
     : challenge.challenger_id;
-  await client.from('notifications').insert([
-    { recipient_id: winnerId, type: 'CHALLENGE_WON', challenge_id: challengeId },
-    { recipient_id: loserId, type: 'CHALLENGE_LOST', challenge_id: challengeId },
-  ]);
+  await createNotification(client, {
+    recipient_id: winnerId,
+    type: 'CHALLENGE_WON',
+    challenge_id: challengeId,
+  });
+  await createNotification(client, {
+    recipient_id: loserId,
+    type: 'CHALLENGE_LOST',
+    challenge_id: challengeId,
+  });
 
   // Build result content
   const challengerName = (challenge.challenger as Record<string, string>)?.display_name

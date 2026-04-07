@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { requireAdmin } from '@/lib/admin/auth-guard';
-import { getAllBots, createBot } from '@/lib/admin/actions/bots';
+import { getAllBots, createBot, getEventQueue } from '@/lib/admin/actions/bots';
 
 export const dynamic = 'force-dynamic';
 
@@ -8,9 +8,12 @@ export async function GET() {
   const auth = await requireAdmin();
   if (!auth.authorized) return auth.response;
 
-  const { bots, error } = await getAllBots();
+  const [{ bots, error }, { events }] = await Promise.all([
+    getAllBots(),
+    getEventQueue(),
+  ]);
   if (error) return NextResponse.json({ error }, { status: 500 });
-  return NextResponse.json({ bots });
+  return NextResponse.json({ bots, eventQueue: events });
 }
 
 export async function POST(request: Request) {

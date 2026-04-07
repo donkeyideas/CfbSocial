@@ -1,22 +1,41 @@
 import { Suspense } from 'react';
 import { LoadingSkeleton } from '@/components/admin/shared/loading-skeleton';
-import { NotificationsClient } from '@/components/admin/notifications/notifications-client';
+import { NotificationCenterClient } from '@/components/admin/notifications/notification-center-client';
 
-export const metadata = { title: 'Notifications' };
+export const dynamic = 'force-dynamic';
+export const metadata = { title: 'Notification Center' };
 
 export default function NotificationsPage() {
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold">Admin Notifications</h1>
+      <h1 className="admin-section-title">Notification Center</h1>
       <Suspense fallback={<LoadingSkeleton rows={10} />}>
-        <NotificationsData />
+        <NotificationCenterData />
       </Suspense>
     </div>
   );
 }
 
-async function NotificationsData() {
-  const { getAdminActivityFeed } = await import('@/lib/admin/actions/admin-notifications');
-  const feed = await getAdminActivityFeed({ limit: 50 });
-  return <NotificationsClient feed={feed} />;
+async function NotificationCenterData() {
+  const { getPushStats, getPushNotificationLog, getSystemNotifications, getSchoolsForPicker, getConferences } =
+    await import('@/lib/admin/actions/push-notifications');
+
+  const [stats, pushLogResult, broadcastsResult, schools, conferences] = await Promise.all([
+    getPushStats(),
+    getPushNotificationLog({ page: 1, limit: 25 }),
+    getSystemNotifications({ page: 1, limit: 25 }),
+    getSchoolsForPicker(),
+    getConferences(),
+  ]);
+
+  return (
+    <NotificationCenterClient
+      stats={stats}
+      pushLog={pushLogResult.data}
+      pushLogTotal={pushLogResult.total}
+      broadcasts={broadcastsResult.data}
+      schools={schools}
+      conferences={conferences}
+    />
+  );
 }

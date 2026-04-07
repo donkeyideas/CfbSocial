@@ -77,7 +77,7 @@ const navSections: NavSection[] = [
     items: [
       { href: '/admin/api-mgmt', label: 'API Management', icon: Plug },
       { href: '/admin/system', label: 'System Health', icon: Server },
-      { href: '/admin/notifications', label: 'Notifications', icon: Bell },
+      { href: '/admin/notifications', label: 'Notification Center', icon: Bell },
       { href: '/admin/email-templates', label: 'Email Templates', icon: Mail },
       { href: '/admin/social-posts', label: 'Social Posts', icon: Share2 },
       { href: '/admin/contacts', label: 'Contacts', icon: MessageSquare },
@@ -129,7 +129,8 @@ export function AdminSidebar() {
 
   return (
     <aside
-      className="sticky top-0 flex h-screen w-64 shrink-0 flex-col"
+      className="sticky top-0 flex w-64 shrink-0 flex-col"
+      data-sidebar
       style={{
         background: sidebarBg,
         borderRight: sidebarBorder,
@@ -159,7 +160,7 @@ export function AdminSidebar() {
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 overflow-y-auto" style={{ padding: '16px 12px', scrollbarWidth: 'none' }}>
+      <nav className="overflow-y-auto" style={{ padding: '16px 12px', scrollbarWidth: 'none' }}>
         {navSections.map((section) => (
           <div key={section.label} style={{ marginBottom: '20px' }}>
             {/* Section label */}

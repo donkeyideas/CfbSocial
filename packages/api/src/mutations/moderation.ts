@@ -3,6 +3,7 @@
 // ============================================================
 
 import type { SupabaseClient } from '@supabase/supabase-js';
+import { createNotification } from './notifications';
 
 /**
  * Submit a user report against a post
@@ -215,7 +216,7 @@ export async function approveAppeal(client: SupabaseClient, appealId: string) {
   // Get the appeal
   const { data: appeal } = await client
     .from('appeals')
-    .select('post_id')
+    .select('post_id, user_id')
     .eq('id', appealId)
     .single();
 
@@ -247,6 +248,16 @@ export async function approveAppeal(client: SupabaseClient, appealId: string) {
       action_taken: 'RESTORE',
       moderator_notes: 'Appeal approved',
     });
+
+  // Notify user their appeal was approved
+  if (appeal.user_id) {
+    await createNotification(client, {
+      recipient_id: appeal.user_id,
+      type: 'MODERATION_APPEAL_RESULT',
+      post_id: appeal.post_id,
+      data: { result: 'approved' },
+    });
+  }
 }
 
 /**
@@ -255,6 +266,13 @@ export async function approveAppeal(client: SupabaseClient, appealId: string) {
 export async function denyAppeal(client: SupabaseClient, appealId: string, notes?: string) {
   const { data: { user } } = await client.auth.getUser();
   if (!user) throw new Error('Not authenticated');
+
+  // Get the appeal to find the user
+  const { data: appeal } = await client
+    .from('appeals')
+    .select('user_id, post_id')
+    .eq('id', appealId)
+    .single();
 
   await client
     .from('appeals')
@@ -265,4 +283,14 @@ export async function denyAppeal(client: SupabaseClient, appealId: string, notes
       admin_notes: notes ?? null,
     })
     .eq('id', appealId);
+
+  // Notify user their appeal was denied
+  if (appeal?.user_id) {
+    await createNotification(client, {
+      recipient_id: appeal.user_id,
+      type: 'MODERATION_APPEAL_RESULT',
+      post_id: appeal.post_id,
+      data: { result: 'denied' },
+    });
+  }
 }

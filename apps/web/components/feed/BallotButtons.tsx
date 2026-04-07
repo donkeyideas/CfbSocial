@@ -91,14 +91,21 @@ export function BallotButtons({ postId, authorId, touchdownCount, fumbleCount }:
       });
       if (error) throw error;
 
-      // Create notification for post author
+      // Create notification for post author + dispatch push
       if (authorId && authorId !== profileId) {
-        await supabase.from('notifications').insert({
+        const { data: notifRow } = await supabase.from('notifications').insert({
           recipient_id: authorId,
           actor_id: profileId,
           type: type === 'TOUCHDOWN' ? 'TOUCHDOWN' : 'FUMBLE',
           post_id: postId,
-        });
+        }).select('id').single();
+        if (notifRow) {
+          fetch('/api/push/dispatch', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ notificationId: notifRow.id }),
+          }).catch(() => {});
+        }
       }
     } catch {
       // Rollback optimistic update

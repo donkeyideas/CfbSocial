@@ -1,7 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { EmptyState } from '@/components/admin/shared/empty-state';
+import { useSortableTable, SortableHeader } from '@/components/admin/shared/sortable-header';
 import { timeAgo } from '@/lib/admin/utils/formatters';
 import { MessageSquare, X, ChevronDown, ChevronUp } from 'lucide-react';
 
@@ -34,6 +35,16 @@ export function ContactsClient({ contacts }: Props) {
 
   const filtered = filter === 'all' ? contacts : contacts.filter((c) => c.status === filter);
 
+  const contactAccessors = useMemo(() => ({
+    name: (c: Contact) => c.name.toLowerCase(),
+    email: (c: Contact) => c.email.toLowerCase(),
+    subject: (c: Contact) => c.subject.toLowerCase(),
+    category: (c: Contact) => c.category,
+    status: (c: Contact) => c.status,
+    date: (c: Contact) => c.created_at,
+  }), []);
+  const { sorted, sortConfig, requestSort } = useSortableTable(filtered, contactAccessors);
+
   if (contacts.length === 0) {
     return <EmptyState icon={MessageSquare} title="No Contact Submissions" description="Submissions will appear here when users fill out the contact form." />;
   }
@@ -51,10 +62,18 @@ export function ContactsClient({ contacts }: Props) {
       <div className="admin-card overflow-hidden">
         <table className="admin-table">
           <thead>
-            <tr><th>Name</th><th>Email</th><th>Subject</th><th>Category</th><th>Status</th><th>Date</th><th></th></tr>
+            <tr>
+              <SortableHeader label="Name" sortKey="name" sortConfig={sortConfig} onSort={requestSort} />
+              <SortableHeader label="Email" sortKey="email" sortConfig={sortConfig} onSort={requestSort} />
+              <SortableHeader label="Subject" sortKey="subject" sortConfig={sortConfig} onSort={requestSort} />
+              <SortableHeader label="Category" sortKey="category" sortConfig={sortConfig} onSort={requestSort} />
+              <SortableHeader label="Status" sortKey="status" sortConfig={sortConfig} onSort={requestSort} />
+              <SortableHeader label="Date" sortKey="date" sortConfig={sortConfig} onSort={requestSort} />
+              <th></th>
+            </tr>
           </thead>
           <tbody>
-            {filtered.map((c) => (
+            {sorted.map((c) => (
               <>
                 <tr key={c.id} className="cursor-pointer" onClick={() => setExpandedId(expandedId === c.id ? null : c.id)}>
                   <td className="font-medium">{c.name}</td>

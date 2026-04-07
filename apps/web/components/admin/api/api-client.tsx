@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import {
   ResponsiveContainer,
   BarChart,
@@ -13,6 +13,7 @@ import {
 import { TabNav } from '@/components/admin/shared/tab-nav';
 import { StatCard } from '@/components/admin/shared/stat-card';
 import { EmptyState } from '@/components/admin/shared/empty-state';
+import { useSortableTable, SortableHeader } from '@/components/admin/shared/sortable-header';
 import { formatDollars, formatDuration, formatPercent, timeAgo } from '@/lib/admin/utils/formatters';
 import type {
   APICallEntry,
@@ -90,6 +91,17 @@ export function APIClient({ callHistory, usage, dailyActivity, providers: initia
 /* ── Tab 1: Call History ───────────────────────────────────────── */
 
 function CallHistoryTab({ entries }: { entries: APICallEntry[] }) {
+  const accessors = useMemo(() => ({
+    time: (e: APICallEntry) => e.created_at,
+    provider: (e: APICallEntry) => e.provider,
+    endpoint: (e: APICallEntry) => e.feature,
+    status: (e: APICallEntry) => e.success ? 1 : 0,
+    latency: (e: APICallEntry) => e.response_time_ms,
+    tokens: (e: APICallEntry) => e.tokens_used,
+    cost: (e: APICallEntry) => e.cost,
+  }), []);
+  const { sorted, sortConfig, requestSort } = useSortableTable(entries, accessors);
+
   if (entries.length === 0) {
     return (
       <EmptyState
@@ -105,17 +117,17 @@ function CallHistoryTab({ entries }: { entries: APICallEntry[] }) {
       <table className="admin-table">
         <thead>
           <tr>
-            <th>Time</th>
-            <th>Provider</th>
-            <th>Endpoint</th>
-            <th>Status</th>
-            <th>Latency</th>
-            <th>Tokens</th>
-            <th>Cost</th>
+            <SortableHeader label="Time" sortKey="time" sortConfig={sortConfig} onSort={requestSort} />
+            <SortableHeader label="Provider" sortKey="provider" sortConfig={sortConfig} onSort={requestSort} />
+            <SortableHeader label="Endpoint" sortKey="endpoint" sortConfig={sortConfig} onSort={requestSort} />
+            <SortableHeader label="Status" sortKey="status" sortConfig={sortConfig} onSort={requestSort} />
+            <SortableHeader label="Latency" sortKey="latency" sortConfig={sortConfig} onSort={requestSort} />
+            <SortableHeader label="Tokens" sortKey="tokens" sortConfig={sortConfig} onSort={requestSort} />
+            <SortableHeader label="Cost" sortKey="cost" sortConfig={sortConfig} onSort={requestSort} />
           </tr>
         </thead>
         <tbody>
-          {entries.map((e) => (
+          {sorted.map((e) => (
             <tr key={e.id}>
               <td className="whitespace-nowrap text-xs text-[var(--admin-text-muted)]">
                 {timeAgo(e.created_at)}
@@ -158,6 +170,18 @@ function UsageCostsTab({ usage, dailyActivity }: { usage: UsageStats; dailyActiv
   const activeDays = dailyActivity.filter((d) => d.calls > 0).length;
   const avg = activeDays > 0 ? Math.round(totalCalls / activeDays) : 0;
 
+  type ByProvider = UsageStats['byProvider'][number];
+  const provAccessors = useMemo(() => ({
+    provider: (p: ByProvider) => p.provider,
+    calls: (p: ByProvider) => p.calls,
+    errors: (p: ByProvider) => p.errors,
+    errorRate: (p: ByProvider) => p.errorRate,
+    cost: (p: ByProvider) => p.cost,
+    tokens: (p: ByProvider) => p.tokens,
+    avgLatency: (p: ByProvider) => p.avgLatency,
+  }), []);
+  const { sorted: sortedProviders, sortConfig: provSortConfig, requestSort: requestProvSort } = useSortableTable(usage.byProvider, provAccessors);
+
   return (
     <div className="space-y-6">
       {/* Usage by Provider table */}
@@ -170,17 +194,17 @@ function UsageCostsTab({ usage, dailyActivity }: { usage: UsageStats; dailyActiv
             <table className="admin-table">
               <thead>
                 <tr>
-                  <th>Provider</th>
-                  <th>Calls</th>
-                  <th>Errors</th>
-                  <th>Error Rate</th>
-                  <th>Cost</th>
-                  <th>Tokens</th>
-                  <th>Avg Latency</th>
+                  <SortableHeader label="Provider" sortKey="provider" sortConfig={provSortConfig} onSort={requestProvSort} />
+                  <SortableHeader label="Calls" sortKey="calls" sortConfig={provSortConfig} onSort={requestProvSort} />
+                  <SortableHeader label="Errors" sortKey="errors" sortConfig={provSortConfig} onSort={requestProvSort} />
+                  <SortableHeader label="Error Rate" sortKey="errorRate" sortConfig={provSortConfig} onSort={requestProvSort} />
+                  <SortableHeader label="Cost" sortKey="cost" sortConfig={provSortConfig} onSort={requestProvSort} />
+                  <SortableHeader label="Tokens" sortKey="tokens" sortConfig={provSortConfig} onSort={requestProvSort} />
+                  <SortableHeader label="Avg Latency" sortKey="avgLatency" sortConfig={provSortConfig} onSort={requestProvSort} />
                 </tr>
               </thead>
               <tbody>
-                {usage.byProvider.map((p) => (
+                {sortedProviders.map((p) => (
                   <tr key={p.provider}>
                     <td>
                       <div className="flex items-center gap-2">

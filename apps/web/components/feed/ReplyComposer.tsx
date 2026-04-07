@@ -45,14 +45,21 @@ export function ReplyComposer({ parentId, parentAuthorId }: ReplyComposerProps) 
       if (count !== null) {
         await supabase.from('posts').update({ reply_count: count }).eq('id', parentId);
       }
-      // Notify the parent post author
+      // Notify the parent post author + dispatch push
       if (parentAuthorId && parentAuthorId !== profile.id) {
-        await supabase.from('notifications').insert({
+        const { data: notifRow } = await supabase.from('notifications').insert({
           recipient_id: parentAuthorId,
           actor_id: profile.id,
           type: 'REPLY',
           post_id: parentId,
-        });
+        }).select('id').single();
+        if (notifRow) {
+          fetch('/api/push/dispatch', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ notificationId: notifRow.id }),
+          }).catch(() => {});
+        }
       }
       router.refresh();
     }

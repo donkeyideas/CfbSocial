@@ -5,6 +5,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { XP_VALUES } from '../constants/xp';
 import type { XPAction } from '../constants/xp';
+import { createNotification } from './notifications';
 
 /**
  * Award XP to the current user.
@@ -78,6 +79,23 @@ export async function awardXP(
 
   if (updateError) throw updateError;
 
+  // Notify user on level up
+  if (newLevel > currentLevel) {
+    const tierNames: Record<string, string> = {
+      WALK_ON: 'Walk-On',
+      STARTER: 'Starter',
+      ALL_CONFERENCE: 'All-Conference',
+      ALL_AMERICAN: 'All-American',
+      HEISMAN: 'Heisman',
+      HALL_OF_FAME: 'Hall of Fame',
+    };
+    await createNotification(client, {
+      recipient_id: user.id,
+      type: 'LEVEL_UP',
+      data: { level: newLevel, level_name: tierNames[newTier] || newTier },
+    });
+  }
+
   return {
     amount,
     newXP: currentXP,
@@ -148,6 +166,13 @@ export async function unlockAchievement(
       .update({ xp: newXP })
       .eq('id', user.id);
   }
+
+  // Notify user of achievement unlock
+  await createNotification(client, {
+    recipient_id: user.id,
+    type: 'ACHIEVEMENT_UNLOCKED',
+    data: { achievement_name: achievement?.name || 'Unknown' },
+  });
 
   return { achievementId, name: achievement?.name };
 }

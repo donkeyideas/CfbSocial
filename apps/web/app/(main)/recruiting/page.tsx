@@ -23,51 +23,49 @@ export default async function RecruitingPage() {
   const { createClient } = await import('@/lib/supabase/server');
   const supabase = await createClient();
 
-  // Fetch all data in PARALLEL with limits (was 3 sequential unbounded queries)
-  const [schoolsRes, portalPlayersRes, claimsRes] = await Promise.all([
+  // Fetch schools + portal data in parallel. Only fetch the columns we need.
+  const [schoolsRes, portalPlayersRes, claimsCountsRes, inPortalRes, committedRes] = await Promise.all([
     supabase
       .from('schools')
       .select('id, name, abbreviation, slug, primary_color, secondary_color, conference, mascot')
       .eq('is_fbs', true)
       .order('name'),
+    // Fetch only school IDs and status — no star_rating (saves bandwidth)
     supabase
       .from('portal_players')
-      .select('previous_school_id, committed_school_id, star_rating, status')
+      .select('previous_school_id, committed_school_id')
       .limit(2000),
+    // Fetch only school_id for claims
     supabase
       .from('roster_claims')
       .select('school_id')
       .limit(5000),
+    // Use head:true count queries instead of fetching all rows to count
+    supabase
+      .from('portal_players')
+      .select('id', { count: 'exact', head: true })
+      .eq('status', 'IN_PORTAL'),
+    supabase
+      .from('portal_players')
+      .select('id', { count: 'exact', head: true })
+      .eq('status', 'COMMITTED'),
   ]);
 
   const schools = schoolsRes.data;
   const portalPlayers = portalPlayersRes.data;
-  const claims = claimsRes.data;
+  const claims = claimsCountsRes.data;
 
   // Build aggregation maps
   const lostMap = new Map<string, number>();
   const gainedMap = new Map<string, number>();
-  const starsMap = new Map<string, number[]>();
-
   for (const p of portalPlayers ?? []) {
-    if (p.previous_school_id) {
-      lostMap.set(p.previous_school_id, (lostMap.get(p.previous_school_id) ?? 0) + 1);
-    }
-    if (p.committed_school_id) {
-      gainedMap.set(p.committed_school_id, (gainedMap.get(p.committed_school_id) ?? 0) + 1);
-    }
-    if (p.previous_school_id && p.star_rating) {
-      const arr = starsMap.get(p.previous_school_id) ?? [];
-      arr.push(p.star_rating);
-      starsMap.set(p.previous_school_id, arr);
-    }
+    if (p.previous_school_id) lostMap.set(p.previous_school_id, (lostMap.get(p.previous_school_id) ?? 0) + 1);
+    if (p.committed_school_id) gainedMap.set(p.committed_school_id, (gainedMap.get(p.committed_school_id) ?? 0) + 1);
   }
 
   const claimsMap = new Map<string, number>();
   for (const c of claims ?? []) {
-    if (c.school_id) {
-      claimsMap.set(c.school_id, (claimsMap.get(c.school_id) ?? 0) + 1);
-    }
+    if (c.school_id) claimsMap.set(c.school_id, (claimsMap.get(c.school_id) ?? 0) + 1);
   }
 
   type ActivityLevel = 'LOW' | 'MODERATE' | 'HIGH' | 'VERY_HIGH';
@@ -82,10 +80,6 @@ export default async function RecruitingPage() {
     const lost = lostMap.get(school.id) ?? 0;
     const gained = gainedMap.get(school.id) ?? 0;
     const totalClaims = claimsMap.get(school.id) ?? 0;
-    const stars = starsMap.get(school.id) ?? [];
-    const avgStarRating = stars.length > 0
-      ? Math.round((stars.reduce((a: number, b: number) => a + b, 0) / stars.length) * 10) / 10
-      : 0;
     const activityScore = lost + gained + totalClaims;
 
     return {
@@ -100,15 +94,15 @@ export default async function RecruitingPage() {
       playersLost: lost,
       playersGained: gained,
       totalClaims,
-      avgStarRating,
+      avgStarRating: 0,
       netMovement: gained - lost,
       activityLevel: getActivityLevel(activityScore),
     };
   });
 
-  // Summary stats
-  const totalInPortal = portalPlayers?.filter((p) => p.status === 'IN_PORTAL').length ?? 0;
-  const totalCommitted = portalPlayers?.filter((p) => p.status === 'COMMITTED').length ?? 0;
+  // Summary stats from lightweight count queries (head:true = no row data transferred)
+  const totalInPortal = inPortalRes.count ?? 0;
+  const totalCommitted = committedRes.count ?? 0;
   const mostActive = [...stats].sort((a, b) =>
     (b.playersLost + b.playersGained + b.totalClaims) - (a.playersLost + a.playersGained + a.totalClaims)
   )[0];

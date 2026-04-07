@@ -21,12 +21,12 @@ export default function AdminLayout({
 }) {
   return (
     <div className="admin-root">
-      <div style={{ display: 'flex', minHeight: '100vh', maxWidth: '100vw', overflow: 'hidden' }}>
+      <div style={{ display: 'flex', minHeight: '100vh', maxWidth: '100vw' }}>
         {/* Sidebar */}
         <AdminSidebar />
 
         {/* Main area */}
-        <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minWidth: 0 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minWidth: 0, height: '100vh', position: 'sticky', top: 0 }}>
           <AdminHeader />
           <main style={{ flex: 1, overflowY: 'auto', padding: '24px' }}>
             <Suspense>{children}</Suspense>

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   MoreHorizontal,
@@ -16,6 +16,7 @@ import { StatusBadge } from '@/components/admin/shared/status-badge';
 import { EmptyState } from '@/components/admin/shared/empty-state';
 import { ConfirmDialog } from '@/components/admin/shared/confirm-dialog';
 import { UserDetailModal } from '@/components/admin/users/user-detail-modal';
+import { useSortableTable, SortableHeader } from '@/components/admin/shared/sortable-header';
 import { createClient } from '@/lib/supabase/client';
 
 interface UserSchool {
@@ -301,6 +302,20 @@ export function UsersClient({ users, total, currentPage, totalPages }: UsersClie
     return pages;
   }
 
+  const userAccessors = useMemo(() => ({
+    user: (u: UserRow) => (u.display_name ?? u.username).toLowerCase(),
+    email: (u: UserRow) => u.email?.toLowerCase() ?? '',
+    school: (u: UserRow) => u.school?.abbreviation ?? '',
+    role: (u: UserRow) => u.role,
+    status: (u: UserRow) => u.status,
+    tier: (u: UserRow) => u.dynasty_tier ?? '',
+    xp: (u: UserRow) => u.xp ?? 0,
+    level: (u: UserRow) => u.level ?? 0,
+    posts: (u: UserRow) => u.post_count ?? 0,
+    joined: (u: UserRow) => u.created_at,
+  }), []);
+  const { sorted: sortedUsers, sortConfig: userSortConfig, requestSort: requestUserSort } = useSortableTable(users, userAccessors);
+
   if (users.length === 0) {
     return (
       <EmptyState
@@ -321,21 +336,21 @@ export function UsersClient({ users, total, currentPage, totalPages }: UsersClie
         <table className="admin-table">
           <thead>
             <tr>
-              <th>User</th>
-              <th>Email</th>
-              <th>School</th>
-              <th>Role</th>
-              <th>Status</th>
-              <th>Tier</th>
-              <th>XP</th>
-              <th>Level</th>
-              <th>Posts</th>
-              <th>Joined</th>
+              <SortableHeader label="User" sortKey="user" sortConfig={userSortConfig} onSort={requestUserSort} />
+              <SortableHeader label="Email" sortKey="email" sortConfig={userSortConfig} onSort={requestUserSort} />
+              <SortableHeader label="School" sortKey="school" sortConfig={userSortConfig} onSort={requestUserSort} />
+              <SortableHeader label="Role" sortKey="role" sortConfig={userSortConfig} onSort={requestUserSort} />
+              <SortableHeader label="Status" sortKey="status" sortConfig={userSortConfig} onSort={requestUserSort} />
+              <SortableHeader label="Tier" sortKey="tier" sortConfig={userSortConfig} onSort={requestUserSort} />
+              <SortableHeader label="XP" sortKey="xp" sortConfig={userSortConfig} onSort={requestUserSort} />
+              <SortableHeader label="Level" sortKey="level" sortConfig={userSortConfig} onSort={requestUserSort} />
+              <SortableHeader label="Posts" sortKey="posts" sortConfig={userSortConfig} onSort={requestUserSort} />
+              <SortableHeader label="Joined" sortKey="joined" sortConfig={userSortConfig} onSort={requestUserSort} />
               <th>Actions</th>
             </tr>
           </thead>
           <tbody>
-            {users.map((user) => (
+            {sortedUsers.map((user) => (
               <tr
                 key={user.id}
                 className="cursor-pointer hover:bg-[var(--admin-surface-raised)]/50 transition-colors"

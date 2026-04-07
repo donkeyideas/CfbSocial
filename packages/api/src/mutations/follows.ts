@@ -3,6 +3,7 @@
 // ============================================================
 
 import type { SupabaseClient } from '@supabase/supabase-js';
+import { createNotification } from './notifications';
 
 /**
  * Follow a user. Denormalized counts are updated by database trigger.
@@ -26,8 +27,8 @@ export async function followUser(client: SupabaseClient, userId: string) {
 
   if (error) throw error;
 
-  // Create follow notification
-  await client.from('notifications').insert({
+  // Create follow notification (push dispatch handled by caller or API layer)
+  await createNotification(client, {
     recipient_id: userId,
     actor_id: user.id,
     type: 'FOLLOW',

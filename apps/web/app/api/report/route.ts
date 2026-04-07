@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { createClient as createServiceClient } from '@supabase/supabase-js';
+import { dispatchPushNotification } from '@/lib/firebase/dispatcher';
 
 export async function POST(req: NextRequest) {
   try {
@@ -66,11 +67,23 @@ export async function POST(req: NextRequest) {
       .eq('id', postId);
 
     // Notify post author their post was flagged (hide reporter identity)
-    await admin.from('notifications').insert({
+    const { data: notifRow } = await admin.from('notifications').insert({
       recipient_id: post.author_id,
       type: 'POST_FLAGGED',
       post_id: postId,
-    });
+    }).select('id, recipient_id, actor_id, type, post_id, challenge_id, data').single();
+
+    if (notifRow) {
+      dispatchPushNotification({
+        id: notifRow.id,
+        recipient_id: notifRow.recipient_id,
+        actor_id: notifRow.actor_id,
+        type: notifRow.type,
+        post_id: notifRow.post_id,
+        challenge_id: notifRow.challenge_id,
+        data: notifRow.data as Record<string, unknown> | null,
+      }).catch(() => {});
+    }
 
     // Log moderation event
     await admin

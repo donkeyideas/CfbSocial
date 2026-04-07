@@ -62,6 +62,16 @@ function getNotificationMessage(type: string, actor: string): string {
     case 'POST_FLAGGED':
     case 'MODERATION_WARNING':
       return 'Your post was flagged for review';
+    case 'MODERATION_APPEAL_RESULT':
+      return 'Your appeal has been reviewed';
+    case 'SYSTEM':
+      return 'New message from CFB Social';
+    case 'AGING_TAKE_SURFACED':
+      return 'One of your aging takes has been surfaced';
+    case 'RECEIPT_VERIFIED':
+      return 'Your prediction aged well -- receipt confirmed';
+    case 'PORTAL_COMMIT':
+      return 'A portal player you claimed has committed';
     default:
       return 'New notification';
   }

@@ -60,40 +60,40 @@ async function HallOfFameContent() {
   const { createClient } = await import('@/lib/supabase/server');
   const supabase = await createClient();
 
-  // Top users by XP
-  const { data: topXP } = await supabase
-    .from('profiles')
-    .select('id, username, display_name, xp, level, dynasty_tier, post_count, touchdown_count, follower_count, school:schools!profiles_school_id_fkey(name, abbreviation, primary_color, slug)')
-    .order('xp', { ascending: false })
-    .limit(15);
-
-  // Top by touchdowns received
-  const { data: topTD } = await supabase
-    .from('profiles')
-    .select('id, username, display_name, touchdown_count, dynasty_tier, school:schools!profiles_school_id_fkey(name, abbreviation, primary_color, slug)')
-    .order('touchdown_count', { ascending: false })
-    .limit(10);
-
-  // Top by followers
-  const { data: topFollowed } = await supabase
-    .from('profiles')
-    .select('id, username, display_name, follower_count, dynasty_tier, school:schools!profiles_school_id_fkey(name, abbreviation, primary_color, slug)')
-    .order('follower_count', { ascending: false })
-    .limit(10);
-
-  // Top by post count
-  const { data: topPosters } = await supabase
-    .from('profiles')
-    .select('id, username, display_name, post_count, dynasty_tier, school:schools!profiles_school_id_fkey(name, abbreviation, primary_color, slug)')
-    .order('post_count', { ascending: false })
-    .limit(10);
-
-  // Top by correct predictions
-  const { data: topPredictors } = await supabase
-    .from('profiles')
-    .select('id, username, display_name, correct_predictions, prediction_count, dynasty_tier, school:schools!profiles_school_id_fkey(name, abbreviation, primary_color, slug)')
-    .order('correct_predictions', { ascending: false })
-    .limit(10);
+  // Fetch all 5 leaderboards in PARALLEL (was sequential — 5x slower)
+  const [
+    { data: topXP },
+    { data: topTD },
+    { data: topFollowed },
+    { data: topPosters },
+    { data: topPredictors },
+  ] = await Promise.all([
+    supabase
+      .from('profiles')
+      .select('id, username, display_name, xp, level, dynasty_tier, post_count, touchdown_count, follower_count, school:schools!profiles_school_id_fkey(name, abbreviation, primary_color, slug)')
+      .order('xp', { ascending: false })
+      .limit(15),
+    supabase
+      .from('profiles')
+      .select('id, username, display_name, touchdown_count, dynasty_tier, school:schools!profiles_school_id_fkey(name, abbreviation, primary_color, slug)')
+      .order('touchdown_count', { ascending: false })
+      .limit(10),
+    supabase
+      .from('profiles')
+      .select('id, username, display_name, follower_count, dynasty_tier, school:schools!profiles_school_id_fkey(name, abbreviation, primary_color, slug)')
+      .order('follower_count', { ascending: false })
+      .limit(10),
+    supabase
+      .from('profiles')
+      .select('id, username, display_name, post_count, dynasty_tier, school:schools!profiles_school_id_fkey(name, abbreviation, primary_color, slug)')
+      .order('post_count', { ascending: false })
+      .limit(10),
+    supabase
+      .from('profiles')
+      .select('id, username, display_name, correct_predictions, prediction_count, dynasty_tier, school:schools!profiles_school_id_fkey(name, abbreviation, primary_color, slug)')
+      .order('correct_predictions', { ascending: false })
+      .limit(10),
+  ]);
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>

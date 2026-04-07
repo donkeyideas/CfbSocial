@@ -1,0 +1,12 @@
+{
+  "crons": [
+    {
+      "path": "/api/cron/bots",
+      "schedule": "*/5 * * * *"
+    },
+    {
+      "path": "/api/cron/bots/midnight",
+      "schedule": "0 5 * * *"
+    }
+  ]
+}

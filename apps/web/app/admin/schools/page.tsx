@@ -1,4 +1,5 @@
 import { Suspense } from 'react';
+import { SchoolsTableClient } from '@/components/admin/schools/schools-table-client';
 
 export const dynamic = 'force-dynamic';
 
@@ -69,81 +70,18 @@ async function SchoolsTable() {
     }
   }
 
-  // Sort schools by user count descending
-  const sortedSchools = [...schools].sort((a, b) => {
-    const aCount = userCounts[a.id] || 0;
-    const bCount = userCounts[b.id] || 0;
-    return bCount - aCount;
-  });
+  const schoolRows = schools.map((s) => ({
+    id: s.id,
+    name: s.name,
+    mascot: s.mascot,
+    abbreviation: s.abbreviation,
+    conference: s.conference,
+    primary_color: s.primary_color,
+    secondary_color: s.secondary_color,
+    is_fbs: s.is_fbs,
+    userCount: userCounts[s.id] || 0,
+    postCount: postCounts[s.id] || 0,
+  }));
 
-  return (
-    <div className="admin-card overflow-hidden overflow-x-auto">
-      <table className="admin-table">
-        <thead>
-          <tr>
-            <th>School</th>
-            <th>Conference</th>
-            <th>Users</th>
-            <th>Posts</th>
-            <th>Colors</th>
-            <th>FBS</th>
-          </tr>
-        </thead>
-        <tbody>
-          {sortedSchools.map((school) => (
-            <tr key={school.id}>
-              <td>
-                <div className="flex items-center gap-3">
-                  <div
-                    className="h-8 w-8 rounded-full"
-                    style={{ backgroundColor: school.primary_color }}
-                  />
-                  <div>
-                    <p className="font-medium">{school.name}</p>
-                    <p className="text-xs text-[var(--admin-text-muted)]">
-                      {school.mascot} &middot; {school.abbreviation}
-                    </p>
-                  </div>
-                </div>
-              </td>
-              <td className="text-sm text-[var(--admin-text-secondary)]">
-                {school.conference}
-              </td>
-              <td className="text-sm font-medium">
-                {userCounts[school.id] || 0}
-              </td>
-              <td className="text-sm font-medium">
-                {postCounts[school.id] || 0}
-              </td>
-              <td>
-                <div className="flex gap-1">
-                  <div
-                    className="h-5 w-5 rounded"
-                    style={{ backgroundColor: school.primary_color }}
-                    title={school.primary_color}
-                  />
-                  <div
-                    className="h-5 w-5 rounded"
-                    style={{ backgroundColor: school.secondary_color }}
-                    title={school.secondary_color}
-                  />
-                </div>
-              </td>
-              <td>
-                <span
-                  className={`text-xs font-semibold ${
-                    school.is_fbs
-                      ? 'text-[var(--admin-success)]'
-                      : 'text-[var(--admin-text-muted)]'
-                  }`}
-                >
-                  {school.is_fbs ? 'FBS' : 'FCS'}
-                </span>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-  );
+  return <SchoolsTableClient schools={schoolRows} />;
 }

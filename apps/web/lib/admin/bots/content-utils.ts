@@ -1,51 +1,194 @@
 // ============================================================
 // Bot Content Utilities
-// ESPN RSS, content cleaning, fallback content
+// ESPN API news, content cleaning, fallback content
 // ============================================================
 
+// ============================================================
+// ESPN API - Real news data for bot content
+// ============================================================
+
+export interface ESPNArticle {
+  headline: string;
+  description: string;
+  teams: string[];       // e.g., ["LSU Tigers", "Alabama Crimson Tide"]
+  athletes: string[];    // e.g., ["Fernando Mendoza", "Denzel Boston"]
+  published: string;
+}
+
 /**
- * Fetch recent CFB headlines from ESPN RSS for AI context.
+ * Fetch real CFB news from ESPN API with team + player metadata.
+ * This is the PRIMARY source of truth for bot content — ensures
+ * bots only reference real, current events.
  */
-export async function fetchESPNCFBNews(): Promise<string[]> {
+export async function fetchESPNNews(): Promise<ESPNArticle[]> {
   try {
-    const res = await fetch('https://www.espn.com/espn/rss/ncf/news', {
-      signal: AbortSignal.timeout(5000),
-    });
+    const res = await fetch(
+      'https://site.api.espn.com/apis/site/v2/sports/football/college-football/news?limit=25',
+      { signal: AbortSignal.timeout(8000) }
+    );
     if (!res.ok) return [];
-    const xml = await res.text();
-    const titles: string[] = [];
+    const data = await res.json() as {
+      articles?: Array<{
+        headline?: string;
+        description?: string;
+        published?: string;
+        categories?: Array<{
+          type?: string;
+          description?: string;
+        }>;
+      }>;
+    };
 
-    // Try CDATA-wrapped titles first
-    const cdataMatches = xml.matchAll(/<title><!\[CDATA\[(.+?)\]\]><\/title>/g);
-    for (const match of cdataMatches) {
-      if (titles.length >= 10) break;
-      const title = match[1]?.trim();
-      if (title && !title.includes('ESPN') && title !== 'NCAA Football') {
-        titles.push(title);
-      }
-    }
-
-    // Fallback to plain title tags
-    if (titles.length < 3) {
-      const plainMatches = xml.matchAll(/<title>([^<]+)<\/title>/g);
-      for (const match of plainMatches) {
-        if (titles.length >= 10) break;
-        const title = match[1]?.trim();
-        if (title && !title.includes('ESPN') && title !== 'NCAA Football' && !titles.includes(title)) {
-          titles.push(title);
-        }
-      }
-    }
-
-    return titles;
+    return (data.articles || []).map(a => ({
+      headline: a.headline || '',
+      description: (a.description || '').substring(0, 300),
+      teams: (a.categories || [])
+        .filter(c => c.type === 'team')
+        .map(c => c.description || '')
+        .filter(d => d.length > 0),
+      athletes: (a.categories || [])
+        .filter(c => c.type === 'athlete')
+        .map(c => c.description || '')
+        .filter(d => d.length > 0),
+      published: a.published || '',
+    }));
   } catch {
     return [];
   }
 }
 
 /**
- * Strip markdown formatting from AI output.
+ * Fallback: Fetch headlines from ESPN RSS if API fails.
  */
+export async function fetchESPNRSSFallback(): Promise<string[]> {
+  try {
+    const res = await fetch('https://www.espn.com/espn/rss/ncf/news', {
+      signal: AbortSignal.timeout(5000),
+    });
+    if (!res.ok) return [];
+    const xml = await res.text();
+    const items: string[] = [];
+    const itemRegex = /<item>([\s\S]*?)<\/item>/g;
+    let itemMatch;
+    while ((itemMatch = itemRegex.exec(xml)) !== null && items.length < 10) {
+      const block = itemMatch[1] || '';
+      const titleCdata = block.match(/<title><!\[CDATA\[(.+?)\]\]><\/title>/);
+      const titlePlain = block.match(/<title>([^<]+)<\/title>/);
+      const title = (titleCdata?.[1] || titlePlain?.[1] || '').trim();
+      if (!title || title.length < 10 || title.toLowerCase().includes('espn') || title.startsWith('www.')) continue;
+
+      const descCdata = block.match(/<description><!\[CDATA\[(.+?)\]\]><\/description>/);
+      const descPlain = block.match(/<description>([^<]+)<\/description>/);
+      const desc = (descCdata?.[1] || descPlain?.[1] || '').trim();
+
+      items.push(desc && desc.length > 20 ? `${title} -- ${desc.substring(0, 150)}` : title);
+    }
+    return items;
+  } catch {
+    return [];
+  }
+}
+
+/**
+ * Find ESPN articles relevant to a specific school.
+ * Matches by school name, mascot, or team description.
+ */
+export function filterArticlesForSchool(
+  articles: ESPNArticle[],
+  schoolName: string,
+  mascot: string,
+  conference?: string
+): { teamArticles: ESPNArticle[]; conferenceArticles: ESPNArticle[]; nationalArticles: ESPNArticle[] } {
+  const schoolLower = schoolName.toLowerCase();
+  const mascotLower = mascot.toLowerCase();
+
+  const teamArticles: ESPNArticle[] = [];
+  const conferenceArticles: ESPNArticle[] = [];
+  const nationalArticles: ESPNArticle[] = [];
+
+  for (const article of articles) {
+    const teamDescriptions = article.teams.map(t => t.toLowerCase());
+    const headlineLower = article.headline.toLowerCase();
+    const descLower = article.description.toLowerCase();
+
+    // Direct team match
+    const isTeamMatch = teamDescriptions.some(t =>
+      t.includes(schoolLower) || t.includes(mascotLower)
+    ) || headlineLower.includes(schoolLower) || headlineLower.includes(mascotLower);
+
+    if (isTeamMatch) {
+      teamArticles.push(article);
+    } else if (conference && (headlineLower.includes(conference.toLowerCase()) ||
+               descLower.includes(conference.toLowerCase()))) {
+      conferenceArticles.push(article);
+    } else {
+      nationalArticles.push(article);
+    }
+  }
+
+  return { teamArticles, conferenceArticles, nationalArticles };
+}
+
+/**
+ * Build the news context string for bot prompts.
+ * Priority: team-specific news > conference news > national news.
+ */
+export function buildNewsContext(
+  articles: ESPNArticle[],
+  schoolName: string,
+  mascot: string,
+  conference?: string
+): { newsContext: string; sourceType: 'team' | 'conference' | 'national'; articleUsed: ESPNArticle | null } {
+  const { teamArticles, conferenceArticles, nationalArticles } = filterArticlesForSchool(
+    articles, schoolName, mascot, conference
+  );
+
+  // Priority 1: Team-specific news
+  if (teamArticles.length > 0) {
+    const selected = teamArticles.slice(0, 3);
+    const context = '\n\nREAL NEWS about ' + schoolName + ' (from ESPN - these are FACTS you can reference):\n' +
+      selected.map(a => {
+        let entry = `- ${a.headline}`;
+        if (a.description) entry += `: ${a.description}`;
+        if (a.athletes.length > 0) entry += ` (Players mentioned: ${a.athletes.join(', ')})`;
+        return entry;
+      }).join('\n');
+    return { newsContext: context, sourceType: 'team', articleUsed: selected[0]! };
+  }
+
+  // Priority 2: Conference news
+  if (conferenceArticles.length > 0) {
+    const selected = conferenceArticles.slice(0, 3);
+    const context = '\n\nREAL NEWS from the ' + (conference || 'college football') + ' (from ESPN - these are FACTS):\n' +
+      selected.map(a => {
+        let entry = `- ${a.headline}`;
+        if (a.description) entry += `: ${a.description}`;
+        if (a.athletes.length > 0) entry += ` (Players: ${a.athletes.join(', ')})`;
+        return entry;
+      }).join('\n');
+    return { newsContext: context, sourceType: 'conference', articleUsed: selected[0]! };
+  }
+
+  // Priority 3: National news
+  if (nationalArticles.length > 0) {
+    const selected = nationalArticles.slice(0, 5);
+    const context = '\n\nREAL college football news this week (from ESPN - these are FACTS):\n' +
+      selected.map(a => {
+        let entry = `- ${a.headline}`;
+        if (a.description) entry += `: ${a.description}`;
+        if (a.athletes.length > 0) entry += ` (Players: ${a.athletes.join(', ')})`;
+        return entry;
+      }).join('\n');
+    return { newsContext: context, sourceType: 'national', articleUsed: selected[0]! };
+  }
+
+  return { newsContext: '', sourceType: 'national', articleUsed: null };
+}
+
+// ============================================================
+// Content cleaning
+// ============================================================
+
 function stripMarkdown(text: string): string {
   return text
     .replace(/\*\*(.+?)\*\*/g, '$1')
@@ -60,15 +203,12 @@ function stripMarkdown(text: string): string {
     .trim();
 }
 
-/**
- * Remove emojis from text.
- */
 function stripEmojis(text: string): string {
   return text.replace(/[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{1F1E0}-\u{1F1FF}\u{2600}-\u{27BF}\u{1F900}-\u{1F9FF}\u{1FA00}-\u{1FA6F}\u{1FA70}-\u{1FAFF}\u{2702}-\u{27B0}\u{FE00}-\u{FE0F}\u{200D}\u{20E3}\u{E0020}-\u{E007F}]/gu, '').trim();
 }
 
 /**
- * Clean AI-generated content: strip markdown, filler, emojis.
+ * Clean AI-generated content: strip markdown, filler, emojis, AI artifacts.
  */
 export function cleanBotContent(raw: string, maxChars = 500): string {
   let content = stripMarkdown(raw);
@@ -102,8 +242,23 @@ export function cleanBotContent(raw: string, maxChars = 500): string {
   // Strip emojis
   content = stripEmojis(content);
 
+  // Strip ---HASHTAGS---, ---IMAGE_PROMPT---, or similar AI section markers and everything after
+  content = content.replace(/\s*---\s*(HASHTAGS|IMAGE_PROMPT|TAGS|PROMPT|META).*$/si, '');
+
   // Strip trailing hashtags
   content = content.replace(/\s*#\w+(\s+#\w+)*\s*$/, '');
+
+  // Strip common AI-speak phrases
+  content = content.replace(/\bAs a fan of\b/gi, '');
+  content = content.replace(/\bIt[''\u2019]s worth noting\b/gi, '');
+  content = content.replace(/\bAt the end of the day[,.]?\s*/gi, '');
+  content = content.replace(/\bThat being said[,.]?\s*/gi, '');
+  content = content.replace(/\bI believe that\b/gi, '');
+  content = content.replace(/\bSound off below\.?\s*/gi, '');
+  content = content.replace(/\bDrop your thoughts below\.?\s*/gi, '');
+  content = content.replace(/\bWhat[''\u2019]s your take\??\s*/gi, '');
+  content = content.replace(/\bWhat do you think\??\s*/gi, '');
+  content = content.replace(/\bLet me know in the comments\.?\s*/gi, '');
 
   content = content.trim();
 
@@ -120,16 +275,14 @@ export function cleanBotContent(raw: string, maxChars = 500): string {
   return content;
 }
 
-/**
- * Pick a random item from an array.
- */
+// ============================================================
+// Utility functions
+// ============================================================
+
 export function pickRandom<T>(arr: T[]): T {
   return arr[Math.floor(Math.random() * arr.length)]!;
 }
 
-/**
- * Shuffle an array in place (Fisher-Yates).
- */
 export function shuffleArray<T>(arr: T[]): T[] {
   const shuffled = [...arr];
   for (let i = shuffled.length - 1; i > 0; i--) {
@@ -139,9 +292,6 @@ export function shuffleArray<T>(arr: T[]): T[] {
   return shuffled;
 }
 
-/**
- * Random temperature within a range.
- */
 export function getRandomTemp(min: number, max: number): number {
   return min + Math.random() * (max - min);
 }

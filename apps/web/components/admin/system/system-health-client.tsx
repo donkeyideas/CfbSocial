@@ -1,8 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { TabNav } from '@/components/admin/shared/tab-nav';
 import { EmptyState } from '@/components/admin/shared/empty-state';
+import { useSortableTable, SortableHeader } from '@/components/admin/shared/sortable-header';
 import { formatDuration, timeAgo } from '@/lib/admin/utils/formatters';
 import { Activity, Database, Server, Briefcase, RefreshCw } from 'lucide-react';
 
@@ -31,9 +32,21 @@ const tabs = [
   { id: 'jobs', label: 'Background Jobs' },
 ];
 
+type Job = Record<string, unknown>;
+
 export function SystemHealthClient({ healthChecks, tableStats, jobs }: Props) {
   const [activeTab, setActiveTab] = useState('status');
   const [triggering, setTriggering] = useState<string | null>(null);
+
+  const jobAccessors = useMemo(() => ({
+    jobType: (j: Job) => (j.job_type as string) ?? '',
+    status: (j: Job) => (j.status as string) ?? '',
+    priority: (j: Job) => (j.priority as number) ?? 0,
+    attempts: (j: Job) => (j.attempts as number) ?? 0,
+    created: (j: Job) => (j.created_at as string) ?? '',
+    error: (j: Job) => (j.last_error as string) ?? '',
+  }), []);
+  const { sorted: sortedJobs, sortConfig: jobSortConfig, requestSort: requestJobSort } = useSortableTable(jobs, jobAccessors);
 
   async function handleTriggerJob(jobType: string) {
     setTriggering(jobType);
@@ -112,16 +125,16 @@ export function SystemHealthClient({ healthChecks, tableStats, jobs }: Props) {
                 <table className="admin-table">
                   <thead>
                     <tr>
-                      <th>Job Type</th>
-                      <th>Status</th>
-                      <th>Priority</th>
-                      <th>Attempts</th>
-                      <th>Created</th>
-                      <th>Error</th>
+                      <SortableHeader label="Job Type" sortKey="jobType" sortConfig={jobSortConfig} onSort={requestJobSort} />
+                      <SortableHeader label="Status" sortKey="status" sortConfig={jobSortConfig} onSort={requestJobSort} />
+                      <SortableHeader label="Priority" sortKey="priority" sortConfig={jobSortConfig} onSort={requestJobSort} />
+                      <SortableHeader label="Attempts" sortKey="attempts" sortConfig={jobSortConfig} onSort={requestJobSort} />
+                      <SortableHeader label="Created" sortKey="created" sortConfig={jobSortConfig} onSort={requestJobSort} />
+                      <SortableHeader label="Error" sortKey="error" sortConfig={jobSortConfig} onSort={requestJobSort} />
                     </tr>
                   </thead>
                   <tbody>
-                    {jobs.map((job) => (
+                    {sortedJobs.map((job) => (
                       <tr key={job.id as string}>
                         <td className="font-medium">{job.job_type as string}</td>
                         <td>

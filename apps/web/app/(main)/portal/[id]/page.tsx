@@ -38,11 +38,13 @@ export default async function PortalDetailPage({ params }: PortalDetailProps) {
   const { createClient } = await import('@/lib/supabase/server');
   const supabase = await createClient();
 
-  // Fetch player with school joins
+  // Fetch player with school joins — select only needed columns
   const { data: player, error } = await supabase
     .from('portal_players')
     .select(`
-      *,
+      id, name, position, class_year, height, weight, star_rating, status,
+      entered_portal_at, portal_window, previous_school_name,
+      previous_school_id, committed_school_id,
       previous_school:schools!portal_players_previous_school_id_fkey(
         id, name, abbreviation, primary_color, secondary_color, logo_url, mascot
       ),
@@ -97,10 +99,11 @@ export default async function PortalDetailPage({ params }: PortalDetailProps) {
     }))
     .sort((a, b) => b.count - a.count);
 
-  // Fetch all schools for the claim dropdown
+  // Fetch FBS schools for the claim dropdown (limit to active FBS schools)
   const { data: allSchools } = await supabase
     .from('schools')
     .select('id, name, abbreviation, primary_color')
+    .eq('is_fbs', true)
     .order('name');
 
   const stars = player.star_rating ?? 0;

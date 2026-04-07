@@ -51,9 +51,26 @@ function getNotificationMessage(notification: NotificationData): string {
     case 'CHALLENGE':
       return `${actorName} challenged you`;
     case 'POST_FLAGGED':
+    case 'MODERATION_WARNING':
       return 'Your post was flagged for review';
     case 'RIVALRY_VOTE':
       return 'New vote on your rivalry';
+    case 'REPOST':
+      return `${actorName} reposted your take`;
+    case 'CHALLENGE_RESPONSE':
+      return `${actorName} responded to your challenge`;
+    case 'CHALLENGE_WON':
+      return 'You won your challenge!';
+    case 'CHALLENGE_LOST':
+      return 'Your challenge has been decided';
+    case 'ACHIEVEMENT_UNLOCKED':
+      return 'Achievement unlocked!';
+    case 'LEVEL_UP':
+      return 'You leveled up!';
+    case 'MODERATION_APPEAL_RESULT':
+      return 'Your appeal has been reviewed';
+    case 'SYSTEM':
+      return notification.message || 'New message from CFB Social';
     default:
       return notification.message || 'You have a new notification';
   }
@@ -68,9 +85,15 @@ function getNavigationTarget(notification: NotificationData): string | null {
     case 'TD':
     case 'FUMBLE':
     case 'REPLY':
+    case 'REPOST':
     case 'POST_FLAGGED':
+    case 'MODERATION_WARNING':
+    case 'MODERATION_APPEAL_RESULT':
       return notification.post_id ? `/post/${notification.post_id}` : null;
     case 'CHALLENGE':
+    case 'CHALLENGE_RESPONSE':
+    case 'CHALLENGE_WON':
+    case 'CHALLENGE_LOST':
       return notification.challenge_id
         ? `/rivalry/challenge/${notification.challenge_id}`
         : null;

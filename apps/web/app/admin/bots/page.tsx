@@ -17,12 +17,14 @@ export default function BotsPage() {
 }
 
 async function BotsData() {
-  const { getAllBots, getGlobalBotStatus, getBotStats, getBotActivityLog } = await import('@/lib/admin/actions/bots');
-  const [{ bots }, globalActive, stats, { logs }] = await Promise.all([
+  const { getAllBots, getGlobalBotStatus, getBotStats, getBotActivityLog, getPersonalityDistribution, getEventQueue } = await import('@/lib/admin/actions/bots');
+  const [{ bots }, globalActive, stats, { logs }, personalityDist, { events }] = await Promise.all([
     getAllBots(),
     getGlobalBotStatus(),
     getBotStats(),
     getBotActivityLog({ limit: 20 }),
+    getPersonalityDistribution(),
+    getEventQueue(),
   ]);
 
   // Fetch schools for the create form
@@ -44,6 +46,8 @@ async function BotsData() {
       stats={stats}
       recentActivity={logs}
       schools={(schools ?? []) as Array<{ id: string; name: string; abbreviation: string; conference: string; mascot: string; primary_color: string }>}
+      personalityDist={personalityDist}
+      eventQueue={events}
     />
   );
 }

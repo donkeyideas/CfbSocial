@@ -232,3 +232,279 @@ export async function seedBots(onProgress?: (msg: string) => void): Promise<{ cr
 
   return { created, errors };
 }
+
+// ============================================================
+// Region mapping from US state to bot region
+// ============================================================
+
+const STATE_TO_REGION: Record<string, string> = {
+  // South
+  'Alabama': 'south', 'Arkansas': 'south', 'Florida': 'south', 'Georgia': 'south',
+  'Kentucky': 'south', 'Louisiana': 'south', 'Mississippi': 'south', 'North Carolina': 'south',
+  'South Carolina': 'south', 'Tennessee': 'south', 'Virginia': 'south', 'West Virginia': 'south',
+  'Texas': 'south',
+  // Midwest
+  'Illinois': 'midwest', 'Indiana': 'midwest', 'Iowa': 'midwest', 'Kansas': 'midwest',
+  'Michigan': 'midwest', 'Minnesota': 'midwest', 'Missouri': 'midwest', 'Nebraska': 'midwest',
+  'North Dakota': 'midwest', 'Ohio': 'midwest', 'South Dakota': 'midwest', 'Wisconsin': 'midwest',
+  // Northeast
+  'Connecticut': 'northeast', 'Delaware': 'northeast', 'Maine': 'northeast',
+  'Maryland': 'northeast', 'Massachusetts': 'northeast', 'New Hampshire': 'northeast',
+  'New Jersey': 'northeast', 'New York': 'northeast', 'Pennsylvania': 'northeast',
+  'Rhode Island': 'northeast', 'Vermont': 'northeast', 'District of Columbia': 'northeast',
+  // West
+  'Arizona': 'west', 'California': 'west', 'Colorado': 'west', 'Hawaii': 'west',
+  'Nevada': 'west', 'New Mexico': 'west', 'Oregon': 'west', 'Utah': 'west',
+  'Washington': 'west',
+  // Plains
+  'Idaho': 'plains', 'Montana': 'plains', 'Oklahoma': 'plains', 'Wyoming': 'plains',
+};
+
+function getRegion(state: string): string {
+  return STATE_TO_REGION[state] || 'south';
+}
+
+const AGE_BRACKETS = ['gen_z', 'gen_z', 'gen_z', 'millennial', 'millennial', 'millennial', 'millennial', 'gen_x', 'gen_x', 'boomer'];
+
+function getAgeBracket(): string {
+  return AGE_BRACKETS[Math.floor(Math.random() * AGE_BRACKETS.length)]!;
+}
+
+/**
+ * Diversify existing bots: reassign personalities, regions, age brackets.
+ * Target distribution: 40 Homer, 20 Analyst, 15 Hot Take, 15 Old School, 10 Recruiting Insider
+ */
+export async function diversifyBotPersonalities(): Promise<{ updated: number; errors: string[] }> {
+  const supabase = createAdminClient();
+
+  // Fetch all bots with school data
+  const { data: bots } = await supabase
+    .from('profiles')
+    .select('id, username, display_name, school_id, bot_personality, school:schools!profiles_school_id_fkey(name, mascot, abbreviation, conference, primary_color, state)')
+    .eq('is_bot', true)
+    .eq('status', 'ACTIVE')
+    .order('created_at');
+
+  if (!bots?.length) return { updated: 0, errors: ['No bots found'] };
+
+  // Desired distribution
+  const distribution: { type: string; count: number }[] = [
+    { type: 'homer', count: 40 },
+    { type: 'analyst', count: 20 },
+    { type: 'hot_take', count: 15 },
+    { type: 'old_school', count: 15 },
+    { type: 'recruiting_insider', count: 10 },
+  ];
+
+  // Build assignment list
+  const assignments: string[] = [];
+  for (const { type, count } of distribution) {
+    for (let i = 0; i < count; i++) assignments.push(type);
+  }
+  // Shuffle assignments
+  for (let i = assignments.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [assignments[i], assignments[j]] = [assignments[j]!, assignments[i]!];
+  }
+
+  let updated = 0;
+  const errors: string[] = [];
+
+  for (let i = 0; i < bots.length; i++) {
+    const bot = bots[i]!;
+    const newType = assignments[i % assignments.length]!;
+    const personality = BOT_PRESETS[newType] ?? BOT_PRESETS.homer!;
+    const school = Array.isArray(bot.school) ? bot.school[0] : bot.school;
+    if (!school) continue;
+
+    const state = (school as Record<string, unknown>).state as string || '';
+    const region = getRegion(state);
+    // Old School bots get gen_x or boomer; Gen Z never gets old_school
+    let ageBracket = getAgeBracket();
+    if (newType === 'old_school') {
+      ageBracket = Math.random() < 0.6 ? 'gen_x' : 'boomer';
+    }
+
+    const vars = {
+      school: (school as Record<string, unknown>).name as string,
+      mascot: (school as Record<string, unknown>).mascot as string,
+      abbr: (school as Record<string, unknown>).abbreviation as string,
+      color: (school as Record<string, unknown>).primary_color as string,
+      conference: '',
+    };
+
+    const nameTemplates = (NAME_TEMPLATES[newType] ?? NAME_TEMPLATES.homer)!;
+    const displayName = fillTemplate(pickRandom(nameTemplates)!, vars);
+
+    const bioTemplates = (BIO_TEMPLATES[newType] ?? BIO_TEMPLATES.homer)!;
+    const bio = fillTemplate(pickRandom(bioTemplates)!, vars);
+
+    const { error } = await supabase
+      .from('profiles')
+      .update({
+        display_name: displayName,
+        bio,
+        bot_personality: personality as unknown as Record<string, unknown>,
+        bot_region: region,
+        bot_age_bracket: ageBracket,
+        bot_mood: 5,
+        bot_topics_covered: JSON.stringify({ recentTopics: [], recentOpeners: [], recentThemes: [], topicDeckIndex: 0 }),
+        bot_post_count_today: 0,
+      })
+      .eq('id', bot.id);
+
+    if (error) {
+      errors.push(`${bot.username}: ${error.message}`);
+    } else {
+      updated++;
+    }
+  }
+
+  return { updated, errors };
+}
+
+// ============================================================
+// Seed Power 5 coverage — create 1 bot per uncovered P5 school
+// ============================================================
+
+const POWER_CONFERENCES = ['SEC', 'Big Ten', 'Big 12', 'ACC', 'Pac-12', 'Independent'];
+
+/**
+ * Ensure every Power 5 school has at least one bot.
+ * Skips schools that already have a bot assigned.
+ */
+export async function seedPowerFiveBots(
+  onProgress?: (msg: string) => void
+): Promise<{ created: number; skipped: number; errors: string[] }> {
+  const supabase = createAdminClient();
+
+  // Fetch all P5 schools
+  const { data: p5Schools } = await supabase
+    .from('schools')
+    .select('id, name, abbreviation, mascot, conference, primary_color, secondary_color, slug, state')
+    .in('conference', POWER_CONFERENCES)
+    .eq('is_active', true)
+    .order('conference')
+    .order('name');
+
+  if (!p5Schools?.length) return { created: 0, skipped: 0, errors: ['No P5 schools found'] };
+
+  // Fetch all existing bot school assignments
+  const { data: existingBots } = await supabase
+    .from('profiles')
+    .select('school_id')
+    .eq('is_bot', true);
+
+  const coveredSchoolIds = new Set(
+    (existingBots ?? []).map(b => b.school_id).filter(Boolean)
+  );
+
+  const uncovered = p5Schools.filter(s => !coveredSchoolIds.has(s.id));
+  const skipped = p5Schools.length - uncovered.length;
+
+  if (uncovered.length === 0) {
+    return { created: 0, skipped, errors: [] };
+  }
+
+  onProgress?.(`Found ${uncovered.length} uncovered P5 schools (${skipped} already covered)`);
+
+  let created = 0;
+  const errors: string[] = [];
+
+  // Rotate through personality types for variety
+  const personalityRotation = ['homer', 'analyst', 'hot_take', 'old_school', 'recruiting_insider'];
+  let pIdx = 0;
+
+  type School = typeof p5Schools[number];
+
+  for (const school of uncovered) {
+    const personalityType = personalityRotation[pIdx % personalityRotation.length]!;
+    pIdx++;
+
+    const personality = BOT_PRESETS[personalityType] ?? BOT_PRESETS.homer!;
+    const abbr = school.abbreviation.toLowerCase().replace(/[^a-z]/g, '');
+    const username = `${abbr}_${personalityType.replace('_insider', '')}_1`;
+    const email = `bot-${abbr}-${personalityType}-p5@cfbsocial.com`;
+
+    const vars: Record<string, string> = {
+      school: school.name,
+      mascot: school.mascot,
+      abbr: school.abbreviation,
+      color: school.primary_color,
+      conference: school.conference,
+    };
+
+    const nameTemplates = (NAME_TEMPLATES[personalityType] ?? NAME_TEMPLATES.homer)!;
+    const displayName = fillTemplate(pickRandom(nameTemplates)!, vars);
+
+    const bioTemplates = (BIO_TEMPLATES[personalityType] ?? BIO_TEMPLATES.homer)!;
+    const bio = fillTemplate(pickRandom(bioTemplates)!, vars);
+
+    const region = getRegion(school.state || '');
+    let ageBracket = getAgeBracket();
+    if (personalityType === 'old_school') {
+      ageBracket = Math.random() < 0.6 ? 'gen_x' : 'boomer';
+    }
+
+    try {
+      // Create auth user
+      const { data: authUser, error: authError } = await supabase.auth.admin.createUser({
+        email,
+        password: crypto.randomUUID() + crypto.randomUUID(),
+        email_confirm: true,
+        user_metadata: { username, display_name: displayName },
+      });
+
+      if (authError) {
+        errors.push(`${school.abbreviation}: ${authError.message}`);
+        continue;
+      }
+      if (!authUser?.user) {
+        errors.push(`${school.abbreviation}: No user returned`);
+        continue;
+      }
+
+      const botId = authUser.user.id;
+      await new Promise(r => setTimeout(r, 300));
+
+      const profileData = {
+        username,
+        display_name: displayName,
+        bio,
+        is_bot: true,
+        bot_active: true, // Activate immediately
+        bot_personality: personality as unknown as Record<string, unknown>,
+        school_id: school.id,
+        banner_color: school.primary_color,
+        role: 'USER' as const,
+        status: 'ACTIVE' as const,
+        bot_region: region,
+        bot_age_bracket: ageBracket,
+        bot_mood: 5,
+        bot_post_count_today: 0,
+        bot_topics_covered: JSON.stringify({
+          recentTopics: [],
+          recentOpeners: [],
+          recentThemes: [],
+          topicDeckIndex: 0,
+        }),
+      };
+
+      const { error: updateError } = await supabase
+        .from('profiles')
+        .update(profileData)
+        .eq('id', botId);
+
+      if (updateError) {
+        await supabase.from('profiles').upsert({ id: botId, ...profileData });
+      }
+
+      created++;
+      onProgress?.(`Created bot for ${school.name} (${school.abbreviation}) [${personalityType}] - ${created}/${uncovered.length}`);
+    } catch (err) {
+      errors.push(`${school.abbreviation}: ${err instanceof Error ? err.message : String(err)}`);
+    }
+  }
+
+  return { created, skipped, errors };
+}

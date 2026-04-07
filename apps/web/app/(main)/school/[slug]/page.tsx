@@ -39,10 +39,10 @@ export default async function SchoolPage({ params }: SchoolPageProps) {
   const { createClient } = await import('@/lib/supabase/server');
   const supabase = await createClient();
 
-  // Fetch school first (needed for dependent queries)
+  // Fetch school first (needed for dependent queries) — select only needed columns
   const { data: school, error } = await supabase
     .from('schools')
-    .select('*')
+    .select('id, name, abbreviation, slug, conference, mascot, stadium, primary_color, secondary_color, logo_url, is_fbs')
     .eq('slug', slug)
     .single();
 

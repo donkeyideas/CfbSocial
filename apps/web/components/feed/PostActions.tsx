@@ -94,6 +94,22 @@ export function PostActions({ postId, authorId, replyCount = 0, bookmarkCount = 
         setReposted(false);
         setRpCount((c) => c - 1);
       } else {
+        // Notify post author of repost
+        if (authorId && authorId !== profileId) {
+          const { data: notifRow } = await supabase.from('notifications').insert({
+            recipient_id: authorId,
+            actor_id: profileId,
+            type: 'REPOST',
+            post_id: postId,
+          }).select('id').single();
+          if (notifRow) {
+            fetch('/api/push/dispatch', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ notificationId: notifRow.id }),
+            }).catch(() => {});
+          }
+        }
         router.refresh();
       }
     }

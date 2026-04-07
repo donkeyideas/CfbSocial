@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { NotificationPreferences } from '@/components/notifications/NotificationPreferences';
@@ -342,7 +343,7 @@ export function SettingsClient() {
             </label>
             <div className="flex items-center gap-4">
               {avatarPreview && (
-                <img src={avatarPreview} alt="Avatar" className="h-12 w-12 rounded-full object-cover" />
+                <Image src={avatarPreview} alt="Avatar" width={48} height={48} className="h-12 w-12 rounded-full object-cover" unoptimized />
               )}
               <input
                 id="avatar"
@@ -399,7 +400,7 @@ export function SettingsClient() {
                   }}
                 >
                   {p.avatar_url ? (
-                    <img src={p.avatar_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    <Image src={p.avatar_url} alt="" width={36} height={36} style={{ width: '100%', height: '100%', objectFit: 'cover' }} unoptimized />
                   ) : (
                     (p.username?.[0] ?? '?').toUpperCase()
                   )}
