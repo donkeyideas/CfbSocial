@@ -69,7 +69,7 @@ export default async function RivalryPage({ searchParams }: RivalryPageProps) {
 
       <section style={{ fontFamily: 'var(--sans)', fontSize: '0.85rem', lineHeight: 1.6, color: 'var(--text-secondary)', marginBottom: 16, padding: '0 4px' }}>
         <p>
-          The Rivalry Ring is where college football fan debates come to life. Pick a side in school-vs-school matchups, issue head-to-head challenges to other fans, and let the community cast the deciding vote. From the Iron Bowl to Bedlam, every rivalry has a place here. Whether you are defending your program or calling out a rival, this is the best place for CFB fan debates online.
+          The Rivalry Ring is where college football fan debates come to life. Pick a side in school-vs-school matchups, issue head-to-head challenges to other fans, and let the community cast the deciding vote. From the Iron Bowl to Bedlam, from the Red River Rivalry to the Egg Bowl, every college football rivalry has a place here. Whether you are defending your program against trash talk or calling out a conference rival with a bold take, this is the best place for CFB fan debates online. The Rivalry Ring tracks votes in real time so you can see which fanbase is winning the argument. Issue a challenge to put your reputation on the line, and let the community decide who has the sharper college football takes. Every debate is archived so the receipts are always available. Settle the arguments that have divided fanbases for generations and prove once and for all whose school reigns supreme.
         </p>
       </section>
 

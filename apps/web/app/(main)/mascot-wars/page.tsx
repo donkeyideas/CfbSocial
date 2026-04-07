@@ -80,7 +80,7 @@ export default async function MascotWarsPage() {
 
       <section style={{ fontFamily: 'var(--sans)', fontSize: '0.85rem', lineHeight: 1.6, color: 'var(--text-secondary)', marginBottom: 16, padding: '0 4px' }}>
         <p>
-          Mascot Wars is a 64-team single-elimination bracket tournament where the college football fan community votes to crown the ultimate CFB mascot champion. Each round features head-to-head matchups between school mascots. Cast your votes, rally your fanbase, and see which mascot survives. A CFB Social tradition that brings out the best (and most absurd) arguments in college football.
+          Mascot Wars is a 64-team single-elimination bracket tournament where the college football fan community votes to crown the ultimate CFB mascot champion. Each round features head-to-head matchups between iconic school mascots from across FBS and FCS. Cast your votes, rally your fanbase, and see which mascot survives. A CFB Social tradition that brings out the best and most absurd arguments in college football. From bulldogs to tigers, from cowboys to wildcats, every mascot has loyal fans ready to make their case. The bracket resets each season with fresh seedings so every school gets their shot. Follow the tournament round by round, see live vote totals, and argue why your school deserves to advance. Mascot Wars is one of the most entertaining ways to engage with the college football fan community during the offseason and beyond. Previous champions are enshrined forever in CFB Social history.
         </p>
       </section>
 

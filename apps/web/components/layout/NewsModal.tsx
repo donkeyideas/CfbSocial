@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
+import Image from 'next/image';
 
 interface NewsModalProps {
   article: {
@@ -52,10 +53,13 @@ export function NewsModal({ article, onClose }: NewsModalProps) {
         </button>
 
         {article.imageUrl && (
-          <img
+          <Image
             src={article.imageUrl}
             alt={article.headline}
+            width={600}
+            height={338}
             className="news-modal-image"
+            unoptimized
           />
         )}
 

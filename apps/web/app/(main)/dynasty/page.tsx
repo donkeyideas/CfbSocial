@@ -52,7 +52,7 @@ export default async function DynastyPage({ searchParams }: DynastyPageProps) {
 
       <section style={{ fontFamily: 'var(--sans)', fontSize: '0.85rem', lineHeight: 1.6, color: 'var(--text-secondary)', marginBottom: 16, padding: '0 4px' }}>
         <p>
-          Dynasty Mode is how you build your legacy on CFB Social. Earn XP by posting takes, winning challenges, nailing predictions, and engaging with the college football fan community. Rise through the tiers from Walk-On to Hall of Fame, unlock achievements, and compete on the all-time dynasty leaderboard. Every interaction counts toward your dynasty.
+          Dynasty Mode is how you build your legacy on CFB Social. Earn XP by posting takes, winning challenges, nailing predictions, and engaging with the college football fan community. Rise through the tiers from Walk-On to Starter, All-Conference, All-American, Heisman, and ultimately Hall of Fame. Unlock achievements for milestones like your first touchdown, first correct prediction, or first rivalry challenge won. Compete on the all-time dynasty leaderboard against fans from all 653 schools. Every interaction counts toward your dynasty, from voting on posts to filing receipts on bold takes. Dynasty Mode rewards the most active, most accurate, and most respected voices in the college football fan community. Track your XP history, see which activities earn the most points, and plan your path to the top tier. Your dynasty is your permanent record on CFB Social.
         </p>
       </section>
 

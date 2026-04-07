@@ -56,7 +56,7 @@ export default async function PredictionsPage({ searchParams }: PredictionsPageP
 
       <section style={{ fontFamily: 'var(--sans)', fontSize: '0.85rem', lineHeight: 1.6, color: 'var(--text-secondary)', margin: '12px 0 4px', padding: '0 4px' }}>
         <p>
-          Make your college football predictions and put your takes on the record. When the season plays out, your calls are graded as receipts or busts for all to see. Track your prediction accuracy on the leaderboard, compete against the community, and prove you know college football better than anyone. The best predictors earn their place on the Oracle Board.
+          Make your college football predictions and put your takes on the record. When the season plays out, your calls are graded as receipts or busts for all to see. Track your prediction accuracy on the leaderboard, compete against the college football fan community, and prove you know CFB better than anyone. The best predictors earn their place on the Oracle Board. File predictions on conference champions, Heisman contenders, playoff teams, transfer portal destinations, coaching hires, and more. Every prediction is timestamped and locked in so there is no backtracking when the results come in. Compare your record against thousands of other fans, climb the accuracy rankings, and build a reputation as someone whose college football takes actually hold up. Whether you are predicting week one upsets or national championship matchups, this is where your football knowledge is put to the test.
         </p>
       </section>
 

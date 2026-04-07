@@ -65,7 +65,7 @@ export default async function PortalPage({ searchParams }: PortalPageProps) {
 
       <section style={{ fontFamily: 'var(--sans)', fontSize: '0.85rem', lineHeight: 1.6, color: 'var(--text-secondary)', margin: '12px 0 16px', padding: '0 4px' }}>
         <p>
-          The Portal Wire is your real-time college football transfer portal tracker. Follow every entry and commitment across FBS, filter by position, star rating, and status, and predict where top players will land. File your claims, track recruiting activity, and join the college football fan community in debating the biggest portal moves of the year.
+          The Portal Wire is your real-time college football transfer portal tracker. Follow every entry and commitment across all FBS programs, filter by position, star rating, and transfer status, and predict where top players will land before anyone else. File your claims on incoming recruits, track recruiting activity across conferences, and join the college football fan community in debating the biggest portal moves of the year. With hundreds of players entering the transfer portal each cycle, staying on top of the movement is essential for every serious college football fan. The Portal Wire gives you a live view of who is available, who has committed, and which schools are winning the recruiting battle. Sort by position group to follow the quarterbacks, edge rushers, and offensive linemen reshaping college football rosters. Whether you follow the SEC, Big Ten, Big 12, or ACC, every portal move is tracked here in one place.
         </p>
       </section>
 

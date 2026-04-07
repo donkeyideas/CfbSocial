@@ -88,12 +88,15 @@ async function FeedList({ tab }: { tab: FeedTab }) {
   const { createClient } = await import('@/lib/supabase/server');
   const supabase = await createClient();
 
-  // Get current user + tab-specific data in parallel
-  const { data: { user } } = await supabase.auth.getUser();
+  // Only fetch user for tabs that need it — skip auth round-trip on public tabs
+  const needsAuth = tab === 'my-school' || tab === 'following';
+  const user = needsAuth
+    ? (await supabase.auth.getUser()).data.user
+    : null;
   let userSchoolId: string | null = null;
   let followingIds: string[] = [];
 
-  if (user && (tab === 'my-school' || tab === 'following')) {
+  if (user && needsAuth) {
     const [profileRes, followsRes] = await Promise.all([
       tab === 'my-school'
         ? supabase.from('profiles').select('school_id').eq('id', user.id).single()

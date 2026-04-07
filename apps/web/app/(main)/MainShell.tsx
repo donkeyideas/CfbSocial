@@ -4,14 +4,19 @@ import { useState } from 'react';
 import dynamic from 'next/dynamic';
 import { Masthead } from '@/components/layout/Masthead';
 import { CorkboardNav } from '@/components/layout/CorkboardNav';
+import { FeaturesBreakdown } from '@/components/layout/FeaturesBreakdown';
+import { Footer } from '@/components/layout/Footer';
 import { SchoolThemeProvider } from '@/components/layout/SchoolThemeProvider';
 import { AuthProvider } from '@/components/auth/AuthProvider';
 
-// Lazy-load non-critical components to reduce initial JS bundle and improve LCP.
-// Only Masthead + CorkboardNav are eagerly loaded (above-the-fold, critical path).
+// Lazy-load client-only components that need browser APIs or fetch data on mount.
+// Masthead, CorkboardNav, FeaturesBreakdown, Footer are eagerly loaded (SSR'd).
+function ScoresRibbonSkeleton() {
+  return <div className="scores-ribbon" style={{ minHeight: 42 }} />;
+}
 const ScoresRibbon = dynamic(
   () => import('@/components/layout/ScoresRibbon').then((m) => m.ScoresRibbon),
-  { ssr: false },
+  { ssr: false, loading: () => <ScoresRibbonSkeleton /> },
 );
 function SidebarSkeleton() {
   return (
@@ -28,14 +33,6 @@ const PressBoxSidebar = dynamic(
 );
 const DynastyTicket = dynamic(
   () => import('@/components/layout/DynastyTicket').then((m) => m.DynastyTicket),
-  { ssr: false },
-);
-const FeaturesBreakdown = dynamic(
-  () => import('@/components/layout/FeaturesBreakdown').then((m) => m.FeaturesBreakdown),
-  { ssr: false },
-);
-const Footer = dynamic(
-  () => import('@/components/layout/Footer').then((m) => m.Footer),
   { ssr: false },
 );
 const AuthCtaBanner = dynamic(

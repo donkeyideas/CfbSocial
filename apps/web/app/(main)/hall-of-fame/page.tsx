@@ -33,7 +33,7 @@ export default function HallOfFamePage() {
 
       <section style={{ fontFamily: 'var(--sans)', fontSize: '0.85rem', lineHeight: 1.6, color: 'var(--text-secondary)', marginBottom: 16, padding: '0 4px' }}>
         <p>
-          The Hall of Fame honors the all-time greats of the CFB Social college football fan community. These leaderboards rank the top dynasty earners, touchdown leaders, most-followed fans, most prolific posters, and prediction oracles. Legends are made through consistent engagement, sharp takes, and community respect across 653 schools.
+          The Hall of Fame honors the all-time greats of the CFB Social college football fan community. These leaderboards rank the top dynasty earners, touchdown leaders, most-followed fans, most prolific posters, and prediction oracles across all 653 schools. Legends are made through consistent engagement, sharp takes, and community respect earned over time. The Dynasty Leaders board tracks total XP earned from every activity on the platform. The Touchdown Leaders board highlights fans whose takes receive the most community approval. The Oracle Board showcases the most accurate predictors in college football. The Iron Men board recognizes the most prolific contributors who keep the conversation going day after day. Climb the rankings by staying active, filing smart predictions, winning rivalry challenges, and earning respect from the college football fan community. Hall of Fame status is the highest honor on CFB Social.
         </p>
       </section>
 
