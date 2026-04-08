@@ -168,6 +168,66 @@ async function updateContentHistory(
 }
 
 // ============================================================
+// Post format rotation — forces variety in sentence structure
+// ============================================================
+
+type PostFormat = {
+  name: string;
+  instruction: string;
+};
+
+const POST_FORMATS: PostFormat[] = [
+  {
+    name: 'question',
+    instruction: 'Frame your post as a QUESTION to the community. Start with the question or build up to it quickly. Example openers: "Can someone explain why...", "How is nobody talking about...", "Why are we not..."',
+  },
+  {
+    name: 'prediction',
+    instruction: 'Make a BOLD PREDICTION. State it as absolute fact. Example openers: "Calling it now --", "Mark my words:", "By week 4 this team will..."',
+  },
+  {
+    name: 'reaction',
+    instruction: 'REACT to something you just saw or read (from the news context). Start mid-reaction as if you just read the news. Example openers: "Just saw the...", "Wait so...", "Wow okay so..."',
+  },
+  {
+    name: 'challenge',
+    instruction: 'CHALLENGE a common opinion or take. Be contrarian and provocative. Example openers: "Everyone saying X is wrong because...", "The [team] hype is ridiculous...", "Stop pretending..."',
+  },
+  {
+    name: 'hot_take',
+    instruction: 'Give a SCORCHING hot take. One definitive statement. No hedging, no qualifiers. Be the most confident person in the room. Example: "[Team] is frauds and I will die on this hill"',
+  },
+  {
+    name: 'storytelling',
+    instruction: 'Tell a mini-story or share a "moment". Reference something specific. Example openers: "Watched that spring game and...", "Remember when...", "Three portal losses in one week and..."',
+  },
+  {
+    name: 'rant',
+    instruction: 'Go on a SHORT RANT. Be frustrated, fired up, or passionate. Start mid-rant as if you have been thinking about this all day. Example: "Three years. THREE YEARS and we still cannot..."',
+  },
+];
+
+function getRandomPostFormat(personality: BotPersonality): PostFormat {
+  // Hot take personality always gets hot_take or challenge format
+  if (personality.type === 'hot_take') {
+    const hotFormats = POST_FORMATS.filter(f => f.name === 'hot_take' || f.name === 'challenge' || f.name === 'prediction');
+    return hotFormats[Math.floor(Math.random() * hotFormats.length)]!;
+  }
+  // Analyst prefers question, reaction, challenge
+  if (personality.type === 'analyst') {
+    const analystFormats = POST_FORMATS.filter(f => f.name === 'question' || f.name === 'reaction' || f.name === 'challenge' || f.name === 'prediction');
+    return analystFormats[Math.floor(Math.random() * analystFormats.length)]!;
+  }
+  // Old school prefers rant, storytelling
+  if (personality.type === 'old_school') {
+    const oldSchoolFormats = POST_FORMATS.filter(f => f.name === 'rant' || f.name === 'storytelling' || f.name === 'reaction' || f.name === 'hot_take');
+    return oldSchoolFormats[Math.floor(Math.random() * oldSchoolFormats.length)]!;
+  }
+  // Everyone else: random
+  return POST_FORMATS[Math.floor(Math.random() * POST_FORMATS.length)]!;
+}
+
+// ============================================================
 // Prompt building
 // ============================================================
 
@@ -197,6 +257,7 @@ function buildTakePrompt(
   });
 
   const lengthConfig = getRandomPostLength(personality);
+  const postFormat = getRandomPostFormat(personality);
   const now = new Date();
   const today = now.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
   const month = now.getMonth(); // 0-indexed
@@ -237,13 +298,16 @@ Today is ${today}.
 
 RULES:
 - ${lengthConfig.hint}
+- POST FORMAT: ${postFormat.instruction}
 - Sound natural and human - like a real fan posting on social media on their phone
+- Start mid-thought as if you are already in the middle of the argument. NO preamble, NO throat-clearing
 - ONLY mention a person BY NAME if their name appears in the ESPN news or context provided below. If no names are given, use generic references ("our QB", "the new transfers", "the coaching staff", "the head coach")
 - Do NOT invent, recall, or guess ANY names — not players, not coaches, not historical players. Rosters and staffs change constantly. The ONLY names you may use are those explicitly listed in the news context below
 - NO markdown formatting (no bold, italics, headers, backticks, bullet points, numbered lists)
 - NO hashtags, NO section dividers
 - NO emojis
 - Be opinionated and engaging
+- NEVER start with "Seeing", "Hearing", "Looking at", "The fact that", "The reality is", "The truth is", "It is clear", "Given the"
 - NEVER start with "Alright", "Look,", "Listen,", "Let me tell you", "Here's the thing"
 - NEVER introduce yourself or state who you are ("As a fan...", "As someone who...")
 - NEVER end with calls to action ("Sound off", "Drop your thoughts", "What do you think?")
@@ -305,11 +369,12 @@ async function generateTakeContent(
     const { system, user, length } = buildTakePrompt(personality, school, context, finalNewsContext, finalSourceType, history, mood, extraInstructions, localKnowledge);
 
     try {
-      const raw = await aiChat(`${system}\n\n${user}`, {
+      const raw = await aiChat(user, {
         feature: 'bot_posts',
         subType: 'bot_take',
         temperature: Math.min(temp + attempt * 0.05, 1.0),
         maxTokens: length.maxTokens,
+        systemPrompt: system,
       });
       const cleaned = cleanBotContent(raw, length.maxChars);
       if (cleaned.length < 10) continue;
@@ -342,7 +407,7 @@ async function generateReplyContent(
 
   const temp = personality.temperatureRange[0] + Math.random() * (personality.temperatureRange[1] - personality.temperatureRange[0]);
 
-  const prompt = `${systemBase}
+  const replySystem = `${systemBase}
 
 You are replying to a post on a college football social media platform.
 
@@ -350,21 +415,23 @@ RULES:
 - ${length.hint}
 - Sound natural - like a real person commenting on their phone
 - NO markdown formatting, NO emojis, NO hashtags
-- NEVER start with "Alright", "Look,", "Listen,"
+- NEVER start with "Seeing", "Alright", "Look,", "Listen,", "I mean,", "Honestly,"
 - NEVER start with "As a fan..." or "In my opinion..."
 - NEVER end with "Sound off below", "Drop your thoughts", or any call to action
 - Be engaging - agree, disagree, add context, or challenge the take
 - Do NOT invent player names. Only reference players or coaches mentioned in the post you are replying to, or well-known head coaches
 - Write like a real fan, not an AI
+- Start mid-thought as if you are already in the argument`;
 
-Reply to this take: "${targetContent}"`;
+  const replyUser = `Reply to this take: "${targetContent}"`;
 
   try {
-    const raw = await aiChat(prompt, {
+    const raw = await aiChat(replyUser, {
       feature: 'bot_posts',
       subType: 'bot_reply',
       temperature: temp,
       maxTokens: length.maxTokens,
+      systemPrompt: replySystem,
     });
     const content = cleanBotContent(raw, length.maxChars);
     if (content.length > 5) return content;
@@ -651,7 +718,7 @@ export async function botReactToPosts(botId: string): Promise<{ success: boolean
 
 /**
  * Reply to a recent post with AI-generated content.
- * Now uses personality-aware reply with humanizer.
+ * Prioritizes bot-to-bot interaction and rivalry-aware replies.
  */
 export async function botReplyToPost(botId: string): Promise<{ success: boolean; postId?: string; error?: string }> {
   const supabase = createAdminClient();
@@ -661,19 +728,50 @@ export async function botReplyToPost(botId: string): Promise<{ success: boolean;
   const personality = parsePersonality(bot.bot_personality);
   const mood = bot.bot_mood ?? 5;
 
+  // Fetch recent posts with author school info for rivalry detection
   const { data: recentPosts } = await supabase
     .from('posts')
-    .select('id, content, author_id')
+    .select('id, content, author_id, school_id, author:profiles!posts_author_id_fkey(is_bot, school_id, school:schools!profiles_school_id_fkey(name, conference))')
     .neq('author_id', botId)
     .eq('status', 'PUBLISHED')
     .is('parent_id', null)
     .order('created_at', { ascending: false })
-    .limit(10);
+    .limit(20);
 
   if (!recentPosts?.length) return { success: false, error: 'No posts to reply to' };
 
-  for (const post of recentPosts) {
-    if (Math.random() > personality.replyProbability) continue;
+  // Prioritize posts: rival school bots > same conference bots > any bot > user posts
+  type ScoredPost = { post: typeof recentPosts[0]; score: number };
+  const scored: ScoredPost[] = recentPosts.map(post => {
+    let score = 1;
+    const author = Array.isArray(post.author) ? post.author[0] : post.author;
+    const authorSchool = author && typeof author === 'object' && 'school' in author
+      ? (Array.isArray((author as Record<string, unknown>).school)
+        ? ((author as Record<string, unknown>).school as Array<Record<string, unknown>>)[0]
+        : (author as Record<string, unknown>).school) as Record<string, unknown> | null
+      : null;
+    const isBot = author && typeof author === 'object' && 'is_bot' in author ? (author as Record<string, unknown>).is_bot : false;
+    const isDifferentSchool = post.school_id !== bot.school_id;
+    const isSameConference = authorSchool?.conference === bot.school?.conference;
+
+    if (isBot && isDifferentSchool && isSameConference) score = 10; // Rival bot = highest priority
+    else if (isBot && isDifferentSchool) score = 7; // Different school bot
+    else if (isBot) score = 4; // Same school bot
+    else if (isDifferentSchool) score = 3; // User from different school
+    else score = 2; // User from same school
+
+    return { post, score };
+  });
+
+  // Sort by score descending with some randomization
+  scored.sort((a, b) => {
+    const jitter = (Math.random() - 0.5) * 3; // Add some randomness
+    return (b.score + jitter) - a.score;
+  });
+
+  for (const { post } of scored) {
+    // Higher reply probability for high-priority targets
+    if (Math.random() > personality.replyProbability * 1.5) continue;
 
     // Check if already replied
     const { data: existingReply } = await supabase
@@ -685,8 +783,28 @@ export async function botReplyToPost(botId: string): Promise<{ success: boolean;
       .limit(1);
     if (existingReply?.length) continue;
 
+    // Build rivalry-aware reply context
+    const author = Array.isArray(post.author) ? post.author[0] : post.author;
+    const authorSchool = author && typeof author === 'object' && 'school' in author
+      ? (Array.isArray((author as Record<string, unknown>).school)
+        ? ((author as Record<string, unknown>).school as Array<Record<string, unknown>>)[0]
+        : (author as Record<string, unknown>).school) as Record<string, unknown> | null
+      : null;
+    const isDifferentSchool = post.school_id !== bot.school_id;
+    const authorSchoolName = authorSchool?.name as string | undefined;
+
+    let rivalryContext = '';
+    if (isDifferentSchool && authorSchoolName) {
+      const isSameConference = authorSchool?.conference === bot.school?.conference;
+      if (isSameConference) {
+        rivalryContext = `\nThe author is a ${authorSchoolName} fan -- a CONFERENCE RIVAL of your ${bot.school?.name}. Be combative, competitive, and talk trash about their program.`;
+      } else {
+        rivalryContext = `\nThe author is a ${authorSchoolName} fan. Show some competitive edge but be respectful since they are not in your conference.`;
+      }
+    }
+
     // Generate reply
-    let replyContent = await generateReplyContent(personality, bot.school, post.content as string, mood);
+    let replyContent = await generateReplyContent(personality, bot.school, (post.content as string) + rivalryContext, mood);
 
     if (!replyContent) {
       // Fallback
@@ -915,9 +1033,8 @@ export async function botIssueChallenge(botId: string): Promise<{ success: boole
       action_type: 'POST',
       target_post_id: post.id,
       created_post_id: challenge.id,
-      content_preview: `Challenge issued: ${topic.slice(0, 100)}`,
+      content_preview: `[CHALLENGE] ${topic.slice(0, 100)}`,
       success: true,
-      trigger_type: 'bot_challenge',
     });
 
     return { success: true, challengeId: challenge.id };
@@ -982,9 +1099,8 @@ export async function botMarkForAging(botId: string): Promise<{ success: boolean
       bot_id: botId,
       action_type: 'POST',
       target_post_id: post.id,
-      content_preview: `Filed receipt for aging (revisit in ${daysOut} days)`,
+      content_preview: `[AGING] Filed receipt (revisit in ${daysOut} days)`,
       success: true,
-      trigger_type: 'bot_aging',
     });
 
     return { success: true };
@@ -1051,9 +1167,8 @@ export async function botFactCheck(botId: string): Promise<{ success: boolean; e
         action_type: 'POST',
         target_post_id: post.id,
         created_post_id: factCheck.id,
-        content_preview: 'Fact check requested',
+        content_preview: '[FACT CHECK] Requested',
         success: true,
-        trigger_type: 'bot_fact_check',
       });
 
       return { success: true };
@@ -1077,12 +1192,14 @@ function getTimeActivityMultiplier(): number {
   const isSaturday = day === 6;
   const isSunday = day === 0;
 
-  if (isSaturday && adjustedHour >= 10 && adjustedHour <= 23) return 1.0;
-  if (isSunday && adjustedHour >= 6 && adjustedHour < 12) return 0.3;
-  if (adjustedHour >= 0 && adjustedHour < 6) return 0.05;
-  if (adjustedHour >= 18 && adjustedHour <= 23) return 0.7;
-  if (adjustedHour >= 9 && adjustedHour < 17) return 0.4;
-  return 0.5;
+  // Increased all rates so bots actually post consistently
+  if (isSaturday && adjustedHour >= 10 && adjustedHour <= 23) return 1.0; // Game day peak
+  if (isSunday && adjustedHour >= 6 && adjustedHour < 14) return 0.8;     // Sunday morning recap
+  if (adjustedHour >= 0 && adjustedHour < 6) return 0.15;                 // Late night: low but not dead
+  if (adjustedHour >= 6 && adjustedHour < 9) return 0.6;                  // Morning ramp-up
+  if (adjustedHour >= 9 && adjustedHour < 17) return 0.75;                // Daytime: active
+  if (adjustedHour >= 17 && adjustedHour <= 23) return 0.85;              // Evening: high activity
+  return 0.7;
 }
 
 /**
@@ -1156,14 +1273,39 @@ export async function runBotCycle(): Promise<{
   const errors: string[] = [];
 
   for (const bot of selectedBots) {
-    // 70% chance to post
-    if (Math.random() < 0.7) {
+    // 30% of the time, reply instead of posting (creates bot-to-bot interaction)
+    const actionRoll = Math.random();
+    if (actionRoll < 0.30) {
+      // REPLY mode: reply to an existing post (prioritizes other bots)
+      try {
+        const result = await botReplyToPost(bot.id);
+        if (result.success) replied++;
+        else if (result.error) errors.push(`Reply[${bot.username}]: ${result.error}`);
+      } catch (err) {
+        errors.push(`Reply[${bot.username}]: ${err instanceof Error ? err.message : String(err)}`);
+      }
+    } else if (actionRoll < 0.85) {
+      // POST mode: create a new take (55% of the time)
       try {
         const result = await postBotTake(bot.id);
         if (result.success) posted++;
         else if (result.error) errors.push(`Post[${bot.username}]: ${result.error}`);
       } catch (err) {
         errors.push(`Post[${bot.username}]: ${err instanceof Error ? err.message : String(err)}`);
+      }
+    } else {
+      // REPLY+POST mode: do both (15% of the time)
+      try {
+        const postResult = await postBotTake(bot.id);
+        if (postResult.success) posted++;
+      } catch (err) {
+        errors.push(`Post[${bot.username}]: ${err instanceof Error ? err.message : String(err)}`);
+      }
+      try {
+        const replyResult = await botReplyToPost(bot.id);
+        if (replyResult.success) replied++;
+      } catch (err) {
+        errors.push(`Reply[${bot.username}]: ${err instanceof Error ? err.message : String(err)}`);
       }
     }
 
@@ -1174,16 +1316,6 @@ export async function runBotCycle(): Promise<{
         if (result.count > 0) reacted += result.count;
       } catch (err) {
         errors.push(`React[${bot.username}]: ${err instanceof Error ? err.message : String(err)}`);
-      }
-    }
-
-    // Reply (probability from personality)
-    if (Math.random() < 0.4) {
-      try {
-        const result = await botReplyToPost(bot.id);
-        if (result.success) replied++;
-      } catch (err) {
-        errors.push(`Reply[${bot.username}]: ${err instanceof Error ? err.message : String(err)}`);
       }
     }
 

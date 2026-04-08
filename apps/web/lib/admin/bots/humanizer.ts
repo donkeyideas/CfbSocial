@@ -35,6 +35,15 @@ const AI_SPEAK_PATTERNS = [
   /^to be (?:fair|honest)[,.]?\s*/i,
   /^you know what[,.]?\s*/i,
   /^i mean[,.]?\s*/i,
+  // DeepSeek throat-clear patterns
+  /^seeing\s+(?:the|how|what|this|that)\s+/i,
+  /^hearing\s+(?:the|about|that|this)\s+/i,
+  /^looking at\s+(?:the|this|how)\s+/i,
+  /^the (?:reality|truth|fact) is[,:]?\s*/i,
+  /^what (?:people|fans|everyone) (?:don[''\u2019]t|do not|need to)\s+/i,
+  /^given (?:the|that|how)\s+/i,
+  /^in light of\s+/i,
+  /^with (?:the|all|that) (?:recent|being|said)\s+/i,
 ];
 
 function stripAiSpeak(text: string): string {

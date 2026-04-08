@@ -381,6 +381,25 @@ export const BANNED_OPENER_POOL = [
   'Third down conversion',
   'The gap between',
   'Nothing beats',
+  // AI throat-clear openers that DeepSeek loves
+  'Seeing',
+  'Hearing',
+  'Looking at',
+  'The fact that',
+  'When you look',
+  'When you consider',
+  'The reality is',
+  'The truth is',
+  'What people',
+  'The thing about',
+  'If you really',
+  'The portal impact',
+  'The recruiting',
+  'It is clear',
+  'As we approach',
+  'With the recent',
+  'Given the current',
+  'In light of',
 ];
 
 /**

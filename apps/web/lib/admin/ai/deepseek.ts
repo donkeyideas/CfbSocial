@@ -14,7 +14,7 @@ const COST_PER_1M_OUTPUT = 0.28;
 
 export async function aiChat(
   prompt: string,
-  opts?: { feature?: string; subType?: string; temperature?: number; maxTokens?: number; timeout?: number },
+  opts?: { feature?: string; subType?: string; temperature?: number; maxTokens?: number; timeout?: number; systemPrompt?: string },
 ): Promise<string> {
   const model = process.env.DEEPSEEK_MODEL ?? 'deepseek-chat';
   const start = Date.now();
@@ -26,9 +26,17 @@ export async function aiChat(
   let totalTokens = 0;
 
   try {
+    // Use proper system/user message separation when systemPrompt is provided
+    const messages: Array<{ role: 'system' | 'user'; content: string }> = opts?.systemPrompt
+      ? [
+          { role: 'system', content: opts.systemPrompt },
+          { role: 'user', content: prompt },
+        ]
+      : [{ role: 'user', content: prompt }];
+
     const response = await getClient().chat.completions.create({
       model,
-      messages: [{ role: 'user', content: prompt }],
+      messages,
       temperature: opts?.temperature ?? 0.7,
       max_tokens: opts?.maxTokens ?? 600,
     });

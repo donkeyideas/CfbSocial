@@ -231,6 +231,24 @@ export function cleanBotContent(raw: string, maxChars = 500): string {
   // Strip filler words at the start
   content = content.replace(/^(look|listen|okay|ok|so|honestly|frankly|real talk|well)[,;:.]?\s+/i, '');
 
+  // Strip AI throat-clear openers (DeepSeek's favorite patterns)
+  content = content.replace(/^seeing\s+/i, '');
+  content = content.replace(/^hearing\s+/i, '');
+  content = content.replace(/^looking at\s+/i, '');
+  content = content.replace(/^the fact that\s+/i, '');
+  content = content.replace(/^when you (?:look at|consider|think about)\s+/i, '');
+  content = content.replace(/^the (?:reality|truth) is[,:]?\s*/i, '');
+  content = content.replace(/^what people (?:don[''\u2019]t|do not) (?:understand|realize|get) is\s+/i, '');
+  content = content.replace(/^the thing about\s+/i, '');
+  content = content.replace(/^if you really (?:look at|think about|consider)\s+/i, '');
+  content = content.replace(/^it[''\u2019]s? (?:clear|obvious|evident) (?:that\s+)?/i, '');
+  content = content.replace(/^as we approach\s+/i, '');
+  content = content.replace(/^with the recent\s+/i, '');
+  content = content.replace(/^given the current\s+/i, '');
+  content = content.replace(/^in light of\s+/i, '');
+  content = content.replace(/^the portal impact (?:assessment )?\s*/i, '');
+  content = content.replace(/^the recruiting (?:landscape|trail|cycle|class) (?:for|at|is)\s+/i, '');
+
   // Strip filler phrases
   content = content.replace(/^I[''\u2019]m looking at\s+/i, '');
   content = content.replace(/^let[''\u2019]s talk about\s+/i, '');
