@@ -16,6 +16,7 @@ export const FEED_POST_SELECT = `
   fumble_count,
   reply_count,
   repost_count,
+  bookmark_count,
   save_count,
   parent_id,
   media_url,
@@ -23,6 +24,10 @@ export const FEED_POST_SELECT = `
   prediction_id,
   challenge_id,
   moderation_score,
+  sideline_quarter,
+  sideline_time,
+  sideline_game,
+  sideline_verified,
   author:profiles!posts_author_id_fkey(
     id,
     username,
