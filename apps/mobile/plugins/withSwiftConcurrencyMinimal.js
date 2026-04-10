@@ -6,8 +6,10 @@
  * (including its closing parenthesis) so the code lives outside the
  * function call and doesn't cause Ruby syntax errors.
  *
- * Also forces Swift 5 language mode to avoid Swift 6 compiler errors
- * in expo-modules-core and other native modules on Xcode 16+.
+ * NOTE: We do NOT override SWIFT_VERSION — expo-modules-core SDK 55
+ * uses Swift 6 syntax (@MainActor on protocol conformances) which
+ * requires the default Swift version from Xcode. We only set
+ * SWIFT_STRICT_CONCURRENCY to 'minimal' to suppress concurrency warnings.
  */
 const { withDangerousMod } = require('@expo/config-plugins');
 const fs = require('fs');
@@ -26,15 +28,13 @@ module.exports = function withSwiftConcurrencyMinimal(config) {
 
       const makeSnippet = (varName) => [
         '',
-        '    # [CFB Social] Force Swift 5 language mode + disable strict concurrency (Xcode 16+)',
+        '    # [CFB Social] Disable strict concurrency checking (Xcode 16+)',
         `    ${varName}.pods_project.build_configurations.each do |bc|`,
         `      bc.build_settings['SWIFT_STRICT_CONCURRENCY'] = 'minimal'`,
-        `      bc.build_settings['SWIFT_VERSION'] = '5.0'`,
         '    end',
         `    ${varName}.pods_project.targets.each do |target|`,
         '      target.build_configurations.each do |bc|',
         `        bc.build_settings['SWIFT_STRICT_CONCURRENCY'] = 'minimal'`,
-        `        bc.build_settings['SWIFT_VERSION'] = '5.0'`,
         '      end',
         '    end',
       ].join('\n');
@@ -69,7 +69,7 @@ module.exports = function withSwiftConcurrencyMinimal(config) {
         contents = lines.join('\n');
 
         console.log(
-          `[withSwiftConcurrencyMinimal] Injected Swift 5 + SWIFT_STRICT_CONCURRENCY=minimal AFTER react_native_post_install (closing paren at line ${closingIdx + 1})`
+          `[withSwiftConcurrencyMinimal] Injected SWIFT_STRICT_CONCURRENCY=minimal AFTER react_native_post_install (closing paren at line ${closingIdx + 1})`
         );
       } else if (postInstallMatch) {
         // Strategy 2: No react_native_post_install found, inject at start of post_install
@@ -84,7 +84,7 @@ module.exports = function withSwiftConcurrencyMinimal(config) {
         // Strategy 3: No post_install at all — append one
         contents += [
           '',
-          '# [CFB Social] Force Swift 5 + disable strict concurrency (Xcode 16+)',
+          '# [CFB Social] Disable strict concurrency (Xcode 16+)',
           'post_install do |installer|',
           makeSnippet('installer'),
           'end',
