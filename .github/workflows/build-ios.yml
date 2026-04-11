@@ -29,9 +29,6 @@ jobs:
           xcodebuild -version
           swift --version
 
-      - name: Install iOS platform
-        run: xcodebuild -downloadPlatform iOS
-
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
