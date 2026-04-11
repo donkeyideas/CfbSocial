@@ -48,7 +48,7 @@ jobs:
           token: ${{ secrets.EXPO_TOKEN }}
 
       - name: Build iOS IPA
-        run: eas build --local --platform ios --profile production --output ${{ github.workspace }}/cfb-social.ipa
+        run: EAS_NO_VCS=1 eas build --local --platform ios --profile production --output ${{ github.workspace }}/cfb-social.ipa
 
       - name: Upload IPA artifact
         uses: actions/upload-artifact@v4
