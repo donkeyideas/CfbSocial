@@ -37,6 +37,22 @@ jobs:
           eas-version: latest
           token: ${{ secrets.EXPO_TOKEN }}
 
+      - name: Setup Android signing credentials
+        run: |
+          echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 --decode > android-keystore.jks
+          cat > credentials.json << 'CREDS'
+          {
+            "android": {
+              "keystore": {
+                "keystorePath": "./android-keystore.jks",
+                "keystorePassword": "${{ secrets.ANDROID_KEYSTORE_PASSWORD }}",
+                "keyAlias": "${{ secrets.ANDROID_KEY_ALIAS }}",
+                "keyPassword": "${{ secrets.ANDROID_KEY_PASSWORD }}"
+              }
+            }
+          }
+          CREDS
+
       - name: Build Android AAB
         run: EAS_NO_VCS=1 eas build --local --platform android --profile production-new --output ${{ github.workspace }}/cfb-social.aab
 
