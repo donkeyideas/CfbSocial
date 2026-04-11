@@ -63,6 +63,17 @@ jobs:
           name: cfb-social-ios
           path: cfb-social.ipa
 
+      - name: Write App Store Connect API key
+        if: success()
+        run: |
+          mkdir -p ~/private_keys
+          echo "${{ secrets.APPLE_API_KEY_BASE64 }}" | base64 --decode > ~/private_keys/AuthKey_${{ secrets.APPLE_API_KEY_ID }}.p8
+        working-directory: .
+
       - name: Submit to App Store
         if: success()
+        env:
+          EXPO_APPLE_APP_STORE_CONNECT_API_KEY_KEY_ID: ${{ secrets.APPLE_API_KEY_ID }}
+          EXPO_APPLE_APP_STORE_CONNECT_API_KEY_ISSUER_ID: ${{ secrets.APPLE_API_ISSUER_ID }}
+          EXPO_APPLE_APP_STORE_CONNECT_API_KEY_PATH: ~/private_keys/AuthKey_${{ secrets.APPLE_API_KEY_ID }}.p8
         run: eas submit --platform ios --path ${{ github.workspace }}/cfb-social.ipa
