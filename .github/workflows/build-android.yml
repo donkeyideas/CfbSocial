@@ -44,9 +44,11 @@ jobs:
           KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
           KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
         run: |
-          printf '%s' "$KEYSTORE_BASE64" | base64 --decode > android-keystore.jks
           node -e "
             const fs = require('fs');
+            const ks = Buffer.from(process.env.KEYSTORE_BASE64.trim(), 'base64');
+            fs.writeFileSync('android-keystore.jks', ks);
+            console.log('Keystore written:', ks.length, 'bytes');
             const creds = {
               android: {
                 keystore: {
