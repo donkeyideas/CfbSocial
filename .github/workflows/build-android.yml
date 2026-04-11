@@ -38,20 +38,28 @@ jobs:
           token: ${{ secrets.EXPO_TOKEN }}
 
       - name: Setup Android signing credentials
+        env:
+          KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
         run: |
-          echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 --decode > android-keystore.jks
-          cat > credentials.json << 'CREDS'
-          {
-            "android": {
-              "keystore": {
-                "keystorePath": "./android-keystore.jks",
-                "keystorePassword": "${{ secrets.ANDROID_KEYSTORE_PASSWORD }}",
-                "keyAlias": "${{ secrets.ANDROID_KEY_ALIAS }}",
-                "keyPassword": "${{ secrets.ANDROID_KEY_PASSWORD }}"
+          printf '%s' "$KEYSTORE_BASE64" | base64 --decode > android-keystore.jks
+          node -e "
+            const fs = require('fs');
+            const creds = {
+              android: {
+                keystore: {
+                  keystorePath: './android-keystore.jks',
+                  keystorePassword: process.env.KEYSTORE_PASSWORD,
+                  keyAlias: process.env.KEY_ALIAS,
+                  keyPassword: process.env.KEY_PASSWORD
+                }
               }
-            }
-          }
-          CREDS
+            };
+            fs.writeFileSync('credentials.json', JSON.stringify(creds, null, 2));
+            console.log('credentials.json written');
+          "
 
       - name: Build Android AAB
         run: EAS_NO_VCS=1 eas build --local --platform android --profile production-new --output ${{ github.workspace }}/cfb-social.aab
