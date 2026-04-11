@@ -67,8 +67,10 @@ jobs:
         if: success()
         run: |
           mkdir -p ~/private_keys
-          echo "${{ secrets.APPLE_API_KEY_BASE64 }}" | base64 --decode > ~/private_keys/AuthKey_${{ secrets.APPLE_API_KEY_ID }}.p8
+          printf '%s' "$APPLE_API_KEY_P8" > ~/private_keys/AuthKey_${{ secrets.APPLE_API_KEY_ID }}.p8
         working-directory: .
+        env:
+          APPLE_API_KEY_P8: ${{ secrets.APPLE_API_KEY_BASE64 }}
 
       - name: Configure EAS submit with API key
         if: success()
