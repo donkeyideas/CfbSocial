@@ -41,7 +41,8 @@
       "expo-font",
       "expo-apple-authentication",
       "expo-image-picker",
-      "./plugins/withSwiftConcurrencyMinimal"
+      "./plugins/withSwiftConcurrencyMinimal",
+      "./plugins/withRealpathFix"
     ],
     "experiments": {
       "typedRoutes": false
