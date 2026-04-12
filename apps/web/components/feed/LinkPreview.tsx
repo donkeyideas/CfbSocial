@@ -22,6 +22,16 @@ export function extractFirstUrl(text: string): string | null {
   return match ? match[0] : null;
 }
 
+/**
+ * Strip the first URL from post content (LinkedIn-style).
+ * Only removes the URL itself; keeps surrounding text intact.
+ */
+export function stripFirstUrl(text: string): string {
+  const url = extractFirstUrl(text);
+  if (!url) return text;
+  return text.replace(url, '').replace(/\n{2,}$/g, '').trimEnd();
+}
+
 export function LinkPreview({ content }: { content: string }) {
   const [ogData, setOgData] = useState<OgData | null>(null);
   const [loading, setLoading] = useState(false);
