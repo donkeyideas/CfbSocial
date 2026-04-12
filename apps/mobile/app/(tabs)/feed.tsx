@@ -218,38 +218,44 @@ export default function FeedScreen() {
 
       const postIds = rawPosts.map((p) => p.id);
 
-      const [reactionsRes, repostsRes, bookmarksRes] = await Promise.all([
-        supabase
-          .from('reactions')
-          .select('post_id, reaction_type')
-          .eq('user_id', userId)
-          .in('post_id', postIds),
-        supabase
-          .from('reposts')
-          .select('post_id')
-          .eq('user_id', userId)
-          .in('post_id', postIds),
-        supabase
-          .from('bookmarks')
-          .select('post_id')
-          .eq('user_id', userId)
-          .in('post_id', postIds),
-      ]);
+      let reactionsRes, repostsRes, bookmarksRes;
+      try {
+        [reactionsRes, repostsRes, bookmarksRes] = await Promise.all([
+          supabase
+            .from('reactions')
+            .select('post_id, reaction_type')
+            .eq('user_id', userId)
+            .in('post_id', postIds),
+          supabase
+            .from('reposts')
+            .select('post_id')
+            .eq('user_id', userId)
+            .in('post_id', postIds),
+          supabase
+            .from('bookmarks')
+            .select('post_id')
+            .eq('user_id', userId)
+            .in('post_id', postIds),
+        ]);
+      } catch (err) {
+        console.warn('Feed: failed to enrich posts:', err);
+        return rawPosts;
+      }
 
       const voteMap = new Map<string, 'TD' | 'FUMBLE'>();
-      if (reactionsRes.data) {
+      if (reactionsRes?.data) {
         for (const r of reactionsRes.data) {
           voteMap.set(r.post_id, r.reaction_type as 'TD' | 'FUMBLE');
         }
       }
 
       const repostSet = new Set<string>();
-      if (repostsRes.data) {
+      if (repostsRes?.data) {
         for (const r of repostsRes.data) repostSet.add(r.post_id);
       }
 
       const bookmarkSet = new Set<string>();
-      if (bookmarksRes.data) {
+      if (bookmarksRes?.data) {
         for (const b of bookmarksRes.data) bookmarkSet.add(b.post_id);
       }
 
@@ -273,100 +279,104 @@ export default function FeedScreen() {
         offsetRef.current = 0;
       }
 
-      // For receipts tab, pre-query aging_takes to get post IDs
-      let receiptPostIds: string[] | undefined;
-      if (activeTab === 'receipts') {
-        const { data: agingTakePosts } = await supabase
-          .from('aging_takes')
-          .select('post_id');
-        receiptPostIds = agingTakePosts?.map((a: { post_id: string }) => a.post_id) ?? [];
-      }
+      try {
+        // For receipts tab, pre-query aging_takes to get post IDs
+        let receiptPostIds: string[] | undefined;
+        if (activeTab === 'receipts') {
+          const { data: agingTakePosts } = await supabase
+            .from('aging_takes')
+            .select('post_id');
+          receiptPostIds = agingTakePosts?.map((a: { post_id: string }) => a.post_id) ?? [];
+        }
 
-      const { data, error } = await buildQuery(offsetRef.current, receiptPostIds);
+        const { data, error } = await buildQuery(offsetRef.current, receiptPostIds);
 
-      if (!error && data) {
-        const typed = data as unknown as PostData[];
-        const enriched = await enrichPostsWithUserStatus(typed);
+        if (!error && data) {
+          const typed = data as unknown as PostData[];
+          const enriched = await enrichPostsWithUserStatus(typed);
 
-        // Fetch reposts and merge into feed (matching web behavior)
-        let merged: PostData[] = enriched.map((p) => ({
-          ...p,
-          _feedKey: `post-${p.id}`,
-        }));
+          // Fetch reposts and merge into feed (matching web behavior)
+          let merged: PostData[] = enriched.map((p) => ({
+            ...p,
+            _feedKey: `post-${p.id}`,
+          }));
 
-        if (activeTab === 'latest' || activeTab === 'following') {
-          // Step 1: Get recent reposts (just IDs + reposter info)
-          const { data: reposts } = await supabase
-            .from('reposts')
-            .select('id, created_at, user_id, post_id')
-            .order('created_at', { ascending: false })
-            .limit(10);
+          if (activeTab === 'latest' || activeTab === 'following') {
+            // Step 1: Get recent reposts (just IDs + reposter info)
+            const { data: reposts } = await supabase
+              .from('reposts')
+              .select('id, created_at, user_id, post_id')
+              .order('created_at', { ascending: false })
+              .limit(10);
 
-          if (reposts && reposts.length > 0) {
-            const repostPostIds = reposts.map((r) => r.post_id);
+            if (reposts && reposts.length > 0) {
+              const repostPostIds = reposts.map((r) => r.post_id);
 
-            // Step 2: Fetch reposter profiles and reposted posts in parallel
-            const [repostersRes, repostedPostsRes] = await Promise.all([
-              supabase
-                .from('profiles')
-                .select('id, username, display_name')
-                .in('id', reposts.map((r) => r.user_id)),
-              supabase
-                .from('posts')
-                .select(POST_SELECT)
-                .in('id', repostPostIds)
-                .in('status', ['PUBLISHED', 'FLAGGED'])
-                .is('parent_id', null),
-            ]);
+              // Step 2: Fetch reposter profiles and reposted posts in parallel
+              const [repostersRes, repostedPostsRes] = await Promise.all([
+                supabase
+                  .from('profiles')
+                  .select('id, username, display_name')
+                  .in('id', reposts.map((r) => r.user_id)),
+                supabase
+                  .from('posts')
+                  .select(POST_SELECT)
+                  .in('id', repostPostIds)
+                  .in('status', ['PUBLISHED', 'FLAGGED'])
+                  .is('parent_id', null),
+              ]);
 
-            const reposterMap = new Map<string, { username: string; display_name: string | null }>();
-            if (repostersRes.data) {
-              for (const p of repostersRes.data) {
-                reposterMap.set(p.id, { username: p.username ?? '', display_name: p.display_name });
+              const reposterMap = new Map<string, { username: string; display_name: string | null }>();
+              if (repostersRes.data) {
+                for (const p of repostersRes.data) {
+                  reposterMap.set(p.id, { username: p.username ?? '', display_name: p.display_name });
+                }
               }
-            }
 
-            const postMap = new Map<string, PostData>();
-            if (repostedPostsRes.data) {
-              for (const p of repostedPostsRes.data as unknown as PostData[]) {
-                postMap.set(p.id, p);
+              const postMap = new Map<string, PostData>();
+              if (repostedPostsRes.data) {
+                for (const p of repostedPostsRes.data as unknown as PostData[]) {
+                  postMap.set(p.id, p);
+                }
               }
+
+              // Step 3: Build repost feed items
+              const repostItems: PostData[] = [];
+              for (const r of reposts) {
+                const post = postMap.get(r.post_id);
+                if (!post) continue;
+                const reposter = reposterMap.get(r.user_id) ?? null;
+                repostItems.push({
+                  ...post,
+                  _feedKey: `repost-${r.id}`,
+                  _repostedBy: reposter,
+                  created_at: r.created_at, // Use repost time for sorting
+                });
+              }
+
+              // Enrich repost items with user status
+              const enrichedReposts = await enrichPostsWithUserStatus(repostItems);
+
+              // Merge and sort by created_at descending
+              // Deduplicate: if a post appears as both original and repost, keep original
+              const existingPostIds = new Set(enriched.map((p) => p.id));
+              const uniqueReposts = enrichedReposts.filter((r) => !existingPostIds.has(r.id));
+
+              merged = [...merged, ...uniqueReposts]
+                .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
             }
-
-            // Step 3: Build repost feed items
-            const repostItems: PostData[] = [];
-            for (const r of reposts) {
-              const post = postMap.get(r.post_id);
-              if (!post) continue;
-              const reposter = reposterMap.get(r.user_id) ?? null;
-              repostItems.push({
-                ...post,
-                _feedKey: `repost-${r.id}`,
-                _repostedBy: reposter,
-                created_at: r.created_at, // Use repost time for sorting
-              });
-            }
-
-            // Enrich repost items with user status
-            const enrichedReposts = await enrichPostsWithUserStatus(repostItems);
-
-            // Merge and sort by created_at descending
-            // Deduplicate: if a post appears as both original and repost, keep original
-            const existingPostIds = new Set(enriched.map((p) => p.id));
-            const uniqueReposts = enrichedReposts.filter((r) => !existingPostIds.has(r.id));
-
-            merged = [...merged, ...uniqueReposts]
-              .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
           }
-        }
 
-        if (reset) {
-          setPosts(merged);
-        } else {
-          setPosts((prev) => [...prev, ...merged]);
+          if (reset) {
+            setPosts(merged);
+          } else {
+            setPosts((prev) => [...prev, ...merged]);
+          }
+          setHasMore(typed.length >= PAGE_SIZE);
+          offsetRef.current += typed.length;
         }
-        setHasMore(typed.length >= PAGE_SIZE);
-        offsetRef.current += typed.length;
+      } catch (err) {
+        console.warn('Feed: failed to fetch posts:', err);
       }
 
       setLoading(false);

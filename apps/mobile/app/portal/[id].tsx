@@ -360,7 +360,11 @@ export default function PortalPlayerDetailScreen() {
 
   const fetchAll = useCallback(async () => {
     setLoading(true);
-    await Promise.all([fetchPlayer(), fetchClaims()]);
+    try {
+      await Promise.all([fetchPlayer(), fetchClaims()]);
+    } catch (err) {
+      console.warn('PortalDetail: failed to load:', err);
+    }
     setLoading(false);
     setRefreshing(false);
   }, [fetchPlayer, fetchClaims]);

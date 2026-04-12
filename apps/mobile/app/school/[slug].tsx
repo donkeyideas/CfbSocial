@@ -269,55 +269,59 @@ export default function SchoolHubScreen() {
     const schoolId = s.id;
 
     // Fetch all related data in parallel
-    const [
-      fansRes,
-      takesRes,
-      portalRes,
-      postsRes,
-      topFansRes,
-    ] = await Promise.all([
-      // Fan count
-      supabase
-        .from('profiles')
-        .select('id', { count: 'exact', head: true })
-        .eq('school_id', schoolId),
+    try {
+      const [
+        fansRes,
+        takesRes,
+        portalRes,
+        postsRes,
+        topFansRes,
+      ] = await Promise.all([
+        // Fan count
+        supabase
+          .from('profiles')
+          .select('id', { count: 'exact', head: true })
+          .eq('school_id', schoolId),
 
-      // Takes count
-      supabase
-        .from('posts')
-        .select('id', { count: 'exact', head: true })
-        .eq('school_id', schoolId)
-        .eq('status', 'PUBLISHED'),
+        // Takes count
+        supabase
+          .from('posts')
+          .select('id', { count: 'exact', head: true })
+          .eq('school_id', schoolId)
+          .eq('status', 'PUBLISHED'),
 
-      // Portal count
-      supabase
-        .from('portal_players')
-        .select('id', { count: 'exact', head: true })
-        .or(`previous_school_id.eq.${schoolId},committed_school_id.eq.${schoolId}`),
+        // Portal count
+        supabase
+          .from('portal_players')
+          .select('id', { count: 'exact', head: true })
+          .or(`previous_school_id.eq.${schoolId},committed_school_id.eq.${schoolId}`),
 
-      // Recent school feed posts
-      supabase
-        .from('posts')
-        .select(POST_SELECT)
-        .eq('school_id', schoolId)
-        .eq('status', 'PUBLISHED')
-        .order('created_at', { ascending: false })
-        .limit(20),
+        // Recent school feed posts
+        supabase
+          .from('posts')
+          .select(POST_SELECT)
+          .eq('school_id', schoolId)
+          .eq('status', 'PUBLISHED')
+          .order('created_at', { ascending: false })
+          .limit(20),
 
-      // Top fans (top 10 by xp)
-      supabase
-        .from('profiles')
-        .select('id, username, display_name, avatar_url, dynasty_tier, xp')
-        .eq('school_id', schoolId)
-        .order('xp', { ascending: false })
-        .limit(10),
-    ]);
+        // Top fans (top 10 by xp)
+        supabase
+          .from('profiles')
+          .select('id, username, display_name, avatar_url, dynasty_tier, xp')
+          .eq('school_id', schoolId)
+          .order('xp', { ascending: false })
+          .limit(10),
+      ]);
 
-    setFanCount(fansRes.count ?? 0);
-    setTakesCount(takesRes.count ?? 0);
-    setPortalCount(portalRes.count ?? 0);
-    if (postsRes.data) setPosts(postsRes.data as unknown as PostData[]);
-    if (topFansRes.data) setTopFans(topFansRes.data as unknown as TopFan[]);
+      setFanCount(fansRes.count ?? 0);
+      setTakesCount(takesRes.count ?? 0);
+      setPortalCount(portalRes.count ?? 0);
+      if (postsRes.data) setPosts(postsRes.data as unknown as PostData[]);
+      if (topFansRes.data) setTopFans(topFansRes.data as unknown as TopFan[]);
+    } catch (err) {
+      console.warn('SchoolHub: failed to fetch data:', err);
+    }
 
     setLoading(false);
     setRefreshing(false);

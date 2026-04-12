@@ -141,49 +141,53 @@ export default function HallOfFameScreen() {
   `;
 
   const fetchLeaderboards = useCallback(async () => {
-    const [dynasty, td, followed, iron, oracle] = await Promise.all([
-      // Dynasty Leaders: top 15 by xp
-      supabase
-        .from('profiles')
-        .select(selectFields)
-        .order('xp', { ascending: false })
-        .limit(15),
+    try {
+      const [dynasty, td, followed, iron, oracle] = await Promise.all([
+        // Dynasty Leaders: top 15 by xp
+        supabase
+          .from('profiles')
+          .select(selectFields)
+          .order('xp', { ascending: false })
+          .limit(15),
 
-      // Touchdown Leaders: top 10 by touchdown_count
-      supabase
-        .from('profiles')
-        .select(selectFields)
-        .order('touchdown_count', { ascending: false })
-        .limit(10),
+        // Touchdown Leaders: top 10 by touchdown_count
+        supabase
+          .from('profiles')
+          .select(selectFields)
+          .order('touchdown_count', { ascending: false })
+          .limit(10),
 
-      // Most Followed: top 10 by follower_count
-      supabase
-        .from('profiles')
-        .select(selectFields)
-        .order('follower_count', { ascending: false })
-        .limit(10),
+        // Most Followed: top 10 by follower_count
+        supabase
+          .from('profiles')
+          .select(selectFields)
+          .order('follower_count', { ascending: false })
+          .limit(10),
 
-      // Iron Men: top 10 by post_count
-      supabase
-        .from('profiles')
-        .select(selectFields)
-        .order('post_count', { ascending: false })
-        .limit(10),
+        // Iron Men: top 10 by post_count
+        supabase
+          .from('profiles')
+          .select(selectFields)
+          .order('post_count', { ascending: false })
+          .limit(10),
 
-      // Oracle Board: top 10 by correct_predictions (filter prediction_count > 0)
-      supabase
-        .from('profiles')
-        .select(selectFields)
-        .gt('prediction_count', 0)
-        .order('correct_predictions', { ascending: false })
-        .limit(10),
-    ]);
+        // Oracle Board: top 10 by correct_predictions (filter prediction_count > 0)
+        supabase
+          .from('profiles')
+          .select(selectFields)
+          .gt('prediction_count', 0)
+          .order('correct_predictions', { ascending: false })
+          .limit(10),
+      ]);
 
-    if (dynasty.data) setDynastyLeaders(dynasty.data as unknown as LeaderEntry[]);
-    if (td.data) setTdLeaders(td.data as unknown as LeaderEntry[]);
-    if (followed.data) setFollowedLeaders(followed.data as unknown as LeaderEntry[]);
-    if (iron.data) setIronMen(iron.data as unknown as LeaderEntry[]);
-    if (oracle.data) setOracleBoard(oracle.data as unknown as LeaderEntry[]);
+      if (dynasty.data) setDynastyLeaders(dynasty.data as unknown as LeaderEntry[]);
+      if (td.data) setTdLeaders(td.data as unknown as LeaderEntry[]);
+      if (followed.data) setFollowedLeaders(followed.data as unknown as LeaderEntry[]);
+      if (iron.data) setIronMen(iron.data as unknown as LeaderEntry[]);
+      if (oracle.data) setOracleBoard(oracle.data as unknown as LeaderEntry[]);
+    } catch (err) {
+      console.warn('HallOfFame: failed to fetch leaderboards:', err);
+    }
 
     setLoading(false);
   }, []);

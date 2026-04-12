@@ -98,48 +98,52 @@ export function ChaosMeter() {
       Date.now() - 24 * 60 * 60 * 1000
     ).toISOString();
 
-    const [postsRes, challengesRes, flaggedRes, portalRes] = await Promise.all([
-      // Posts in last 24h
-      supabase
-        .from('posts')
-        .select('id', { count: 'exact', head: true })
-        .eq('status', 'PUBLISHED')
-        .gte('created_at', twentyFourHoursAgo),
+    try {
+      const [postsRes, challengesRes, flaggedRes, portalRes] = await Promise.all([
+        // Posts in last 24h
+        supabase
+          .from('posts')
+          .select('id', { count: 'exact', head: true })
+          .eq('status', 'PUBLISHED')
+          .gte('created_at', twentyFourHoursAgo),
 
-      // Challenges in last 24h
-      supabase
-        .from('challenges')
-        .select('id', { count: 'exact', head: true })
-        .gte('created_at', twentyFourHoursAgo),
+        // Challenges in last 24h
+        supabase
+          .from('challenges')
+          .select('id', { count: 'exact', head: true })
+          .gte('created_at', twentyFourHoursAgo),
 
-      // Flagged posts in last 24h
-      supabase
-        .from('posts')
-        .select('id', { count: 'exact', head: true })
-        .eq('status', 'FLAGGED')
-        .gte('flagged_at', twentyFourHoursAgo),
+        // Flagged posts in last 24h
+        supabase
+          .from('posts')
+          .select('id', { count: 'exact', head: true })
+          .eq('status', 'FLAGGED')
+          .gte('flagged_at', twentyFourHoursAgo),
 
-      // Portal moves in last 24h
-      supabase
-        .from('portal_players')
-        .select('id', { count: 'exact', head: true })
-        .in('status', ['IN_PORTAL', 'COMMITTED'])
-        .gte('created_at', twentyFourHoursAgo),
-    ]);
+        // Portal moves in last 24h
+        supabase
+          .from('portal_players')
+          .select('id', { count: 'exact', head: true })
+          .in('status', ['IN_PORTAL', 'COMMITTED'])
+          .gte('created_at', twentyFourHoursAgo),
+      ]);
 
-    const posts = postsRes.count ?? 0;
-    const challenges = challengesRes.count ?? 0;
-    const flags = flaggedRes.count ?? 0;
-    const portal = portalRes.count ?? 0;
+      const posts = postsRes.count ?? 0;
+      const challenges = challengesRes.count ?? 0;
+      const flags = flaggedRes.count ?? 0;
+      const portal = portalRes.count ?? 0;
 
-    // Calculate score (0-100)
-    const postPoints = Math.min(30, (posts / 50) * 30);
-    const challengePoints = Math.min(25, (challenges / 10) * 25);
-    const flagPoints = Math.min(20, (flags / 5) * 20);
-    const portalPoints = Math.min(25, (portal / 10) * 25);
+      // Calculate score (0-100)
+      const postPoints = Math.min(30, (posts / 50) * 30);
+      const challengePoints = Math.min(25, (challenges / 10) * 25);
+      const flagPoints = Math.min(20, (flags / 5) * 20);
+      const portalPoints = Math.min(25, (portal / 10) * 25);
 
-    const total = Math.round(postPoints + challengePoints + flagPoints + portalPoints);
-    setScore(total);
+      const total = Math.round(postPoints + challengePoints + flagPoints + portalPoints);
+      setScore(total);
+    } catch (err) {
+      console.warn('ChaosMeter: failed to fetch:', err);
+    }
     setLoading(false);
   }, []);
 

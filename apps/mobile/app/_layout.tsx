@@ -10,6 +10,7 @@ import { ThemeProvider, useTheme } from '@/lib/theme/ThemeProvider';
 import { AlertProvider } from '@/lib/AlertProvider';
 import { MenuProvider } from '@/lib/MenuProvider';
 import { usePushNotifications } from '@/lib/hooks/usePushNotifications';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
 import 'react-native-url-polyfill/auto';
 
 // Prevent the splash screen from auto-hiding before fonts are loaded
@@ -97,13 +98,15 @@ export default function RootLayout() {
   }
 
   return (
-    <ThemeProvider>
-      <AuthProvider>
-        <SchoolThemeProvider>
-          <AppShell />
-        </SchoolThemeProvider>
-      </AuthProvider>
-    </ThemeProvider>
+    <ErrorBoundary>
+      <ThemeProvider>
+        <AuthProvider>
+          <SchoolThemeProvider>
+            <AppShell />
+          </SchoolThemeProvider>
+        </AuthProvider>
+      </ThemeProvider>
+    </ErrorBoundary>
   );
 }
 

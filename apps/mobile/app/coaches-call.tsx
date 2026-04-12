@@ -163,24 +163,28 @@ export default function CoachesCallScreen() {
   }), [colors]);
 
   const fetchData = useCallback(async () => {
-    const [rivalryRes, predictionRes] = await Promise.all([
-      supabase
-        .from('rivalries')
-        .select(RIVALRY_SELECT)
-        .eq('status', 'ACTIVE')
-        .order('created_at', { ascending: false })
-        .limit(10),
-      supabase
-        .from('posts')
-        .select(POST_SELECT)
-        .eq('post_type', 'PREDICTION')
-        .eq('status', 'PUBLISHED')
-        .order('touchdown_count', { ascending: false })
-        .limit(10),
-    ]);
+    try {
+      const [rivalryRes, predictionRes] = await Promise.all([
+        supabase
+          .from('rivalries')
+          .select(RIVALRY_SELECT)
+          .eq('status', 'ACTIVE')
+          .order('created_at', { ascending: false })
+          .limit(10),
+        supabase
+          .from('posts')
+          .select(POST_SELECT)
+          .eq('post_type', 'PREDICTION')
+          .eq('status', 'PUBLISHED')
+          .order('touchdown_count', { ascending: false })
+          .limit(10),
+      ]);
 
-    if (rivalryRes.data) setDebates(rivalryRes.data as unknown as DebateRivalry[]);
-    if (predictionRes.data) setPredictions(predictionRes.data as unknown as PostData[]);
+      if (rivalryRes.data) setDebates(rivalryRes.data as unknown as DebateRivalry[]);
+      if (predictionRes.data) setPredictions(predictionRes.data as unknown as PostData[]);
+    } catch (err) {
+      console.warn('CoachesCall: failed to fetch data:', err);
+    }
 
     setLoading(false);
     setRefreshing(false);

@@ -308,11 +308,15 @@ export default function DynastyScreen() {
 
   const handleRefresh = async () => {
     setRefreshing(true);
-    await refreshProfile();
-    if (activeTab === 'my-dynasty') {
-      await Promise.all([fetchXpLog(), fetchAchievements()]);
-    } else if (activeTab === 'achievements') {
-      await fetchAchievements();
+    try {
+      await refreshProfile();
+      if (activeTab === 'my-dynasty') {
+        await Promise.all([fetchXpLog(), fetchAchievements()]);
+      } else if (activeTab === 'achievements') {
+        await fetchAchievements();
+      }
+    } catch (err) {
+      console.warn('Dynasty: refresh failed:', err);
     }
     setRefreshing(false);
   };

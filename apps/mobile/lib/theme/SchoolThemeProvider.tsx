@@ -49,11 +49,13 @@ export function SchoolThemeProvider({ children }: PropsWithChildren) {
       return;
     }
 
-    supabase
-      .from('schools')
-      .select('id, name, abbreviation, mascot, primary_color, secondary_color, conference, slug, logo_url')
-      .eq('id', profile.school_id)
-      .single()
+    Promise.resolve(
+      supabase
+        .from('schools')
+        .select('id, name, abbreviation, mascot, primary_color, secondary_color, conference, slug, logo_url')
+        .eq('id', profile.school_id)
+        .single()
+    )
       .then(({ data, error }) => {
         if (error) {
           console.warn('SchoolThemeProvider: failed to load school:', error.message);
@@ -63,7 +65,7 @@ export function SchoolThemeProvider({ children }: PropsWithChildren) {
         }
         setThemeLoading(false);
       })
-      .catch((err) => {
+      .catch((err: unknown) => {
         console.warn('SchoolThemeProvider: unexpected error:', err);
         setThemeLoading(false);
       });

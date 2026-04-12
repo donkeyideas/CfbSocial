@@ -263,7 +263,11 @@ export default function ChallengeDetailScreen() {
 
   const fetchAll = useCallback(async () => {
     setLoading(true);
-    await Promise.all([fetchChallenge(), fetchUserVote()]);
+    try {
+      await Promise.all([fetchChallenge(), fetchUserVote()]);
+    } catch (err) {
+      console.warn('Challenge: failed to load:', err);
+    }
     setLoading(false);
     setRefreshing(false);
   }, [fetchChallenge, fetchUserVote]);

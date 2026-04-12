@@ -142,7 +142,11 @@ export default function PostDetailScreen() {
 
   const loadAll = useCallback(async () => {
     setLoading(true);
-    await Promise.all([fetchPost(), fetchReplies()]);
+    try {
+      await Promise.all([fetchPost(), fetchReplies()]);
+    } catch (err) {
+      console.warn('PostDetail: failed to load:', err);
+    }
     setLoading(false);
   }, [fetchPost, fetchReplies]);
 

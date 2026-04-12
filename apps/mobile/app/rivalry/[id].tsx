@@ -163,7 +163,11 @@ export default function RivalryDetailScreen() {
 
   const fetchAll = useCallback(async () => {
     setLoading(true);
-    await Promise.all([fetchRivalry(), fetchTakes()]);
+    try {
+      await Promise.all([fetchRivalry(), fetchTakes()]);
+    } catch (err) {
+      console.warn('Rivalry: failed to load:', err);
+    }
     setLoading(false);
     setRefreshing(false);
   }, [fetchRivalry, fetchTakes]);
