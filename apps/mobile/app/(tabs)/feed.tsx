@@ -18,6 +18,7 @@ import { ScoresBanner } from '@/components/feed/ScoresBanner';
 import { FeedTabs, type FeedTab } from '@/components/feed/FeedTabs';
 import { NewPostsBanner } from '@/components/feed/NewPostsBanner';
 import { DynastyWidget } from '@/components/feed/DynastyWidget';
+import { NewsSection } from '@/components/feed/NewsSection';
 import { PostCard, type PostData } from '@/components/posts/PostCard';
 import { PostComposer } from '@/components/posts/PostComposer';
 import { useColors } from '@/lib/theme/ThemeProvider';
@@ -34,9 +35,10 @@ const POST_SELECT = `
   aging_takes(id, user_id, revisit_date, is_surfaced, community_verdict)
 `;
 
-// Sentinel item injected into the FlatList data to render the DynastyWidget inline
+// Sentinel items injected into the FlatList data to render widgets inline
 const DYNASTY_SENTINEL = '__DYNASTY_WIDGET__';
-type FeedItem = PostData | typeof DYNASTY_SENTINEL;
+const NEWS_SENTINEL = '__NEWS_SECTION__';
+type FeedItem = PostData | typeof DYNASTY_SENTINEL | typeof NEWS_SENTINEL;
 
 export default function FeedScreen() {
   const colors = useColors();
@@ -447,10 +449,17 @@ export default function FeedScreen() {
       if (i === 2) {
         data.push(DYNASTY_SENTINEL);
       }
+      if (i === 6) {
+        data.push(NEWS_SENTINEL);
+      }
     }
     // If fewer than 3 posts, still add dynasty widget at the end
     if (posts.length > 0 && posts.length <= 3 && !data.includes(DYNASTY_SENTINEL)) {
       data.push(DYNASTY_SENTINEL);
+    }
+    // If fewer than 7 posts, add news section at the end
+    if (posts.length > 0 && posts.length <= 6 && !data.includes(NEWS_SENTINEL)) {
+      data.push(NEWS_SENTINEL);
     }
     return data;
   }, [posts]);
@@ -462,11 +471,15 @@ export default function FeedScreen() {
     if (item === DYNASTY_SENTINEL) {
       return <DynastyWidget />;
     }
+    if (item === NEWS_SENTINEL) {
+      return <NewsSection />;
+    }
     return <PostCard post={item} />;
   }, []);
 
   const keyExtractor = useCallback((item: FeedItem) => {
     if (item === DYNASTY_SENTINEL) return 'dynasty-widget';
+    if (item === NEWS_SENTINEL) return 'news-section';
     return item._feedKey ?? item.id;
   }, []);
 
