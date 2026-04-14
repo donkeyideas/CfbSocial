@@ -7,6 +7,25 @@
   "client": [
     {
       "client_info": {
+        "mobilesdk_app_id": "1:914210730595:android:b6e218a0aa9d732e24be56",
+        "android_client_info": {
+          "package_name": "com.cfbsocial.android"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAeAe-3Ibhgvm_mCeF065XIeyu75oB0lrw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
         "mobilesdk_app_id": "1:914210730595:android:01a25e0d97f4891324be56",
         "android_client_info": {
           "package_name": "com.cfbsocial.app"

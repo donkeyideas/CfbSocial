@@ -107,7 +107,7 @@ export default function SchoolHubScreen() {
     schoolAvatarText: {
       fontFamily: typography.sansBold,
       fontSize: 20,
-      color: colors.textInverse,
+      color: '#f4efe4',
       letterSpacing: 1,
     },
     schoolName: {
@@ -490,7 +490,7 @@ export default function SchoolHubScreen() {
                     <Text
                       style={[
                         styles.rankText,
-                        { color: isTop3 ? colors.textInverse : colors.textMuted },
+                        { color: isTop3 ? '#f4efe4' : colors.textMuted },
                       ]}
                     >
                       {rank}

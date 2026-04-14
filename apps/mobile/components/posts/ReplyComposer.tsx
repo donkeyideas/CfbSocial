@@ -64,7 +64,7 @@ export function ReplyComposer({ postId, onReplySent }: ReplyComposerProps) {
     sendText: {
       fontFamily: typography.sansSemiBold,
       fontSize: 14,
-      color: colors.textInverse,
+      color: '#f4efe4',
     },
     loginPrompt: {
       fontFamily: typography.sans,
@@ -141,7 +141,7 @@ export function ReplyComposer({ postId, onReplySent }: ReplyComposerProps) {
         disabled={!content.trim() || submitting}
       >
         {submitting ? (
-          <ActivityIndicator size="small" color={colors.textInverse} />
+          <ActivityIndicator size="small" color="#f4efe4" />
         ) : (
           <Text style={styles.sendText}>Send</Text>
         )}

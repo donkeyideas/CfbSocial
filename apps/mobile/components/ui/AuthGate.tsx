@@ -34,7 +34,7 @@ export function AuthGate({ message = 'Sign in to access this feature' }: AuthGat
     buttonText: {
       fontFamily: typography.sansSemiBold,
       fontSize: 16,
-      color: colors.paper,
+      color: '#f4efe4',
     },
     link: {
       fontFamily: typography.sans,

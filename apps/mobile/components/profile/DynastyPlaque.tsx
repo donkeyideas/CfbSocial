@@ -52,7 +52,7 @@ export function DynastyPlaque({
     headerText: {
       fontFamily: typography.mono,
       fontSize: 11,
-      color: colors.paper,
+      color: '#f4efe4',
       letterSpacing: 1.5,
       textTransform: 'uppercase',
     },

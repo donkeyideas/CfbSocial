@@ -47,14 +47,14 @@ export function LiveScoreboard({ espnGameId, viewerCount }: ScoreboardProps) {
     teamAbbr: {
       fontFamily: typography.sansBold,
       fontSize: 12,
-      color: colors.textInverse,
+      color: '#ffffff',
       letterSpacing: 0.5,
       textTransform: 'uppercase',
     },
     teamScore: {
       fontFamily: typography.serifBold,
       fontSize: 32,
-      color: colors.textInverse,
+      color: '#ffffff',
     },
     center: {
       alignItems: 'center',
@@ -75,7 +75,7 @@ export function LiveScoreboard({ espnGameId, viewerCount }: ScoreboardProps) {
     viewerText: {
       fontFamily: typography.sans,
       fontSize: 11,
-      color: withAlpha(colors.textInverse, 0.6),
+      color: 'rgba(255,255,255,0.6)',
     },
   }), [colors]);
 
@@ -176,7 +176,7 @@ export function LiveScoreboard({ espnGameId, viewerCount }: ScoreboardProps) {
           <Text
             style={[
               styles.statusText,
-              { color: isLive ? colors.textInverse : colors.textPrimary },
+              { color: isLive ? '#f4efe4' : '#ffffff' },
             ]}
           >
             {statusText}

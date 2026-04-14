@@ -65,12 +65,24 @@ export function FollowButton({ userId, initialFollowing }: FollowButtonProps) {
 
       if (!error) {
         setIsFollowing(true);
-        // Send follow notification
-        await supabase.from('notifications').insert({
-          recipient_id: userId,
-          actor_id: currentUserId,
-          type: 'FOLLOW',
-        });
+        // Send follow notification + push dispatch
+        const { data: notifRow } = await supabase
+          .from('notifications')
+          .insert({
+            recipient_id: userId,
+            actor_id: currentUserId,
+            type: 'FOLLOW',
+          })
+          .select('id')
+          .single();
+
+        if (notifRow) {
+          fetch('/api/push/dispatch', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ notificationId: notifRow.id }),
+          }).catch(() => {});
+        }
       }
     }
 

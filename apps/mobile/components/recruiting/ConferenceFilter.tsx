@@ -77,7 +77,7 @@ export function ConferenceFilter({ active, onSelect }: ConferenceFilterProps) {
               <Text
                 style={[
                   styles.pillText,
-                  { color: isActive ? colors.textInverse : colors.textSecondary },
+                  { color: isActive ? '#f4efe4' : colors.textSecondary },
                 ]}
               >
                 {conf}

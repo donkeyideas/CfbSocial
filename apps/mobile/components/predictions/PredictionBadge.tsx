@@ -48,7 +48,7 @@ export function PredictionBadge({ status }: PredictionBadgeProps) {
       <Text
         style={[
           styles.text,
-          { color: config.filled ? colors.textInverse : config.textColor },
+          { color: config.filled ? '#f4efe4' : config.textColor },
         ]}
       >
         {config.label}

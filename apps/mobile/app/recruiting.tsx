@@ -185,7 +185,7 @@ export default function RecruitingScreen() {
               <Text
                 style={[
                   styles.sortPillText,
-                  { color: isActive ? colors.textInverse : colors.textSecondary },
+                  { color: isActive ? '#f4efe4' : colors.textSecondary },
                 ]}
               >
                 {opt.label}

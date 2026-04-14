@@ -2,11 +2,10 @@ import { memo, useMemo, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { PostHeader } from './PostHeader';
-import { PostEngagement } from './PostEngagement';
 import { BallotButtons } from './BallotButtons';
 import { PostActions } from './PostActions';
 import { ReportModal } from '../moderation/ReportModal';
-import { LinkPreview } from './LinkPreview';
+import { LinkPreview, extractFirstUrl, stripFirstUrl } from './LinkPreview';
 import { useColors } from '@/lib/theme/ThemeProvider';
 import { typography } from '@/lib/theme/typography';
 import { withAlpha } from '@/lib/theme/utils';
@@ -166,17 +165,16 @@ export const NewspaperClippingCard = memo(function NewspaperClippingCard({ post,
     },
   }), [colors]);
 
-  const handleContentPress = () => {
-    router.push(`/post/${post.id}` as never);
-  };
+  // Strip URL from displayed text (link preview card shows it instead)
+  const displayContent = extractFirstUrl(post.content) ? stripFirstUrl(post.content) : post.content;
 
   // Split content into headline (first sentence) and body
-  const dotIdx = post.content.indexOf('.');
-  const headline = dotIdx > 0 && dotIdx < 80 ? post.content.slice(0, dotIdx + 1) : null;
-  const body = headline ? post.content.slice(dotIdx + 1).trim() : post.content;
+  const dotIdx = displayContent.indexOf('.');
+  const headline = dotIdx > 0 && dotIdx < 80 ? displayContent.slice(0, dotIdx + 1) : null;
+  const body = headline ? displayContent.slice(dotIdx + 1).trim() : displayContent;
 
   return (
-    <View style={[styles.card, hasAgingTake && styles.receiptCard]}>
+    <Pressable style={[styles.card, hasAgingTake && styles.receiptCard]} onPress={() => router.push(`/post/${post.id}` as never)}>
       {/* Repost stamp */}
       {post._repostedBy && (
         <Pressable
@@ -212,14 +210,12 @@ export const NewspaperClippingCard = memo(function NewspaperClippingCard({ post,
         <View style={[styles.ruleLine, { backgroundColor: colors.crimson, height: 2 }]} />
       </View>
 
-      <Pressable onPress={handleContentPress}>
-        {headline && (
-          <Text style={styles.headline}>{headline}</Text>
-        )}
-        {body ? (
-          <Text style={styles.content}>{body}</Text>
-        ) : null}
-      </Pressable>
+      {headline && (
+        <Text style={styles.headline} selectable>{headline}</Text>
+      )}
+      {body ? (
+        <Text style={styles.content} selectable>{body}</Text>
+      ) : null}
 
       <LinkPreview content={post.content} />
 
@@ -240,11 +236,6 @@ export const NewspaperClippingCard = memo(function NewspaperClippingCard({ post,
           </View>
         </View>
       )}
-
-      <PostEngagement
-        touchdownCount={post.touchdown_count}
-        fumbleCount={post.fumble_count}
-      />
 
       <BallotButtons
         postId={post.id}
@@ -271,6 +262,6 @@ export const NewspaperClippingCard = memo(function NewspaperClippingCard({ post,
         postAuthorId={post.author_id}
         onClose={() => setReportVisible(false)}
       />
-    </View>
+    </Pressable>
   );
 });

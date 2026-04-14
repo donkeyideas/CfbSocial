@@ -2,18 +2,23 @@ import { useMemo } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useSchoolTheme } from '@/lib/theme/SchoolThemeProvider';
-import { useColors } from '@/lib/theme/ThemeProvider';
+import { useColors, useTheme } from '@/lib/theme/ThemeProvider';
 import { useMenu } from '@/lib/MenuProvider';
 import { typography } from '@/lib/theme/typography';
 import { NotificationBell } from '@/components/notifications/NotificationBell';
+import { Ionicons } from '@expo/vector-icons';
 
 export function AppHeader() {
   const colors = useColors();
+  const { isDark, toggleColorMode } = useTheme();
   const { dark, accent, school } = useSchoolTheme();
   const insets = useSafeAreaInsets();
   const { openMenu } = useMenu();
 
   const teamName = school ? school.name : 'CFB Social';
+
+  // Header always sits on the school's dark color, so text/icons must always be white
+  const headerFg = '#ffffff';
 
   const styles = useMemo(() => StyleSheet.create({
     container: {
@@ -37,22 +42,26 @@ export function AppHeader() {
     bar: {
       width: 18,
       height: 2,
-      backgroundColor: colors.paper,
+      backgroundColor: headerFg,
       borderRadius: 1,
     },
     teamName: {
       flex: 1,
       fontFamily: typography.serifBold,
       fontSize: 18,
-      color: colors.paper,
+      color: headerFg,
       letterSpacing: 1,
       textAlign: 'center',
     },
     rightSection: {
-      width: 40,
-      alignItems: 'flex-end',
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 12,
     },
-  }), [colors]);
+    themeToggle: {
+      padding: 4,
+    },
+  }), []);
 
   return (
     <View style={[styles.container, { backgroundColor: dark, paddingTop: insets.top + 4 }]}>
@@ -66,6 +75,9 @@ export function AppHeader() {
         </Pressable>
         <Text style={styles.teamName} numberOfLines={1}>{teamName}</Text>
         <View style={styles.rightSection}>
+          <Pressable onPress={toggleColorMode} style={styles.themeToggle} hitSlop={8}>
+            <Ionicons name={isDark ? 'sunny-outline' : 'moon-outline'} size={20} color={headerFg} />
+          </Pressable>
           <NotificationBell />
         </View>
       </View>

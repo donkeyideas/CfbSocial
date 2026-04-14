@@ -31,8 +31,8 @@ export const PostHeader = memo(function PostHeader({ author, createdAt, invertCo
   const router = useRouter();
   const displayName = author?.display_name || author?.username || 'Anonymous';
   const schoolColor = author?.school?.primary_color || colors.crimson;
-  const textColor = invertColors ? colors.textInverse : colors.textPrimary;
-  const mutedColor = invertColors ? withAlpha(colors.paper, 0.6) : colors.textMuted;
+  const textColor = invertColors ? '#f4efe4' : colors.textPrimary;
+  const mutedColor = invertColors ? 'rgba(244,239,228,0.6)' : colors.textMuted;
 
   const styles = useMemo(() => StyleSheet.create({
     container: {

@@ -81,7 +81,7 @@ export default function RivalryScreen() {
     fabText: {
       fontFamily: typography.sansBold,
       fontSize: 28,
-      color: colors.textInverse,
+      color: '#f4efe4',
       marginTop: -2,
     },
   }), [colors]);

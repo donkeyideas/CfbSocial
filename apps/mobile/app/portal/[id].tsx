@@ -229,7 +229,7 @@ export default function PortalPlayerDetailScreen() {
     claimBtnText: {
       fontFamily: typography.sansBold,
       fontSize: 14,
-      color: colors.textInverse,
+      color: '#f4efe4',
       letterSpacing: 0.5,
       textTransform: 'uppercase',
     },

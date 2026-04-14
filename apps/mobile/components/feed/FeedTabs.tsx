@@ -70,7 +70,7 @@ export function FeedTabs({ activeTab, onTabChange }: FeedTabsProps) {
               <Text
                 style={[
                   styles.pillText,
-                  { color: isActive ? colors.textInverse : colors.textSecondary },
+                  { color: isActive ? '#f4efe4' : colors.textSecondary },
                 ]}
               >
                 {tab.label}

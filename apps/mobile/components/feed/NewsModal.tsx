@@ -164,7 +164,7 @@ export function NewsModal({ article, onClose }: NewsModalProps) {
         readMoreText: {
           fontFamily: typography.sansSemiBold,
           fontSize: 14,
-          color: colors.textInverse,
+          color: '#f4efe4',
           letterSpacing: 1,
         },
       }),

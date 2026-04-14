@@ -90,7 +90,7 @@ export function ProfileEditModal({ visible, onClose, onSaved }: ProfileEditModal
     saveBtnText: {
       fontFamily: typography.sansSemiBold,
       fontSize: 14,
-      color: colors.paper,
+      color: '#f4efe4',
     },
     scroll: {
       flex: 1,
@@ -383,7 +383,7 @@ export function ProfileEditModal({ visible, onClose, onSaved }: ProfileEditModal
             style={[styles.saveBtn, { backgroundColor: dark }, saving && styles.saveBtnDisabled]}
           >
             {saving ? (
-              <ActivityIndicator size="small" color={colors.paper} />
+              <ActivityIndicator size="small" color="#f4efe4" />
             ) : (
               <Text style={styles.saveBtnText}>Save</Text>
             )}

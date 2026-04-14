@@ -34,7 +34,7 @@ export function HamburgerFAB({ onPress }: HamburgerFABProps) {
     bar: {
       width: 16,
       height: 2,
-      backgroundColor: colors.paper,
+      backgroundColor: '#f4efe4',
       borderRadius: 1,
     },
   }), [colors]);

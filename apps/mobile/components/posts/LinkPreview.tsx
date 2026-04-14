@@ -30,6 +30,16 @@ export function extractFirstUrl(text: string): string | null {
   return match ? match[0] : null;
 }
 
+/**
+ * Strip the first URL from post content so it doesn't show as raw text
+ * when a link preview card is rendered below.
+ */
+export function stripFirstUrl(text: string): string {
+  const url = extractFirstUrl(text);
+  if (!url) return text;
+  return text.replace(url, '').replace(/\n{2,}$/g, '').trimEnd();
+}
+
 function decodeHtmlEntities(str: string): string {
   return str
     .replace(/&amp;/g, '&')

@@ -41,7 +41,7 @@ export function FollowButton({ targetUserId }: FollowButtonProps) {
       fontSize: 14,
     },
     followText: {
-      color: colors.paper,
+      color: '#f4efe4',
     },
     followingText: {
       color: colors.ink,
@@ -125,7 +125,7 @@ export function FollowButton({ targetUserId }: FollowButtonProps) {
       {toggling ? (
         <ActivityIndicator
           size="small"
-          color={isFollowing ? colors.ink : colors.paper}
+          color={isFollowing ? colors.ink : '#f4efe4'}
         />
       ) : (
         <Text

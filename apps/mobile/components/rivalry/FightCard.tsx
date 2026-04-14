@@ -131,7 +131,7 @@ export function FightCard({ rivalry, onVote, expanded }: FightCardProps) {
     voteBtnText: {
       fontFamily: typography.sansBold,
       fontSize: 13,
-      color: colors.textInverse,
+      color: '#f4efe4',
       letterSpacing: 0.5,
       textTransform: 'uppercase',
     },

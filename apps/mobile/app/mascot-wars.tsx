@@ -245,7 +245,7 @@ export default function MascotWarsScreen() {
               <Text
                 style={[
                   styles.roundPillText,
-                  { color: isActive ? colors.textInverse : colors.textSecondary },
+                  { color: isActive ? '#f4efe4' : colors.textSecondary },
                 ]}
               >
                 {label}

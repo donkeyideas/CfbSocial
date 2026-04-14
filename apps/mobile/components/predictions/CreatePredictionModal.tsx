@@ -106,7 +106,7 @@ export function CreatePredictionModal({ visible, onClose, onCreated }: CreatePre
     submitText: {
       fontFamily: typography.sansSemiBold,
       fontSize: 15,
-      color: colors.textInverse,
+      color: '#f4efe4',
     },
   }), [colors]);
 
@@ -214,7 +214,7 @@ export function CreatePredictionModal({ visible, onClose, onCreated }: CreatePre
               disabled={!content.trim() || submitting}
             >
               {submitting ? (
-                <ActivityIndicator size="small" color={colors.textInverse} />
+                <ActivityIndicator size="small" color="#f4efe4" />
               ) : (
                 <Text style={styles.submitText}>File Prediction</Text>
               )}

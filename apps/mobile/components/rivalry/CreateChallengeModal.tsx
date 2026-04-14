@@ -169,7 +169,7 @@ export function CreateChallengeModal({
     submitText: {
       fontFamily: typography.sansBold,
       fontSize: 15,
-      color: colors.textInverse,
+      color: '#f4efe4',
       letterSpacing: 0.5,
       textTransform: 'uppercase',
     },
@@ -341,7 +341,7 @@ export function CreateChallengeModal({
             disabled={!canSubmit}
           >
             {submitting ? (
-              <ActivityIndicator size="small" color={colors.textInverse} />
+              <ActivityIndicator size="small" color="#f4efe4" />
             ) : (
               <Text style={styles.submitText}>Issue Challenge</Text>
             )}

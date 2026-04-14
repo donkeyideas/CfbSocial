@@ -223,7 +223,7 @@ export default function HallOfFameScreen() {
           <Text
             style={[
               styles.rankText,
-              { color: isTop3 ? colors.textInverse : colors.textMuted },
+              { color: isTop3 ? '#f4efe4' : colors.textMuted },
             ]}
           >
             {rank}

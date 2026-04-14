@@ -35,6 +35,7 @@ export default function RegisterScreen() {
   const [loading, setLoading] = useState(false);
   const [oauthLoading, setOauthLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [agreedToTerms, setAgreedToTerms] = useState(false);
 
   const styles = useMemo(() => StyleSheet.create({
     container: {
@@ -127,7 +128,7 @@ export default function RegisterScreen() {
     buttonText: {
       fontFamily: typography.sansBold,
       fontSize: 16,
-      color: colors.textInverse,
+      color: '#f4efe4',
     },
     footer: {
       flexDirection: 'row',
@@ -157,6 +158,44 @@ export default function RegisterScreen() {
       fontSize: 15,
       color: colors.ink,
     },
+    termsRow: {
+      flexDirection: 'row',
+      alignItems: 'flex-start',
+      gap: 10,
+      marginTop: 4,
+    },
+    checkbox: {
+      width: 22,
+      height: 22,
+      borderWidth: 1.5,
+      borderColor: colors.borderStrong,
+      borderRadius: 4,
+      alignItems: 'center',
+      justifyContent: 'center',
+      marginTop: 1,
+    },
+    checkboxChecked: {
+      backgroundColor: colors.crimson,
+      borderColor: colors.crimson,
+    },
+    checkmark: {
+      color: '#f4efe4',
+      fontFamily: typography.sansBold,
+      fontSize: 14,
+      lineHeight: 18,
+    },
+    termsText: {
+      fontFamily: typography.sans,
+      fontSize: 13,
+      color: colors.textSecondary,
+      flex: 1,
+      lineHeight: 20,
+    },
+    termsLink: {
+      fontFamily: typography.sansSemiBold,
+      fontSize: 13,
+      color: colors.crimson,
+    },
   }), [colors]);
 
   useEffect(() => {
@@ -174,6 +213,10 @@ export default function RegisterScreen() {
   async function handleRegister() {
     if (!username || !email || !password || !schoolId) {
       setError('All fields are required.');
+      return;
+    }
+    if (!agreedToTerms) {
+      setError('You must agree to the Terms of Service and Privacy Policy.');
       return;
     }
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
@@ -295,9 +338,24 @@ export default function RegisterScreen() {
       });
 
       if (tokenError) {
-        setError(tokenError.message);
+        if (tokenError.message.includes('not enabled')) {
+          setError('Apple Sign In is currently unavailable. Please use email or Google to create your account.');
+        } else {
+          setError(tokenError.message);
+        }
         setOauthLoading(false);
         return;
+      }
+
+      // Apple only returns the full name on the FIRST sign-in — capture it now
+      if (credential.fullName) {
+        const { givenName, familyName } = credential.fullName;
+        if (givenName || familyName) {
+          const displayName = [givenName, familyName].filter(Boolean).join(' ');
+          await supabase.auth.updateUser({
+            data: { display_name: displayName },
+          });
+        }
       }
 
       router.replace('/(tabs)/feed');
@@ -305,6 +363,8 @@ export default function RegisterScreen() {
       const message = err instanceof Error ? err.message : 'Apple sign-in failed';
       if (message.includes('ERR_REQUEST_CANCELED')) {
         // User cancelled
+      } else if (message.includes('not enabled')) {
+        setError('Apple Sign In is currently unavailable. Please use email or Google to create your account.');
       } else {
         setError(message);
       }
@@ -389,7 +449,7 @@ export default function RegisterScreen() {
                   {schools.map((school) => (
                     <Picker.Item
                       key={school.id}
-                      label={`${school.name} ${school.mascot}`}
+                      label={school.name}
                       value={school.id}
                     />
                   ))}
@@ -406,13 +466,25 @@ export default function RegisterScreen() {
             </View>
           </View>
 
+          <Pressable style={styles.termsRow} onPress={() => setAgreedToTerms(!agreedToTerms)}>
+            <View style={[styles.checkbox, agreedToTerms && styles.checkboxChecked]}>
+              {agreedToTerms && <Text style={styles.checkmark}>{'✓'}</Text>}
+            </View>
+            <Text style={styles.termsText}>
+              I agree to the{' '}
+              <Text style={styles.termsLink} onPress={() => router.push('/terms')}>Terms of Service</Text>
+              {' '}and{' '}
+              <Text style={styles.termsLink} onPress={() => router.push('/privacy')}>Privacy Policy</Text>
+            </Text>
+          </Pressable>
+
           <Pressable
-            style={[styles.button, loading && styles.buttonDisabled]}
+            style={[styles.button, (loading || !agreedToTerms) && styles.buttonDisabled]}
             onPress={handleRegister}
-            disabled={loading}
+            disabled={loading || !agreedToTerms}
           >
             {loading ? (
-              <ActivityIndicator color={colors.textInverse} />
+              <ActivityIndicator color="#f4efe4" />
             ) : (
               <Text style={styles.buttonText}>Create Account</Text>
             )}

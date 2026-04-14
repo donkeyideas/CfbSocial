@@ -106,7 +106,7 @@ export function PostComposer({ visible, onClose, onPostCreated }: PostComposerPr
     ctaButtonText: {
       fontFamily: typography.sansSemiBold,
       fontSize: 14,
-      color: colors.textInverse,
+      color: '#f4efe4',
     },
     ctaLinkText: {
       fontFamily: typography.sans,
@@ -225,7 +225,7 @@ export function PostComposer({ visible, onClose, onPostCreated }: PostComposerPr
     submitText: {
       fontFamily: typography.sansSemiBold,
       fontSize: 15,
-      color: colors.textInverse,
+      color: '#f4efe4',
     },
   }), [colors]);
 
@@ -395,7 +395,7 @@ export function PostComposer({ visible, onClose, onPostCreated }: PostComposerPr
                         <Text
                           style={[
                             styles.toolText,
-                            isActive && { color: colors.textInverse },
+                            isActive && { color: '#f4efe4' },
                           ]}
                         >
                           {pt.label}
@@ -421,7 +421,7 @@ export function PostComposer({ visible, onClose, onPostCreated }: PostComposerPr
                   disabled={!content.trim() || submitting}
                 >
                   {submitting ? (
-                    <ActivityIndicator size="small" color={colors.textInverse} />
+                    <ActivityIndicator size="small" color="#f4efe4" />
                   ) : (
                     <Text style={styles.submitText}>Publish</Text>
                   )}

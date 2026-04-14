@@ -3,11 +3,10 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'expo-router';
 import { PostHeader } from './PostHeader';
-import { PostEngagement } from './PostEngagement';
 import { BallotButtons } from './BallotButtons';
 import { PostActions } from './PostActions';
 import { ReportModal } from '../moderation/ReportModal';
-import { LinkPreview } from './LinkPreview';
+import { LinkPreview, extractFirstUrl, stripFirstUrl } from './LinkPreview';
 import { useColors } from '@/lib/theme/ThemeProvider';
 import { typography } from '@/lib/theme/typography';
 import { timeAgo } from '@/lib/utils/timeAgo';
@@ -111,12 +110,8 @@ export const SidelineReportCard = memo(function SidelineReportCard({ post }: Sid
     },
   }), [colors]);
 
-  const handleContentPress = () => {
-    router.push(`/post/${post.id}` as never);
-  };
-
   return (
-    <View style={styles.card}>
+    <Pressable style={styles.card} onPress={() => router.push(`/post/${post.id}` as never)}>
       <View style={styles.headerBar}>
         <View style={styles.liveIndicator}>
           <View
@@ -142,16 +137,9 @@ export const SidelineReportCard = memo(function SidelineReportCard({ post }: Sid
           createdAt={post.created_at}
         />
 
-        <Pressable onPress={handleContentPress}>
-          <Text style={styles.content}>{post.content}</Text>
-        </Pressable>
+        <Text style={styles.content} selectable>{extractFirstUrl(post.content) ? stripFirstUrl(post.content) : post.content}</Text>
 
         <LinkPreview content={post.content} />
-
-        <PostEngagement
-          touchdownCount={post.touchdown_count}
-          fumbleCount={post.fumble_count}
-        />
 
         <BallotButtons
           postId={post.id}
@@ -179,6 +167,6 @@ export const SidelineReportCard = memo(function SidelineReportCard({ post }: Sid
           onClose={() => setReportVisible(false)}
         />
       </View>
-    </View>
+    </Pressable>
   );
 });

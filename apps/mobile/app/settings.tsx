@@ -464,7 +464,7 @@ export default function SettingsScreen() {
           disabled={saving}
         >
           {saving ? (
-            <ActivityIndicator color={colors.textInverse} />
+            <ActivityIndicator color="#f4efe4" />
           ) : (
             <Text style={styles.saveButtonText}>Save Changes</Text>
           )}
@@ -548,6 +548,7 @@ export default function SettingsScreen() {
         </View>
 
         <Text style={styles.versionText}>CFB Social v{APP_VERSION}</Text>
+        <Text style={styles.disclaimerText}>An independent fan community. Not affiliated with, endorsed by, or sponsored by the NCAA, any conference, or any university.</Text>
       </ScrollView>
     </KeyboardAvoidingView>
   );
@@ -739,6 +740,15 @@ function useStyles(c: ColorPalette) {
       color: c.textMuted,
       textAlign: 'center',
       letterSpacing: 0.5,
+    },
+    disclaimerText: {
+      fontFamily: typography.sans,
+      fontSize: 10,
+      color: c.textMuted,
+      textAlign: 'center',
+      marginTop: 8,
+      paddingHorizontal: 16,
+      lineHeight: 14,
     },
   }), [c]);
 }

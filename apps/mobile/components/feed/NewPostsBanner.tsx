@@ -25,7 +25,7 @@ export function NewPostsBanner({ count, onPress }: NewPostsBannerProps) {
     text: {
       fontFamily: typography.sansSemiBold,
       fontSize: 13,
-      color: colors.textInverse,
+      color: '#f4efe4',
     },
   }), [colors]);
 

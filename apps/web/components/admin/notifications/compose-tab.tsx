@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { ConfirmDialog } from '@/components/admin/shared/confirm-dialog';
 
 interface School {
@@ -20,8 +20,48 @@ export function ComposeTab({ schools, conferences }: Props) {
   const [audience, setAudience] = useState<'all' | 'school' | 'conference'>('all');
   const [targetId, setTargetId] = useState('');
   const [sending, setSending] = useState(false);
+  const [generating, setGenerating] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
+  const [showGenMenu, setShowGenMenu] = useState(false);
   const [result, setResult] = useState<{ success: boolean; sent?: number; failed?: number; error?: string } | null>(null);
+  const genMenuRef = useRef<HTMLDivElement>(null);
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (genMenuRef.current && !genMenuRef.current.contains(e.target as Node)) {
+        setShowGenMenu(false);
+      }
+    }
+    if (showGenMenu) document.addEventListener('mousedown', handleClick);
+    return () => document.removeEventListener('mousedown', handleClick);
+  }, [showGenMenu]);
+
+  async function handleGenerate(mode: 'news' | 'general') {
+    setShowGenMenu(false);
+    setGenerating(true);
+    setResult(null);
+
+    try {
+      const res = await fetch('/api/admin/generate-broadcast', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ mode }),
+      });
+
+      const data = await res.json();
+      if (res.ok && data.title && data.body) {
+        setTitle(data.title);
+        setBody(data.body);
+      } else {
+        setResult({ success: false, error: data.error || 'Generation failed' });
+      }
+    } catch {
+      setResult({ success: false, error: 'Network error' });
+    } finally {
+      setGenerating(false);
+    }
+  }
 
   async function handleSend() {
     setShowConfirm(false);
@@ -57,11 +97,95 @@ export function ComposeTab({ schools, conferences }: Props) {
     }
   }
 
-  const canSend = title.trim() && body.trim() && !sending && (audience === 'all' || targetId);
+  const canSend = title.trim() && body.trim() && !sending && !generating && (audience === 'all' || targetId);
 
   return (
     <div className="compose-tab">
       <div className="compose-form">
+        {/* Generate with AI */}
+        <div className="compose-field" style={{ position: 'relative' }} ref={genMenuRef}>
+          <button
+            className="btn-admin"
+            disabled={generating}
+            onClick={() => setShowGenMenu(!showGenMenu)}
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 8,
+              background: 'var(--admin-accent-secondary, #444)',
+              opacity: generating ? 0.6 : 1,
+            }}
+          >
+            {generating ? 'Generating...' : 'Generate with AI'}
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor" style={{ marginLeft: 2 }}>
+              <path d="M2 4l4 4 4-4" stroke="currentColor" strokeWidth="1.5" fill="none" />
+            </svg>
+          </button>
+          {showGenMenu && (
+            <div
+              style={{
+                position: 'absolute',
+                top: '100%',
+                left: 0,
+                marginTop: 4,
+                background: 'var(--admin-card-bg, #fff)',
+                border: '1px solid var(--admin-border, #ccc)',
+                borderRadius: 6,
+                boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+                zIndex: 10,
+                minWidth: 240,
+                overflow: 'hidden',
+              }}
+            >
+              <button
+                onClick={() => handleGenerate('news')}
+                style={{
+                  display: 'block',
+                  width: '100%',
+                  padding: '10px 16px',
+                  textAlign: 'left',
+                  background: 'none',
+                  border: 'none',
+                  borderBottom: '1px solid var(--admin-border, #eee)',
+                  cursor: 'pointer',
+                  fontSize: '0.85rem',
+                  color: 'var(--admin-text)',
+                }}
+                onMouseEnter={(e) => (e.currentTarget.style.background = 'var(--admin-hover, rgba(0,0,0,0.04))')}
+                onMouseLeave={(e) => (e.currentTarget.style.background = 'none')}
+              >
+                <strong>Latest News</strong>
+                <br />
+                <span style={{ fontSize: '0.75rem', color: 'var(--admin-text-secondary)' }}>
+                  Generate from trending CFB headlines
+                </span>
+              </button>
+              <button
+                onClick={() => handleGenerate('general')}
+                style={{
+                  display: 'block',
+                  width: '100%',
+                  padding: '10px 16px',
+                  textAlign: 'left',
+                  background: 'none',
+                  border: 'none',
+                  cursor: 'pointer',
+                  fontSize: '0.85rem',
+                  color: 'var(--admin-text)',
+                }}
+                onMouseEnter={(e) => (e.currentTarget.style.background = 'var(--admin-hover, rgba(0,0,0,0.04))')}
+                onMouseLeave={(e) => (e.currentTarget.style.background = 'none')}
+              >
+                <strong>General</strong>
+                <br />
+                <span style={{ fontSize: '0.75rem', color: 'var(--admin-text-secondary)' }}>
+                  Promote platform features and engagement
+                </span>
+              </button>
+            </div>
+          )}
+        </div>
+
         <div className="compose-field">
           <label className="admin-label">Title</label>
           <input

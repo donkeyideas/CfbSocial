@@ -92,7 +92,7 @@ export function FactCheckPanel({ postId, postContent, onClose }: FactCheckPanelP
     runButtonText: {
       fontFamily: typography.mono,
       fontSize: 11,
-      color: colors.textInverse,
+      color: '#f4efe4',
       letterSpacing: 1,
       textTransform: 'uppercase',
     },

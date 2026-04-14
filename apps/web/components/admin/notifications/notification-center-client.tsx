@@ -6,6 +6,7 @@ import { NotificationStats } from './notification-stats';
 import { PushLogTab } from './push-log-tab';
 import { BroadcastsTab } from './broadcasts-tab';
 import { ComposeTab } from './compose-tab';
+import { AutoBroadcastTab } from './auto-broadcast-tab';
 
 interface PushStats {
   totalSentToday: number;
@@ -62,10 +63,11 @@ interface Props {
 }
 
 const tabs = [
+  { id: 'compose', label: 'Compose' },
+  { id: 'auto-broadcast', label: 'Auto-Broadcast' },
   { id: 'dashboard', label: 'Dashboard' },
   { id: 'push-log', label: 'Push Log' },
   { id: 'broadcasts', label: 'System Broadcasts' },
-  { id: 'compose', label: 'Compose' },
 ];
 
 export function NotificationCenterClient({
@@ -76,7 +78,7 @@ export function NotificationCenterClient({
   schools,
   conferences,
 }: Props) {
-  const [activeTab, setActiveTab] = useState('dashboard');
+  const [activeTab, setActiveTab] = useState('compose');
 
   return (
     <div>
@@ -103,6 +105,10 @@ export function NotificationCenterClient({
 
         {activeTab === 'compose' && (
           <ComposeTab schools={schools} conferences={conferences} />
+        )}
+
+        {activeTab === 'auto-broadcast' && (
+          <AutoBroadcastTab />
         )}
       </div>
     </div>

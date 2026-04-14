@@ -79,7 +79,7 @@ export function MatchupCard({ matchup, userVoteSchoolId, onVoted }: MatchupCardP
     winnerBadgeText: {
       fontFamily: typography.mono,
       fontSize: 10,
-      color: colors.textInverse,
+      color: '#f4efe4',
       letterSpacing: 1,
     },
     schoolRow: {

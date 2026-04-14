@@ -39,7 +39,7 @@ export function NotificationBell() {
     badgeText: {
       fontFamily: typography.sansBold,
       fontSize: 10,
-      color: colors.textInverse,
+      color: '#f4efe4',
       lineHeight: 14,
     },
   }), [colors]);
@@ -70,9 +70,10 @@ export function NotificationBell() {
 
   if (!userId) return null;
 
+  // Bell always sits on the school's dark header, so icon must always be white
   return (
     <Pressable onPress={handlePress} style={styles.container}>
-      <Bell size={22} color={colors.textInverse} strokeWidth={1.8} />
+      <Bell size={22} color="#ffffff" strokeWidth={1.8} />
       {totalUnread > 0 && (
         <View style={[styles.badge, { backgroundColor: dark }]}>
           <Text style={styles.badgeText}>

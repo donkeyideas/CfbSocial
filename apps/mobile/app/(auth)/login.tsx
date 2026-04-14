@@ -106,7 +106,7 @@ export default function LoginScreen() {
     buttonText: {
       fontFamily: typography.sansBold,
       fontSize: 16,
-      color: colors.textInverse,
+      color: '#f4efe4',
     },
     oauthDividerContainer: {
       marginVertical: 20,
@@ -241,9 +241,24 @@ export default function LoginScreen() {
       });
 
       if (tokenError) {
-        setError(tokenError.message);
+        if (tokenError.message.includes('not enabled')) {
+          setError('Apple Sign In is currently unavailable. Please use email or Google to sign in.');
+        } else {
+          setError(tokenError.message);
+        }
         setOauthLoading(false);
         return;
+      }
+
+      // Apple only returns the full name on the FIRST sign-in — capture it now
+      if (credential.fullName) {
+        const { givenName, familyName } = credential.fullName;
+        if (givenName || familyName) {
+          const displayName = [givenName, familyName].filter(Boolean).join(' ');
+          await supabase.auth.updateUser({
+            data: { display_name: displayName },
+          });
+        }
       }
 
       router.replace('/(tabs)/feed');
@@ -251,6 +266,8 @@ export default function LoginScreen() {
       const message = err instanceof Error ? err.message : 'Apple sign-in failed';
       if (message.includes('ERR_REQUEST_CANCELED')) {
         // User cancelled -- not an error
+      } else if (message.includes('not enabled')) {
+        setError('Apple Sign In is currently unavailable. Please use email or Google to sign in.');
       } else {
         setError(message);
       }
@@ -313,7 +330,7 @@ export default function LoginScreen() {
             disabled={loading || oauthLoading}
           >
             {loading ? (
-              <ActivityIndicator color={colors.textInverse} />
+              <ActivityIndicator color="#f4efe4" />
             ) : (
               <Text style={styles.buttonText}>Sign In</Text>
             )}

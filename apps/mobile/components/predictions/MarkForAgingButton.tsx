@@ -40,7 +40,7 @@ export function MarkForAgingButton({ postId }: MarkForAgingButtonProps) {
       letterSpacing: 1,
     },
     submittedText: {
-      color: colors.textInverse,
+      color: '#f4efe4',
     },
   }), [colors]);
 

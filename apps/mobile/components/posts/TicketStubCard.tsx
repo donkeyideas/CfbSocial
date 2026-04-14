@@ -2,11 +2,10 @@ import { memo, useMemo, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { PostHeader } from './PostHeader';
-import { PostEngagement } from './PostEngagement';
 import { BallotButtons } from './BallotButtons';
 import { PostActions } from './PostActions';
 import { ReportModal } from '../moderation/ReportModal';
-import { LinkPreview } from './LinkPreview';
+import { LinkPreview, extractFirstUrl, stripFirstUrl } from './LinkPreview';
 import { useColors } from '@/lib/theme/ThemeProvider';
 import { typography } from '@/lib/theme/typography';
 import { timeAgo } from '@/lib/utils/timeAgo';
@@ -72,12 +71,8 @@ export const TicketStubCard = memo(function TicketStubCard({ post }: TicketStubC
     },
   }), [colors]);
 
-  const handleContentPress = () => {
-    router.push(`/post/${post.id}` as never);
-  };
-
   return (
-    <View style={[styles.card, { borderLeftColor: schoolColor }]}>
+    <Pressable style={[styles.card, { borderLeftColor: schoolColor }]} onPress={() => router.push(`/post/${post.id}` as never)}>
       {post._repostedBy && (
         <Pressable
           style={styles.repostStamp}
@@ -93,16 +88,9 @@ export const TicketStubCard = memo(function TicketStubCard({ post }: TicketStubC
         createdAt={post.created_at}
       />
 
-      <Pressable onPress={handleContentPress}>
-        <Text style={styles.content}>{post.content}</Text>
-      </Pressable>
+      <Text style={styles.content} selectable>{extractFirstUrl(post.content) ? stripFirstUrl(post.content) : post.content}</Text>
 
       <LinkPreview content={post.content} />
-
-      <PostEngagement
-        touchdownCount={post.touchdown_count}
-        fumbleCount={post.fumble_count}
-      />
 
       <BallotButtons
         postId={post.id}
@@ -129,6 +117,6 @@ export const TicketStubCard = memo(function TicketStubCard({ post }: TicketStubC
         postAuthorId={post.author_id}
         onClose={() => setReportVisible(false)}
       />
-    </View>
+    </Pressable>
   );
 });

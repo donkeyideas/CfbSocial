@@ -134,7 +134,7 @@ export default function DeleteAccountScreen() {
     loginButtonText: {
       fontFamily: typography.sansBold,
       fontSize: 14,
-      color: colors.textInverse,
+      color: '#f4efe4',
     },
     contact: {
       fontFamily: typography.sans,

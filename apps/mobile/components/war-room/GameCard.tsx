@@ -160,7 +160,7 @@ export function GameCard({ game }: GameCardProps) {
           <Text
             style={[
               styles.statusText,
-              { color: isLive ? colors.textInverse : statusLabel.color },
+              { color: isLive ? '#f4efe4' : statusLabel.color },
             ]}
           >
             {statusLabel.text}

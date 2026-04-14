@@ -103,7 +103,7 @@ export function PortalFilters({ filters, onFilterChange }: PortalFiltersProps) {
               <Text
                 style={[
                   styles.pillText,
-                  { color: isActive ? colors.textInverse : colors.textSecondary },
+                  { color: isActive ? '#f4efe4' : colors.textSecondary },
                 ]}
               >
                 {opt}

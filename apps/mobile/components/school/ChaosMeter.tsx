@@ -82,7 +82,7 @@ export function ChaosMeter() {
     levelText: {
       fontFamily: typography.sansBold,
       fontSize: 11,
-      color: colors.textInverse,
+      color: '#f4efe4',
       letterSpacing: 1,
       textTransform: 'uppercase',
     },

@@ -78,7 +78,7 @@ export function ScoresBanner() {
     empty: {
       fontFamily: typography.sans,
       fontSize: 12,
-      color: withAlpha(colors.paper, 0.5),
+      color: 'rgba(255,255,255,0.5)',
       textAlign: 'center',
     },
     tickerContainer: {
@@ -103,7 +103,7 @@ export function ScoresBanner() {
     statusText: {
       fontFamily: typography.sans,
       fontSize: 9,
-      color: withAlpha(colors.paper, 0.5),
+      color: 'rgba(255,255,255,0.6)',
       marginTop: 2,
       textTransform: 'uppercase',
       letterSpacing: 0.5,

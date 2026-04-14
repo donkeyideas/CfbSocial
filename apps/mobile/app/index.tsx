@@ -77,7 +77,7 @@ export default function SplashScreen() {
     primaryButtonText: {
       fontFamily: typography.sansBold,
       fontSize: 16,
-      color: colors.textInverse,
+      color: '#f4efe4',
     },
     secondaryButton: {
       paddingVertical: 16,
@@ -88,6 +88,15 @@ export default function SplashScreen() {
       fontSize: 16,
       color: colors.ink,
       textDecorationLine: 'underline',
+    },
+    disclaimer: {
+      fontFamily: typography.sans,
+      fontSize: 10,
+      color: colors.textMuted,
+      textAlign: 'center',
+      marginTop: 24,
+      paddingHorizontal: 16,
+      lineHeight: 14,
     },
   }), [colors]);
 
@@ -145,6 +154,11 @@ export default function SplashScreen() {
 
       {/* Bottom ornament */}
       <Text style={styles.ornament}>WHERE RECEIPTS ARE KEPT</Text>
+
+      {/* Disclaimer */}
+      <Text style={styles.disclaimer}>
+        An independent fan community. Not affiliated with, endorsed by, or sponsored by the NCAA, any conference, or any university.
+      </Text>
     </View>
   );
 }

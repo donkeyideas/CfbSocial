@@ -66,7 +66,7 @@ export function MenuOverlay({ visible, onClose }: MenuOverlayProps) {
     handle: {
       width: 40,
       height: 4,
-      backgroundColor: withAlpha(colors.paper, 0.4),
+      backgroundColor: 'rgba(244,239,228,0.4)',
       borderRadius: 2,
       alignSelf: 'center',
       marginBottom: 16,
@@ -74,26 +74,26 @@ export function MenuOverlay({ visible, onClose }: MenuOverlayProps) {
     title: {
       fontFamily: typography.serifBold,
       fontSize: 20,
-      color: colors.paper,
+      color: '#f4efe4',
       textAlign: 'center',
       letterSpacing: 2,
       marginBottom: 8,
     },
     divider: {
       height: 1,
-      backgroundColor: withAlpha(colors.paper, 0.2),
+      backgroundColor: 'rgba(244,239,228,0.2)',
       marginBottom: 8,
     },
     menuItem: {
       paddingVertical: 13,
       paddingHorizontal: 4,
       borderBottomWidth: StyleSheet.hairlineWidth,
-      borderBottomColor: withAlpha(colors.paper, 0.1),
+      borderBottomColor: 'rgba(244,239,228,0.1)',
     },
     menuText: {
       fontFamily: typography.sans,
       fontSize: 16,
-      color: colors.paper,
+      color: '#f4efe4',
       letterSpacing: 0.5,
     },
   }), [colors]);

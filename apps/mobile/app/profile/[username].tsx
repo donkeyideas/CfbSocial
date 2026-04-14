@@ -22,6 +22,7 @@ import { ProfilePortrait } from '@/components/profile/ProfilePortrait';
 import { ProfileStats } from '@/components/profile/ProfileStats';
 import { DynastyPlaque } from '@/components/profile/DynastyPlaque';
 import { FollowButton } from '@/components/profile/FollowButton';
+import { BlockButton } from '@/components/profile/BlockButton';
 import { ProfileEditButton } from '@/components/profile/ProfileEditButton';
 import { PostCard, type PostData } from '@/components/posts/PostCard';
 import { useColors } from '@/lib/theme/ThemeProvider';
@@ -101,6 +102,9 @@ export default function ProfileScreen() {
     },
     actionArea: {
       paddingBottom: 4,
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 8,
     },
     displayName: {
       fontFamily: typography.serifBold,
@@ -317,7 +321,10 @@ export default function ProfileScreen() {
             {isOwnProfile ? (
               <ProfileEditButton onSaved={handleProfileSaved} />
             ) : (
-              <FollowButton targetUserId={profile.id} />
+              <>
+                <FollowButton targetUserId={profile.id} />
+                <BlockButton targetUserId={profile.id} />
+              </>
             )}
           </View>
         </View>

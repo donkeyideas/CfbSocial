@@ -174,7 +174,7 @@ export function PortalCard({ player, onClaim }: PortalCardProps) {
     claimBtnText: {
       fontFamily: typography.sansBold,
       fontSize: 12,
-      color: colors.textInverse,
+      color: '#f4efe4',
       letterSpacing: 0.5,
       textTransform: 'uppercase',
     },

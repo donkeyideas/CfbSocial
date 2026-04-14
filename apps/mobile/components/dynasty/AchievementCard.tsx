@@ -74,7 +74,7 @@ export function AchievementCard({ achievement }: AchievementCardProps) {
       color: colors.textMuted,
     },
     iconTextUnlocked: {
-      color: colors.textInverse,
+      color: '#f4efe4',
     },
     content: {
       flex: 1,
@@ -119,7 +119,7 @@ export function AchievementCard({ achievement }: AchievementCardProps) {
       letterSpacing: 0.5,
     },
     xpTextUnlocked: {
-      color: colors.textInverse,
+      color: '#f4efe4',
     },
   }), [colors]);
 

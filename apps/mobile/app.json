@@ -16,6 +16,7 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.cfbsocial.app",
+      "googleServicesFile": "./GoogleService-Info.plist",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
       }
@@ -26,6 +27,7 @@
         "backgroundColor": "#f4efe4"
       },
       "package": "com.cfbsocial.app",
+      "googleServicesFile": "./google-services.json",
       "permissions": [
         "android.permission.RECORD_AUDIO"
       ]
@@ -41,6 +43,13 @@
       "expo-font",
       "expo-apple-authentication",
       "expo-image-picker",
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/icon.png",
+          "color": "#8b1a1a"
+        }
+      ],
       "./plugins/withSwiftConcurrencyMinimal",
       "./plugins/withRealpathFix"
     ],

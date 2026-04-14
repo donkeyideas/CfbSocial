@@ -29,7 +29,7 @@ export function DynastyWidget() {
     headerText: {
       fontFamily: typography.mono,
       fontSize: 13,
-      color: colors.textInverse,
+      color: '#f4efe4',
       letterSpacing: 3,
     },
     body: {
@@ -79,7 +79,7 @@ export function DynastyWidget() {
     ctaButtonText: {
       fontFamily: typography.sansSemiBold,
       fontSize: 14,
-      color: colors.textInverse,
+      color: '#f4efe4',
     },
   }), [colors]);
 

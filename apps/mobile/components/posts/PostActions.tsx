@@ -139,7 +139,7 @@ export function PostActions({
       letterSpacing: 0.5,
     },
     revisitDayTextActive: {
-      color: colors.textInverse,
+      color: '#f4efe4',
     },
     actionButton: {
       paddingVertical: 4,
@@ -150,7 +150,7 @@ export function PostActions({
     actionButtonText: {
       fontFamily: typography.mono,
       fontSize: 9,
-      color: colors.textInverse,
+      color: '#f4efe4',
       letterSpacing: 1,
       textTransform: 'uppercase',
     },

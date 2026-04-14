@@ -210,7 +210,7 @@ export function ChatInput({ threadId, onMessageSent }: ChatInputProps) {
               size={18}
               color={
                 text.trim() && !sending && threadId
-                  ? colors.textInverse
+                  ? '#f4efe4'
                   : colors.textMuted
               }
               strokeWidth={2}

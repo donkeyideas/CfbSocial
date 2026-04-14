@@ -210,7 +210,7 @@ export default function ReceiptsScreen() {
       textTransform: 'uppercase',
     },
     stampReadyText: {
-      color: colors.textInverse,
+      color: '#f4efe4',
     },
     stampPendingText: {
       color: colors.textMuted,

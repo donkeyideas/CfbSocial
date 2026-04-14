@@ -89,7 +89,7 @@ export default function ContactScreen() {
     submitButtonText: {
       fontFamily: typography.sansBold,
       fontSize: 16,
-      color: colors.textInverse,
+      color: '#f4efe4',
       letterSpacing: 0.5,
       textTransform: 'uppercase',
     },

@@ -111,7 +111,7 @@ export default function FeedScreen() {
     authGateButtonText: {
       fontFamily: typography.sansSemiBold,
       fontSize: 14,
-      color: colors.textInverse,
+      color: '#f4efe4',
     },
     fab: {
       position: 'absolute',
@@ -131,7 +131,7 @@ export default function FeedScreen() {
     fabText: {
       fontFamily: typography.sansBold,
       fontSize: 28,
-      color: colors.textInverse,
+      color: '#f4efe4',
       marginTop: -2,
     },
   }), [colors]);

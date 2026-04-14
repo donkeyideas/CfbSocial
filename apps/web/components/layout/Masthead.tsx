@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Search, Menu, X } from 'lucide-react';
@@ -19,8 +19,20 @@ export function Masthead({ onMenuToggle, menuOpen }: MastheadProps) {
   const username = profile?.username ?? null;
   const [accountMenuOpen, setAccountMenuOpen] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [googlePlayUrl, setGooglePlayUrl] = useState('');
+  const [appStoreUrl, setAppStoreUrl] = useState('');
 
   const otherProfiles = profiles.filter((p) => p.id !== profile?.id);
+
+  useEffect(() => {
+    fetch('/api/admin/app-links')
+      .then((r) => r.json())
+      .then((data) => {
+        setGooglePlayUrl(data.links?.app_google_play_url || '');
+        setAppStoreUrl(data.links?.app_apple_store_url || '');
+      })
+      .catch(() => {});
+  }, []);
 
   const handleSwitch = useCallback((profileId: string) => {
     switchProfile(profileId);
@@ -77,6 +89,18 @@ export function Masthead({ onMenuToggle, menuOpen }: MastheadProps) {
 
           {/* Right: Actions */}
           <div className="masthead-actions">
+            {googlePlayUrl && (
+              <a href={googlePlayUrl} target="_blank" rel="noopener noreferrer" className="masthead-badge-link">
+                <svg className="masthead-badge-icon" viewBox="0 0 512 512" fill="currentColor"><path d="M325.3 234.3L104.6 13l280.8 161.2-60.1 60.1zM47 0C34 6.8 25.3 19.2 25.3 35.3v441.3c0 16.1 8.7 28.5 21.7 35.3l256.6-256L47 0zm425.2 225.6l-58.9-34.1-65.7 64.5 65.7 64.5 60.1-34.1c18-14.3 18-46.5-1.2-60.8zM104.6 499l280.8-161.2-60.1-60.1L104.6 499z"/></svg>
+                <span>Google Play</span>
+              </a>
+            )}
+            {appStoreUrl && (
+              <a href={appStoreUrl} target="_blank" rel="noopener noreferrer" className="masthead-badge-link">
+                <svg className="masthead-badge-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>
+                <span>App Store</span>
+              </a>
+            )}
             <ThemeToggle />
             <button className="masthead-btn" aria-label="Search">
               <Search className="h-4 w-4" />
