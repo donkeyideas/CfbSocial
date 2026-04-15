@@ -55,6 +55,24 @@ export function ReportModal({ visible, postId, postAuthorId, onClose }: ReportMo
       padding: 20,
       maxHeight: '80%',
     },
+    closeButton: {
+      position: 'absolute',
+      top: 12,
+      right: 12,
+      zIndex: 1,
+      width: 32,
+      height: 32,
+      borderRadius: 16,
+      backgroundColor: colors.surface,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    closeButtonText: {
+      fontFamily: typography.mono,
+      fontSize: 16,
+      color: colors.textMuted,
+      lineHeight: 18,
+    },
     flagLabel: {
       fontFamily: typography.mono,
       fontSize: 11,
@@ -242,9 +260,14 @@ export function ReportModal({ visible, postId, postAuthorId, onClose }: ReportMo
   }
 
   return (
-    <Modal visible={visible} transparent animationType="fade">
-      <View style={styles.backdrop}>
-        <View style={styles.card}>
+    <Modal visible={visible} transparent animationType="fade" onRequestClose={handleClose}>
+      <Pressable style={styles.backdrop} onPress={handleClose}>
+        <Pressable style={styles.card} onPress={() => {}}>
+          {/* X close button */}
+          <Pressable style={styles.closeButton} onPress={handleClose}>
+            <Text style={styles.closeButtonText}>X</Text>
+          </Pressable>
+
           {submitted ? (
             <View style={styles.successContainer}>
               <Text style={styles.successTitle}>Report Filed</Text>
@@ -308,8 +331,8 @@ export function ReportModal({ visible, postId, postAuthorId, onClose }: ReportMo
               </View>
             </ScrollView>
           )}
-        </View>
-      </View>
+        </Pressable>
+      </Pressable>
     </Modal>
   );
 }

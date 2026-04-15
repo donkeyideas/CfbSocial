@@ -72,7 +72,7 @@ export function AutoBroadcastTab() {
     setTriggering(true);
     setMessage(null);
     try {
-      const res = await fetch('/api/cron/auto-broadcast', {
+      const res = await fetch('/api/cron/auto-broadcast?force=true', {
         headers: {
           Authorization: `Bearer ${window.prompt('Enter CRON_SECRET to trigger manually (or leave blank in dev mode):', '') || ''}`,
         },

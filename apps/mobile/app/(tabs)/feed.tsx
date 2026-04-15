@@ -7,6 +7,8 @@ import {
   RefreshControl,
   Pressable,
   ActivityIndicator,
+  KeyboardAvoidingView,
+  Platform,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { supabase } from '@/lib/supabase';
@@ -250,10 +252,10 @@ export default function FeedScreen() {
         return rawPosts;
       }
 
-      const voteMap = new Map<string, 'TD' | 'FUMBLE'>();
+      const voteMap = new Map<string, 'TOUCHDOWN' | 'FUMBLE'>();
       if (reactionsRes?.data) {
         for (const r of reactionsRes.data) {
-          voteMap.set(r.post_id, r.reaction_type as 'TD' | 'FUMBLE');
+          voteMap.set(r.post_id, r.reaction_type as 'TOUCHDOWN' | 'FUMBLE');
         }
       }
 
@@ -532,7 +534,10 @@ export default function FeedScreen() {
   ) : null;
 
   return (
-    <View style={styles.container}>
+    <KeyboardAvoidingView
+      style={styles.container}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+    >
       <AppHeader />
       <ScoresBanner />
       <FeedTabs activeTab={activeTab} onTabChange={handleTabChange} />
@@ -563,6 +568,8 @@ export default function FeedScreen() {
           renderItem={renderItem}
           keyExtractor={keyExtractor}
           contentContainerStyle={styles.listContent}
+          keyboardShouldPersistTaps="handled"
+          keyboardDismissMode="on-drag"
           refreshControl={
             <RefreshControl
               refreshing={refreshing}
@@ -603,7 +610,7 @@ export default function FeedScreen() {
         onClose={() => setComposerVisible(false)}
         onPostCreated={handlePostCreated}
       />
-    </View>
+    </KeyboardAvoidingView>
   );
 }
 

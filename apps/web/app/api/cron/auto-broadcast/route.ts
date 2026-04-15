@@ -23,9 +23,11 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
+  const force = request.nextUrl.searchParams.get('force') === 'true';
+
   after(async () => {
     try {
-      await runAutoBroadcast();
+      await runAutoBroadcast(force);
     } catch (err) {
       console.error('[auto-broadcast] Fatal error:', err);
     }
@@ -34,7 +36,7 @@ export async function GET(request: NextRequest) {
   return NextResponse.json({ queued: true });
 }
 
-async function runAutoBroadcast() {
+async function runAutoBroadcast(force = false) {
   const supabase = createAdminClient();
 
   // --- 1. Check if auto-broadcast is enabled and get schedule ---
@@ -48,7 +50,7 @@ async function runAutoBroadcast() {
     settings[row.key as string] = row.value as string;
   }
 
-  if (settings.auto_broadcast_enabled !== 'true') {
+  if (!force && settings.auto_broadcast_enabled !== 'true') {
     console.log('[auto-broadcast] Disabled, skipping.');
     return;
   }
@@ -58,11 +60,13 @@ async function runAutoBroadcast() {
   try {
     scheduledHours = JSON.parse(settings.auto_broadcast_schedule || '[]');
   } catch {
-    console.log('[auto-broadcast] Invalid schedule, skipping.');
-    return;
+    if (!force) {
+      console.log('[auto-broadcast] Invalid schedule, skipping.');
+      return;
+    }
   }
 
-  if (!Array.isArray(scheduledHours) || scheduledHours.length === 0) {
+  if (!force && (!Array.isArray(scheduledHours) || scheduledHours.length === 0)) {
     console.log('[auto-broadcast] No hours scheduled, skipping.');
     return;
   }
@@ -76,9 +80,13 @@ async function runAutoBroadcast() {
   });
   const currentETHour = parseInt(etFormatter.format(now), 10);
 
-  if (!scheduledHours.includes(currentETHour)) {
+  if (!force && !scheduledHours.includes(currentETHour)) {
     console.log(`[auto-broadcast] Current ET hour (${currentETHour}) not in schedule [${scheduledHours.join(', ')}]. Skipping.`);
     return;
+  }
+
+  if (force) {
+    console.log(`[auto-broadcast] Force-triggered manually, bypassing schedule checks.`);
   }
 
   // --- 3. Guard against duplicate sends in the same hour ---

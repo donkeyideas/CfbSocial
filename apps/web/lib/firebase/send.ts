@@ -61,10 +61,18 @@ async function sendToFcmToken(
     return { success: true };
   } catch (error: unknown) {
     const err = error as { code?: string; message?: string };
-    if (
-      err.code === 'messaging/invalid-registration-token' ||
-      err.code === 'messaging/registration-token-not-registered'
-    ) {
+    const code = err.code || '';
+    const msg = (err.message || '').toLowerCase();
+
+    // Detect invalid/expired tokens — check both error code and message
+    const isInvalidToken =
+      code === 'messaging/invalid-registration-token' ||
+      code === 'messaging/registration-token-not-registered' ||
+      msg.includes('not a valid fcm registration token') ||
+      msg.includes('not registered') ||
+      msg.includes('invalid registration');
+
+    if (isInvalidToken) {
       return { success: false, error: 'INVALID_TOKEN' };
     }
     return { success: false, error: err.message || 'Unknown error' };

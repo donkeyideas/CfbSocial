@@ -19,7 +19,7 @@ export interface PostData {
   moderation_reason: string | null;
   moderation_labels: string[] | null;
   /** Pre-fetched user interaction status (set by batch query in feed) */
-  _userVote?: 'TD' | 'FUMBLE' | null;
+  _userVote?: 'TOUCHDOWN' | 'FUMBLE' | null;
   _userReposted?: boolean;
   _userSaved?: boolean;
   _repostedBy?: { username: string; display_name: string | null } | null;

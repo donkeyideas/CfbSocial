@@ -54,9 +54,9 @@ export async function GET(request: NextRequest) {
         return;
       }
 
-      // Shuffle and pick 3-5 bots
+      // Shuffle and pick 2-3 bots (reduced from 3-5 to cut API costs)
       const shuffled = activeBots.sort(() => Math.random() - 0.5);
-      const botCount = Math.min(3 + Math.floor(Math.random() * 3), shuffled.length);
+      const botCount = Math.min(2 + Math.floor(Math.random() * 2), shuffled.length);
       const selectedBots = shuffled.slice(0, botCount);
 
       let totalReactions = 0;
@@ -71,7 +71,7 @@ export async function GET(request: NextRequest) {
             engaged++;
           }
 
-          if (Math.random() < 0.4) {
+          if (Math.random() < 0.20) {
             const replyResult = await botReplyToPost(bot.id);
             if (replyResult.success && replyResult.postId) {
               totalReplies++;

@@ -198,8 +198,10 @@ export function FactCheckPanel({ postId, postContent, onClose }: FactCheckPanelP
         }
       }
 
-      if (!DEEPSEEK_API_KEY) {
-        setError('Fact check service not configured.');
+      const apiKey = DEEPSEEK_API_KEY || process.env.EXPO_PUBLIC_DEEPSEEK_API_KEY;
+      if (!apiKey) {
+        console.warn('FactCheck: EXPO_PUBLIC_DEEPSEEK_API_KEY is not set. Restart Metro with --clear.');
+        setError('Fact check service unavailable. Restart the app and try again.');
         setRequesting(false);
         return;
       }
@@ -229,7 +231,7 @@ Respond ONLY with valid JSON:
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${DEEPSEEK_API_KEY}`,
+          Authorization: `Bearer ${apiKey}`,
         },
         body: JSON.stringify({
           model: 'deepseek-chat',

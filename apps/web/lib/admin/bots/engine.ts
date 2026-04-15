@@ -721,32 +721,33 @@ export async function botReactToPosts(botId: string): Promise<{ success: boolean
       .limit(1);
     if (existing?.length) continue;
 
-    // Context-aware reaction logic
-    let tdChance = 0.5;
+    // Context-aware reaction logic — target 80-90% TD overall
+    // TDs = likes, FUMBLEs = dislikes. Most content should be liked.
+    let tdChance = 0.85;
     const postContent = (post.content as string || '').toLowerCase();
     const isSameSchool = bot.school_id && post.school_id === bot.school_id;
     const isDifferentSchool = bot.school_id && post.school_id && post.school_id !== bot.school_id;
     const isPositiveAboutSchool = isSameSchool && /\b(great|best|elite|dominant|amazing|underrated)\b/.test(postContent);
     const isNegativeAboutSchool = isSameSchool && /\b(bad|terrible|worst|overrated|fraud|exposed)\b/.test(postContent);
 
-    if (personality.reactionBias === 'touchdown_heavy') tdChance = 0.8;
-    else if (personality.reactionBias === 'fumble_heavy') tdChance = 0.3;
+    if (personality.reactionBias === 'touchdown_heavy') tdChance = 0.92;
+    else if (personality.reactionBias === 'fumble_heavy') tdChance = 0.70;
 
     // School-aware reactions
-    if (isSameSchool) tdChance = Math.max(tdChance, 0.8); // Touchdown own school
-    if (isDifferentSchool) tdChance = Math.min(tdChance, 0.35); // More fumbles for rivals
+    if (isSameSchool) tdChance = Math.max(tdChance, 0.95); // Almost always TD own school
+    if (isDifferentSchool) tdChance = Math.max(tdChance - 0.10, 0.65); // Slight dip for other schools, but still mostly TDs
 
     // Personality-specific adjustments
     if (personality.type === 'homer') {
-      if (isPositiveAboutSchool) tdChance = 0.95;
-      if (isNegativeAboutSchool) tdChance = 0.05;
-      if (isDifferentSchool) tdChance = 0.25; // Homer fumbles rivals
+      if (isPositiveAboutSchool) tdChance = 0.98;
+      if (isNegativeAboutSchool) tdChance = 0.30;
+      if (isDifferentSchool) tdChance = 0.70; // Homer still mostly TDs, slight rival bias
     } else if (personality.type === 'old_school') {
       if (/\b(nil|transfer portal)\b/i.test(postContent) && /\b(good|great|love|amazing)\b/i.test(postContent)) {
-        tdChance = 0.1; // Fumble pro-NIL/portal takes
+        tdChance = 0.40; // Fumble pro-NIL/portal takes sometimes
       }
     } else if (personality.type === 'hot_take') {
-      tdChance = 0.35; // Contrarian
+      tdChance = 0.65; // Most contrarian but still majority TD
     }
 
     const reactionType = Math.random() < tdChance ? 'TOUCHDOWN' : 'FUMBLE';
@@ -762,8 +763,8 @@ export async function botReactToPosts(botId: string): Promise<{ success: boolean
 
     reactCount++;
 
-    // FUMBLE + REPLY combo: 80% of fumbles generate a disagreement reply
-    if (reactionType === 'FUMBLE' && Math.random() < 0.80) {
+    // FUMBLE + REPLY combo: 25% of fumbles generate a disagreement reply (reduced from 80% to cut API costs)
+    if (reactionType === 'FUMBLE' && Math.random() < 0.25) {
       try {
         // Check if already replied
         const { data: existingReply } = await supabase
@@ -824,7 +825,7 @@ export async function botReactToPosts(botId: string): Promise<{ success: boolean
         .limit(1);
       if (existing?.length) continue;
 
-      const reactionType = Math.random() < 0.6 ? 'TOUCHDOWN' : 'FUMBLE';
+      const reactionType = Math.random() < 0.85 ? 'TOUCHDOWN' : 'FUMBLE';
       const { error } = await supabase
         .from('reactions')
         .insert({ user_id: botId, post_id: post.id, reaction_type: reactionType });

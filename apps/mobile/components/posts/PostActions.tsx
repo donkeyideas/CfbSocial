@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Alert, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Alert, KeyboardAvoidingView, Modal, Platform, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useAuth } from '@/lib/auth/AuthProvider';
 import { useThemedAlert } from '@/lib/AlertProvider';
@@ -170,28 +170,44 @@ export function PostActions({
       letterSpacing: 1,
       textTransform: 'uppercase',
     },
-    // CHALLENGE expanded
-    challengeContainer: {
-      marginTop: 6,
-      width: '100%',
+    // CHALLENGE modal
+    challengeOverlay: {
+      flex: 1,
+      justifyContent: 'flex-end',
+      backgroundColor: 'rgba(0,0,0,0.4)',
+    },
+    challengeModal: {
+      backgroundColor: colors.paper,
+      borderTopLeftRadius: 12,
+      borderTopRightRadius: 12,
+      padding: 16,
+      paddingBottom: 24,
+    },
+    challengeTitle: {
+      fontFamily: typography.mono,
+      fontSize: 11,
+      color: colors.textSecondary,
+      letterSpacing: 2,
+      textTransform: 'uppercase',
+      marginBottom: 10,
     },
     challengeInput: {
       fontFamily: typography.sans,
-      fontSize: 13,
+      fontSize: 14,
       color: colors.ink,
       backgroundColor: colors.surface,
       borderWidth: 1,
       borderColor: colors.border,
       borderRadius: 6,
-      padding: 8,
-      minHeight: 50,
+      padding: 10,
+      minHeight: 60,
       textAlignVertical: 'top',
     },
     challengeActions: {
       flexDirection: 'row',
       alignItems: 'center',
       gap: 8,
-      marginTop: 6,
+      marginTop: 10,
     },
     challengeCharCount: {
       fontFamily: typography.mono,
@@ -636,41 +652,53 @@ export function PostActions({
         )}
       </View>
 
-      {/* CHALLENGE expanded: topic form */}
-      {challengeExpanded && (
-        <View style={styles.challengeContainer}>
-          <TextInput
-            style={styles.challengeInput}
-            value={challengeTopic}
-            onChangeText={setChallengeTopic}
-            placeholder="What are you challenging? e.g. 'Your take on the QB depth chart is wrong...'"
-            placeholderTextColor={colors.textMuted}
-            multiline
-            maxLength={MAX_CHALLENGE_CHARS}
-            autoFocus
-          />
-          <View style={styles.challengeActions}>
-            <Text style={styles.challengeCharCount}>
-              {challengeTopic.length}/{MAX_CHALLENGE_CHARS}
-            </Text>
-            <Pressable
-              onPress={handleChallengeSubmit}
-              style={styles.actionButton}
-              disabled={challengeBusy || !challengeTopic.trim()}
-            >
-              <Text style={styles.actionButtonText}>
-                {challengeBusy ? '...' : 'ISSUE'}
+      {/* CHALLENGE modal: slides up above keyboard */}
+      <Modal
+        visible={challengeExpanded}
+        transparent
+        animationType="slide"
+        onRequestClose={() => { setChallengeExpanded(false); setChallengeTopic(''); }}
+      >
+        <KeyboardAvoidingView
+          style={styles.challengeOverlay}
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        >
+          <Pressable style={{ flex: 1 }} onPress={() => { setChallengeExpanded(false); setChallengeTopic(''); }} />
+          <View style={styles.challengeModal}>
+            <Text style={styles.challengeTitle}>ISSUE A CHALLENGE</Text>
+            <TextInput
+              style={styles.challengeInput}
+              value={challengeTopic}
+              onChangeText={setChallengeTopic}
+              placeholder="What are you challenging? e.g. 'Your take on the QB depth chart is wrong...'"
+              placeholderTextColor={colors.textMuted}
+              multiline
+              maxLength={MAX_CHALLENGE_CHARS}
+              autoFocus
+            />
+            <View style={styles.challengeActions}>
+              <Text style={styles.challengeCharCount}>
+                {challengeTopic.length}/{MAX_CHALLENGE_CHARS}
               </Text>
-            </Pressable>
-            <Pressable
-              onPress={() => { setChallengeExpanded(false); setChallengeTopic(''); }}
-              style={styles.closeButton}
-            >
-              <Text style={styles.closeText}>x</Text>
-            </Pressable>
+              <Pressable
+                onPress={handleChallengeSubmit}
+                style={styles.actionButton}
+                disabled={challengeBusy || !challengeTopic.trim()}
+              >
+                <Text style={styles.actionButtonText}>
+                  {challengeBusy ? '...' : 'ISSUE'}
+                </Text>
+              </Pressable>
+              <Pressable
+                onPress={() => { setChallengeExpanded(false); setChallengeTopic(''); }}
+                style={styles.closeButton}
+              >
+                <Text style={styles.closeText}>x</Text>
+              </Pressable>
+            </View>
           </View>
-        </View>
-      )}
+        </KeyboardAvoidingView>
+      </Modal>
 
       {/* REVISIT expanded: day picker + SET */}
       {revisitExpanded && !revisitFiled && (

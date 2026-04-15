@@ -13,7 +13,7 @@ interface BallotButtonsProps {
   initialTdCount: number;
   initialFmCount: number;
   /** Pre-fetched user vote to avoid per-post query. undefined = not pre-fetched (will query). */
-  prefetchedVote?: 'TD' | 'FUMBLE' | null;
+  prefetchedVote?: 'TOUCHDOWN' | 'FUMBLE' | null;
 }
 
 export function BallotButtons({
@@ -27,7 +27,7 @@ export function BallotButtons({
   const { profile } = useAuth();
   const userId = profile?.id ?? null;
   const { showAlert } = useThemedAlert();
-  const [voted, setVoted] = useState<'TD' | 'FUMBLE' | null>(null);
+  const [voted, setVoted] = useState<'TOUCHDOWN' | 'FUMBLE' | null>(null);
   const [tdCount, setTdCount] = useState(initialTdCount);
   const [fmCount, setFmCount] = useState(initialFmCount);
   const [voting, setVoting] = useState(false);
@@ -97,13 +97,13 @@ export function BallotButtons({
       .maybeSingle()
       .then(({ data }) => {
         if (mountedRef.current && data) {
-          setVoted(data.reaction_type as 'TD' | 'FUMBLE');
+          setVoted(data.reaction_type as 'TOUCHDOWN' | 'FUMBLE');
         }
       });
   }, [userId, postId, prefetchedVote]);
 
   const handleVote = useCallback(
-    async (type: 'TD' | 'FUMBLE') => {
+    async (type: 'TOUCHDOWN' | 'FUMBLE') => {
       if (!userId) {
         showAlert('Bench Warmer', 'You must be signed in to vote.');
         return;
@@ -119,7 +119,7 @@ export function BallotButtons({
         if (voted === type) {
           // Un-vote: remove reaction
           setVoted(null);
-          if (type === 'TD') setTdCount((c) => c - 1);
+          if (type === 'TOUCHDOWN') setTdCount((c) => c - 1);
           else setFmCount((c) => c - 1);
 
           const { error } = await supabase
@@ -133,12 +133,12 @@ export function BallotButtons({
           // New vote or switch vote
           if (voted) {
             // Switching: adjust old count down
-            if (voted === 'TD') setTdCount((c) => c - 1);
+            if (voted === 'TOUCHDOWN') setTdCount((c) => c - 1);
             else setFmCount((c) => c - 1);
           }
 
           setVoted(type);
-          if (type === 'TD') setTdCount((c) => c + 1);
+          if (type === 'TOUCHDOWN') setTdCount((c) => c + 1);
           else setFmCount((c) => c + 1);
 
           // Remove any existing reaction first
@@ -159,7 +159,7 @@ export function BallotButtons({
           if (error) throw error;
 
           // Send notification for TD votes
-          if (type === 'TD' && authorId !== userId) {
+          if (type === 'TOUCHDOWN' && authorId !== userId) {
             await supabase.from('notifications').insert({
               type: 'TD',
               recipient_id: authorId,
@@ -168,12 +168,14 @@ export function BallotButtons({
             });
           }
         }
-      } catch {
-        // Rollback on error
+      } catch (err) {
+        // Rollback on error and notify user
+        console.error('BallotButtons: vote failed:', err);
         if (mountedRef.current) {
           setVoted(previousVoted);
           setTdCount(previousTd);
           setFmCount(previousFm);
+          showAlert('Incomplete Pass', 'Vote failed. Please try again.');
         }
       } finally {
         if (mountedRef.current) {
@@ -189,15 +191,15 @@ export function BallotButtons({
       <Pressable
         style={[
           styles.button,
-          voted === 'TD' && styles.tdActive,
+          voted === 'TOUCHDOWN' && styles.tdActive,
         ]}
-        onPress={() => handleVote('TD')}
+        onPress={() => handleVote('TOUCHDOWN')}
         disabled={voting}
       >
         <Text
           style={[
             styles.buttonText,
-            voted === 'TD' && styles.tdActiveText,
+            voted === 'TOUCHDOWN' && styles.tdActiveText,
           ]}
         >
           TD {tdCount}

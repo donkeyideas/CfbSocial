@@ -7,6 +7,7 @@ import { PushLogTab } from './push-log-tab';
 import { BroadcastsTab } from './broadcasts-tab';
 import { ComposeTab } from './compose-tab';
 import { AutoBroadcastTab } from './auto-broadcast-tab';
+import { NotificationTypesTab } from './notification-types-tab';
 
 interface PushStats {
   totalSentToday: number;
@@ -68,6 +69,7 @@ const tabs = [
   { id: 'dashboard', label: 'Dashboard' },
   { id: 'push-log', label: 'Push Log' },
   { id: 'broadcasts', label: 'System Broadcasts' },
+  { id: 'types', label: 'Notification Types' },
 ];
 
 export function NotificationCenterClient({
@@ -109,6 +111,10 @@ export function NotificationCenterClient({
 
         {activeTab === 'auto-broadcast' && (
           <AutoBroadcastTab />
+        )}
+
+        {activeTab === 'types' && (
+          <NotificationTypesTab />
         )}
       </div>
     </div>
