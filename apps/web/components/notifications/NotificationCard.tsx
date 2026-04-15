@@ -88,12 +88,17 @@ export function NotificationCard({
   challengeId,
   isRead,
   createdAt,
+  data,
   onMarkRead,
 }: NotificationCardProps) {
   const actor = actorDisplayName ?? actorUsername ?? 'Someone';
-  const message = getNotificationMessage(type, actor);
+  const isSystem = type === 'SYSTEM';
+  const message = isSystem
+    ? (data?.title as string) || (data?.message as string) || getNotificationMessage(type, actor)
+    : getNotificationMessage(type, actor);
+  const systemBody = isSystem && data?.title && data?.message ? (data.message as string) : null;
   const timeAgo = getTimeAgo(new Date(createdAt));
-  const initial = actor[0]?.toUpperCase() ?? '?';
+  const initial = isSystem ? 'G' : (actor[0]?.toUpperCase() ?? '?');
 
   function handleClick() {
     if (!isRead && onMarkRead) {
@@ -140,13 +145,13 @@ export function NotificationCard({
             width: 36,
             height: 36,
             borderRadius: '50%',
-            background: 'var(--crimson)',
-            color: '#fff',
+            background: isSystem ? 'var(--ink)' : 'var(--crimson)',
+            color: isSystem ? 'var(--paper)' : '#fff',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             fontFamily: 'var(--serif)',
-            fontSize: '0.9rem',
+            fontSize: isSystem ? '1.1rem' : '0.9rem',
             fontWeight: 700,
             flexShrink: 0,
           }}
@@ -167,6 +172,19 @@ export function NotificationCard({
         >
           {message}
         </div>
+        {systemBody && (
+          <div
+            style={{
+              fontFamily: 'var(--sans)',
+              fontSize: '0.78rem',
+              color: 'var(--faded-ink)',
+              lineHeight: 1.3,
+              marginTop: 2,
+            }}
+          >
+            {systemBody}
+          </div>
+        )}
         <div
           suppressHydrationWarning
           style={{

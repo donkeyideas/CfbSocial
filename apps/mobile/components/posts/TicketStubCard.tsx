@@ -1,5 +1,5 @@
 import { memo, useMemo, useState } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View, type ViewProps } from 'react-native';
 import { useRouter } from 'expo-router';
 import { PostHeader } from './PostHeader';
 import { BallotButtons } from './BallotButtons';
@@ -13,9 +13,10 @@ import type { PostData } from './PostCard';
 
 interface TicketStubCardProps {
   post: PostData;
+  isDetailView?: boolean;
 }
 
-export const TicketStubCard = memo(function TicketStubCard({ post }: TicketStubCardProps) {
+export const TicketStubCard = memo(function TicketStubCard({ post, isDetailView }: TicketStubCardProps) {
   const colors = useColors();
   const router = useRouter();
   const schoolColor = post.author?.school?.primary_color || colors.crimson;
@@ -71,8 +72,11 @@ export const TicketStubCard = memo(function TicketStubCard({ post }: TicketStubC
     },
   }), [colors]);
 
+  const Wrapper = isDetailView ? View : Pressable;
+  const wrapperProps = isDetailView ? {} : { onPress: () => router.push(`/post/${post.id}` as never) };
+
   return (
-    <Pressable style={[styles.card, { borderLeftColor: schoolColor }]} onPress={() => router.push(`/post/${post.id}` as never)}>
+    <Wrapper style={[styles.card, { borderLeftColor: schoolColor }]} {...wrapperProps}>
       {post._repostedBy && (
         <Pressable
           style={styles.repostStamp}
@@ -117,6 +121,6 @@ export const TicketStubCard = memo(function TicketStubCard({ post }: TicketStubC
         postAuthorId={post.author_id}
         onClose={() => setReportVisible(false)}
       />
-    </Pressable>
+    </Wrapper>
   );
 });

@@ -48,9 +48,11 @@ export interface PostData {
 
 interface PostCardProps {
   post: PostData;
+  /** When true, disables tap-to-navigate (used on the post detail screen) */
+  isDetailView?: boolean;
 }
 
-export const PostCard = memo(function PostCard({ post }: PostCardProps) {
+export const PostCard = memo(function PostCard({ post, isDetailView }: PostCardProps) {
   // Flagged posts always render as penalty flag card
   if (post.status === 'FLAGGED') {
     return <PenaltyFlagCard post={post} />;
@@ -58,12 +60,12 @@ export const PostCard = memo(function PostCard({ post }: PostCardProps) {
 
   // Posts with aging_takes filed render as receipt cards
   if (post.aging_takes && post.aging_takes.length > 0) {
-    return <NewspaperClippingCard post={post} isAgingReceipt />;
+    return <NewspaperClippingCard post={post} isAgingReceipt isDetailView={isDetailView} />;
   }
 
   // Receipt and prediction posts render as newspaper clippings
   if (post.post_type === 'RECEIPT' || post.post_type === 'PREDICTION') {
-    return <NewspaperClippingCard post={post} />;
+    return <NewspaperClippingCard post={post} isDetailView={isDetailView} />;
   }
 
   // Sideline reports for live game posts
@@ -72,5 +74,5 @@ export const PostCard = memo(function PostCard({ post }: PostCardProps) {
   }
 
   // Default: standard ticket stub card
-  return <TicketStubCard post={post} />;
+  return <TicketStubCard post={post} isDetailView={isDetailView} />;
 });

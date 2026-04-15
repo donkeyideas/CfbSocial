@@ -209,7 +209,7 @@ export default function PostDetailScreen() {
         contentContainerStyle={styles.listContent}
         ListHeaderComponent={
           <View>
-            <PostCard post={post} />
+            <PostCard post={post} isDetailView />
             {replies.length > 0 && (
               <View style={styles.repliesHeader}>
                 <Text style={styles.repliesLabel}>

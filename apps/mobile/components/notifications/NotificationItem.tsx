@@ -23,6 +23,7 @@ export interface NotificationData {
   post_id: string | null;
   challenge_id: string | null;
   message: string | null;
+  data: { title?: string; message?: string } | null;
   is_read: boolean;
   created_at: string;
   actor: NotificationActor | null;
@@ -70,9 +71,9 @@ function getNotificationMessage(notification: NotificationData): string {
     case 'MODERATION_APPEAL_RESULT':
       return 'Your appeal has been reviewed';
     case 'SYSTEM':
-      return notification.message || 'New message from CFB Social';
+      return notification.data?.title || notification.data?.message || notification.message || 'New message from CFB Social';
     default:
-      return notification.message || 'You have a new notification';
+      return notification.data?.message || notification.message || 'You have a new notification';
   }
 }
 
@@ -131,14 +132,14 @@ export function NotificationItem({ notification, onRead }: NotificationItemProps
       width: 40,
       height: 40,
       borderRadius: 20,
-      backgroundColor: colors.surface,
+      backgroundColor: dark,
       justifyContent: 'center',
       alignItems: 'center',
     },
     systemIconText: {
       fontFamily: typography.serifBold,
-      fontSize: 18,
-      color: colors.crimson,
+      fontSize: 20,
+      color: '#f4efe4',
     },
     content: {
       flex: 1,
@@ -152,6 +153,12 @@ export function NotificationItem({ notification, onRead }: NotificationItemProps
     },
     unreadMessage: {
       fontFamily: typography.sansSemiBold,
+    },
+    systemBody: {
+      fontFamily: typography.sans,
+      fontSize: 13,
+      color: colors.textSecondary,
+      lineHeight: 18,
     },
     timestamp: {
       fontFamily: typography.sans,
@@ -198,7 +205,7 @@ export function NotificationItem({ notification, onRead }: NotificationItemProps
           />
         ) : (
           <View style={styles.systemIcon}>
-            <Text style={[styles.systemIconText, { color: dark }]}>!</Text>
+            <Text style={styles.systemIconText}>G</Text>
           </View>
         )}
       </View>
@@ -213,6 +220,11 @@ export function NotificationItem({ notification, onRead }: NotificationItemProps
         >
           {message}
         </Text>
+        {notification.type === 'SYSTEM' && notification.data?.message && notification.data?.title && (
+          <Text style={styles.systemBody} numberOfLines={2}>
+            {notification.data.message}
+          </Text>
+        )}
         <Text style={styles.timestamp}>{timeAgo(notification.created_at)}</Text>
       </View>
 

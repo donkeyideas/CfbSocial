@@ -70,8 +70,8 @@ export function Masthead({ onMenuToggle, menuOpen }: MastheadProps) {
           {/* Left: Date & Edition */}
           <div className="masthead-left">
             <div>
-              <div className="masthead-date">{dateStr}</div>
-              <div className="masthead-edition">
+              <div className="masthead-date" suppressHydrationWarning>{dateStr}</div>
+              <div className="masthead-edition" suppressHydrationWarning>
                 Vol. I &middot; No. {dayOfYear}
               </div>
             </div>

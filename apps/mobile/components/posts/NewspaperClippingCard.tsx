@@ -15,9 +15,10 @@ import type { PostData } from './PostCard';
 interface NewspaperClippingCardProps {
   post: PostData;
   isAgingReceipt?: boolean;
+  isDetailView?: boolean;
 }
 
-export const NewspaperClippingCard = memo(function NewspaperClippingCard({ post, isAgingReceipt }: NewspaperClippingCardProps) {
+export const NewspaperClippingCard = memo(function NewspaperClippingCard({ post, isAgingReceipt, isDetailView }: NewspaperClippingCardProps) {
   const colors = useColors();
   const router = useRouter();
   const isReceipt = post.post_type === 'RECEIPT';
@@ -173,8 +174,11 @@ export const NewspaperClippingCard = memo(function NewspaperClippingCard({ post,
   const headline = dotIdx > 0 && dotIdx < 80 ? displayContent.slice(0, dotIdx + 1) : null;
   const body = headline ? displayContent.slice(dotIdx + 1).trim() : displayContent;
 
+  const Wrapper = isDetailView ? View : Pressable;
+  const wrapperProps = isDetailView ? {} : { onPress: () => router.push(`/post/${post.id}` as never) };
+
   return (
-    <Pressable style={[styles.card, hasAgingTake && styles.receiptCard]} onPress={() => router.push(`/post/${post.id}` as never)}>
+    <Wrapper style={[styles.card, hasAgingTake && styles.receiptCard]} {...wrapperProps}>
       {/* Repost stamp */}
       {post._repostedBy && (
         <Pressable
@@ -262,6 +266,6 @@ export const NewspaperClippingCard = memo(function NewspaperClippingCard({ post,
         postAuthorId={post.author_id}
         onClose={() => setReportVisible(false)}
       />
-    </Pressable>
+    </Wrapper>
   );
 });
