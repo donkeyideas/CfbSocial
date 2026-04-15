@@ -28,6 +28,14 @@ function AppShell() {
     }
   }, [loading, colorModeReady]);
 
+  // Safety: force-hide splash after 10s no matter what, so the app never freezes
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      SplashScreen.hideAsync();
+    }, 10000);
+    return () => clearTimeout(timer);
+  }, []);
+
   return (
     <AlertProvider>
       <MenuProvider>

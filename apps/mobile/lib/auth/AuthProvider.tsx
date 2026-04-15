@@ -132,7 +132,25 @@ export function AuthProvider({ children }: PropsWithChildren) {
   }, []);
 
   useEffect(() => {
+    let settled = false;
+    const settle = () => {
+      if (!settled) {
+        settled = true;
+        setLoading(false);
+      }
+    };
+
+    // Safety timeout: if getSession hangs (e.g. stale token refresh on Android),
+    // force loading to false so the app doesn't freeze on the splash screen.
+    const timeout = setTimeout(() => {
+      if (!settled) {
+        console.warn('AuthProvider: getSession timed out after 8s, proceeding without session');
+        settle();
+      }
+    }, 8000);
+
     supabase.auth.getSession().then(async ({ data: { session: initialSession }, error }) => {
+      clearTimeout(timeout);
       if (error) {
         console.warn('Auth session error, signing out:', error.message);
         try { await supabase.auth.signOut(); } catch {}
@@ -140,7 +158,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
         setProfiles([]);
         setActiveId(null);
         userIdRef.current = null;
-        setLoading(false);
+        settle();
         return;
       }
       setSession(initialSession);
@@ -148,10 +166,11 @@ export function AuthProvider({ children }: PropsWithChildren) {
         userIdRef.current = initialSession.user.id;
         await fetchProfiles(initialSession.user.id);
       }
-      setLoading(false);
+      settle();
     }).catch((err) => {
+      clearTimeout(timeout);
       console.warn('Auth getSession failed:', err);
-      setLoading(false);
+      settle();
     });
 
     const {
