@@ -124,10 +124,25 @@ export async function getAPIUsageStats(days: number = 30): Promise<UsageStats> {
   const supabase = createAdminClient();
   const startDate = new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString();
 
-  const { data } = await supabase
-    .from('ai_interactions')
-    .select('provider, response_time_ms, cost, success, tokens_used')
-    .gte('created_at', startDate);
+  // Supabase default limit is 1000 — paginate to get ALL rows
+  const allRows: Array<{ provider: string; response_time_ms: number; cost: number; success: boolean; tokens_used: number }> = [];
+  const PAGE_SIZE = 1000;
+  let offset = 0;
+  let hasMore = true;
+
+  while (hasMore) {
+    const { data } = await supabase
+      .from('ai_interactions')
+      .select('provider, response_time_ms, cost, success, tokens_used')
+      .gte('created_at', startDate)
+      .order('created_at', { ascending: true })
+      .range(offset, offset + PAGE_SIZE - 1);
+
+    const rows = (data ?? []) as typeof allRows;
+    allRows.push(...rows);
+    hasMore = rows.length === PAGE_SIZE;
+    offset += PAGE_SIZE;
+  }
 
   let totalCalls = 0;
   let totalCost = 0;
@@ -135,7 +150,7 @@ export async function getAPIUsageStats(days: number = 30): Promise<UsageStats> {
   let totalLatency = 0;
   const byProvider: Record<string, { calls: number; cost: number; errors: number; latency: number; tokens: number }> = {};
 
-  for (const row of data ?? []) {
+  for (const row of allRows) {
     totalCalls++;
     totalCost += row.cost || 0;
     totalLatency += row.response_time_ms || 0;
@@ -181,14 +196,30 @@ export async function getDailyActivity(days: number = 30): Promise<DailyActivity
   const supabase = createAdminClient();
   const startDate = new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString();
 
-  const { data } = await supabase
-    .from('ai_interactions')
-    .select('created_at')
-    .gte('created_at', startDate);
+  // Paginate to get ALL rows (Supabase default limit is 1000)
+  const allDates: string[] = [];
+  const PAGE_SIZE = 1000;
+  let offset = 0;
+  let hasMore = true;
+
+  while (hasMore) {
+    const { data } = await supabase
+      .from('ai_interactions')
+      .select('created_at')
+      .gte('created_at', startDate)
+      .order('created_at', { ascending: true })
+      .range(offset, offset + PAGE_SIZE - 1);
+
+    const rows = data ?? [];
+    for (const row of rows) {
+      allDates.push((row.created_at as string).slice(0, 10));
+    }
+    hasMore = rows.length === PAGE_SIZE;
+    offset += PAGE_SIZE;
+  }
 
   const counts: Record<string, number> = {};
-  for (const row of data ?? []) {
-    const day = row.created_at.slice(0, 10);
+  for (const day of allDates) {
     counts[day] = (counts[day] || 0) + 1;
   }
 
