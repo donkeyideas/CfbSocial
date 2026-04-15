@@ -3,13 +3,11 @@ import { createClient } from '@supabase/supabase-js';
 
 const BASE_URL = 'https://www.cfbsocial.com';
 
-export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-  );
+export const dynamic = 'force-dynamic';
+export const revalidate = 3600; // regenerate at most every hour
 
-  // Static pages
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  // Static pages (always included, no DB dependency)
   const staticPages: MetadataRoute.Sitemap = [
     { url: `${BASE_URL}/feed`, lastModified: new Date(), changeFrequency: 'always', priority: 1.0 },
     { url: `${BASE_URL}/rivalry`, lastModified: new Date(), changeFrequency: 'daily', priority: 0.8 },
@@ -39,34 +37,47 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.7,
   }));
 
-  // Dynamic school pages (653 schools)
-  const { data: schools } = await supabase
-    .from('schools')
-    .select('slug, updated_at')
-    .not('slug', 'is', null);
+  // Dynamic pages from Supabase — wrapped in try/catch so the build
+  // doesn't fail when Supabase is slow or unreachable.
+  let schoolPages: MetadataRoute.Sitemap = [];
+  let postPages: MetadataRoute.Sitemap = [];
 
-  const schoolPages: MetadataRoute.Sitemap = (schools ?? []).map((school) => ({
-    url: `${BASE_URL}/school/${school.slug}`,
-    lastModified: school.updated_at ? new Date(school.updated_at) : new Date(),
-    changeFrequency: 'daily' as const,
-    priority: 0.8,
-  }));
+  try {
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    );
 
-  // Dynamic post pages (latest 1000 published posts)
-  const { data: posts } = await supabase
-    .from('posts')
-    .select('id, created_at')
-    .eq('status', 'PUBLISHED')
-    .is('parent_id', null)
-    .order('created_at', { ascending: false })
-    .limit(1000);
+    const [schoolsResult, postsResult] = await Promise.all([
+      supabase
+        .from('schools')
+        .select('slug, updated_at')
+        .not('slug', 'is', null),
+      supabase
+        .from('posts')
+        .select('id, created_at')
+        .eq('status', 'PUBLISHED')
+        .is('parent_id', null)
+        .order('created_at', { ascending: false })
+        .limit(1000),
+    ]);
 
-  const postPages: MetadataRoute.Sitemap = (posts ?? []).map((post) => ({
-    url: `${BASE_URL}/post/${post.id}`,
-    lastModified: new Date(post.created_at),
-    changeFrequency: 'weekly' as const,
-    priority: 0.6,
-  }));
+    schoolPages = (schoolsResult.data ?? []).map((school) => ({
+      url: `${BASE_URL}/school/${school.slug}`,
+      lastModified: school.updated_at ? new Date(school.updated_at) : new Date(),
+      changeFrequency: 'daily' as const,
+      priority: 0.8,
+    }));
+
+    postPages = (postsResult.data ?? []).map((post) => ({
+      url: `${BASE_URL}/post/${post.id}`,
+      lastModified: new Date(post.created_at),
+      changeFrequency: 'weekly' as const,
+      priority: 0.6,
+    }));
+  } catch (err) {
+    console.warn('Sitemap: Supabase query failed, returning static pages only:', err);
+  }
 
   return [...staticPages, ...conferencePages, ...schoolPages, ...postPages];
 }
