@@ -4,6 +4,8 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
+import { checkPasswordBreaches } from '@/lib/providers/hibp';
+import { TurnstileWidget } from '@/components/turnstile/TurnstileWidget';
 import type { SchoolRow } from '@cfb-social/types';
 
 export function RegisterForm() {
@@ -15,6 +17,9 @@ export function RegisterForm() {
   const [schools, setSchools] = useState<SchoolRow[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [breachCount, setBreachCount] = useState<number | null>(null);
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
+  const turnstileEnabled = !!process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
 
   useEffect(() => {
     async function fetchSchools() {
@@ -29,10 +34,52 @@ export function RegisterForm() {
     fetchSchools();
   }, []);
 
+  async function handlePasswordBlur() {
+    if (password.length < 8) {
+      setBreachCount(null);
+      return;
+    }
+    const count = await checkPasswordBreaches(password);
+    setBreachCount(count);
+  }
+
   async function handleRegister(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
     setError(null);
+
+    // Safety check: block if password known to be breached
+    if (breachCount && breachCount > 0) {
+      setError('This password has appeared in known data breaches. Please choose a different one.');
+      setLoading(false);
+      return;
+    }
+
+    // Verify Turnstile if enabled
+    if (turnstileEnabled) {
+      if (!turnstileToken) {
+        setError('Please complete the CAPTCHA challenge.');
+        setLoading(false);
+        return;
+      }
+      try {
+        const res = await fetch('/api/turnstile/verify', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ token: turnstileToken }),
+        });
+        const json = (await res.json()) as { success: boolean };
+        if (!json.success) {
+          setError('CAPTCHA verification failed. Please try again.');
+          setLoading(false);
+          return;
+        }
+      } catch {
+        setError('CAPTCHA verification failed. Please try again.');
+        setLoading(false);
+        return;
+      }
+    }
 
     const supabase = createClient();
 
@@ -54,6 +101,13 @@ export function RegisterForm() {
     }
 
     if (authData.user) {
+      // Fire-and-forget welcome email (no-op when RESEND_API_KEY is unset)
+      fetch('/api/email/welcome', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ to: email, username }),
+      }).catch(() => {});
+
       router.push('/feed');
       router.refresh();
     }
@@ -116,14 +170,24 @@ export function RegisterForm() {
             id="password"
             type="password"
             value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            onChange={(e) => {
+              setPassword(e.target.value);
+              setBreachCount(null);
+            }}
+            onBlur={handlePasswordBlur}
             required
             minLength={8}
             className="gridiron-input w-full"
           />
-          <p className="mt-1 text-xs text-[var(--text-muted)]">
-            Minimum 8 characters
-          </p>
+          {breachCount && breachCount > 0 ? (
+            <p className="mt-1 text-xs text-[var(--error)]">
+              This password has appeared in {breachCount.toLocaleString()} known breaches. Please choose a different one.
+            </p>
+          ) : (
+            <p className="mt-1 text-xs text-[var(--text-muted)]">
+              Minimum 8 characters
+            </p>
+          )}
         </div>
 
         <div>
@@ -145,6 +209,15 @@ export function RegisterForm() {
             ))}
           </select>
         </div>
+
+        {turnstileEnabled && (
+          <div className="mt-2 flex justify-center">
+            <TurnstileWidget
+              onVerify={(t) => setTurnstileToken(t)}
+              onExpire={() => setTurnstileToken(null)}
+            />
+          </div>
+        )}
 
         <button
           type="submit"

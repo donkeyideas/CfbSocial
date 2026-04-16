@@ -99,6 +99,29 @@ export async function getAPICallHistory(limit: number = 50): Promise<APICallEntr
   return (data ?? []) as APICallEntry[];
 }
 
+/** Fetch ALL call history rows (paginated) for CSV/Excel export. */
+export async function getAllCallHistoryForExport(): Promise<APICallEntry[]> {
+  const supabase = createAdminClient();
+  const allRows: APICallEntry[] = [];
+  const PAGE_SIZE = 1000;
+  let offset = 0;
+  let hasMore = true;
+
+  while (hasMore) {
+    const { data } = await supabase
+      .from('ai_interactions')
+      .select('id, feature, sub_type, provider, model, tokens_used, prompt_tokens, completion_tokens, cost, response_time_ms, success, error_message, created_at')
+      .order('created_at', { ascending: false })
+      .range(offset, offset + PAGE_SIZE - 1);
+
+    const rows = (data ?? []) as APICallEntry[];
+    allRows.push(...rows);
+    hasMore = rows.length === PAGE_SIZE;
+    offset += PAGE_SIZE;
+  }
+  return allRows;
+}
+
 /* ── Usage Stats (aggregated from ai_interactions) ───────────── */
 
 export interface ProviderStats {
@@ -236,6 +259,254 @@ export async function getDailyActivity(days: number = 30): Promise<DailyActivity
   return result;
 }
 
+/* ── Analytics (date-range filtered) ─────────────────────────── */
+
+export interface DailyMetrics {
+  date: string;
+  calls: number;
+  cost: number;
+  tokens: number;
+  errors: number;
+  avgLatency: number;
+}
+
+export interface HourlyDistribution {
+  hour: number; // 0-23
+  calls: number;
+}
+
+export interface FeatureBreakdown {
+  feature: string;
+  calls: number;
+  cost: number;
+  tokens: number;
+}
+
+export interface ProviderBreakdown {
+  provider: string;
+  calls: number;
+  cost: number;
+  tokens: number;
+}
+
+export interface DailyProviderCost {
+  date: string;
+  totalCost: number;
+  totalCalls: number;
+  totalTokens: number;
+  perProvider: Record<string, { calls: number; cost: number; tokens: number }>;
+}
+
+export interface AnalyticsData {
+  range: { startDate: string; endDate: string };
+  kpis: {
+    totalCalls: number;
+    totalCost: number;
+    totalTokens: number;
+    avgCostPerCall: number;
+    avgTokensPerCall: number;
+    avgLatency: number;
+    successRate: number;
+    peakDayCalls: number;
+    peakDayDate: string | null;
+  };
+  daily: DailyMetrics[];
+  hourly: HourlyDistribution[];
+  byFeature: FeatureBreakdown[];
+  byProvider: ProviderBreakdown[];
+  dailyByProvider: DailyProviderCost[];
+  providers: string[]; // ordered list of provider keys appearing in range
+  monthly: { month: string; calls: number; cost: number; tokens: number }[];
+}
+
+export async function getAnalyticsData(
+  startDate: string,
+  endDate: string,
+): Promise<AnalyticsData> {
+  const supabase = createAdminClient();
+
+  // Paginate through ALL rows in date range
+  type Row = {
+    feature: string;
+    provider: string;
+    cost: number;
+    tokens_used: number;
+    response_time_ms: number;
+    success: boolean;
+    created_at: string;
+  };
+
+  const allRows: Row[] = [];
+  const PAGE_SIZE = 1000;
+  let offset = 0;
+  let hasMore = true;
+
+  while (hasMore) {
+    const { data } = await supabase
+      .from('ai_interactions')
+      .select('feature, provider, cost, tokens_used, response_time_ms, success, created_at')
+      .gte('created_at', startDate)
+      .lte('created_at', endDate)
+      .order('created_at', { ascending: true })
+      .range(offset, offset + PAGE_SIZE - 1);
+
+    const rows = (data ?? []) as Row[];
+    allRows.push(...rows);
+    hasMore = rows.length === PAGE_SIZE;
+    offset += PAGE_SIZE;
+  }
+
+  // Daily aggregation
+  const dailyMap: Record<string, { calls: number; cost: number; tokens: number; errors: number; latency: number }> = {};
+  const hourlyMap: Record<number, number> = {};
+  const featureMap: Record<string, { calls: number; cost: number; tokens: number }> = {};
+  const providerMap: Record<string, { calls: number; cost: number; tokens: number }> = {};
+  const monthlyMap: Record<string, { calls: number; cost: number; tokens: number }> = {};
+  const dailyProviderMap: Record<string, Record<string, { calls: number; cost: number; tokens: number }>> = {};
+
+  let totalCost = 0;
+  let totalTokens = 0;
+  let totalErrors = 0;
+  let totalLatency = 0;
+
+  for (const row of allRows) {
+    const d = new Date(row.created_at);
+    const dayKey = row.created_at.slice(0, 10);
+    const monthKey = row.created_at.slice(0, 7);
+    const hour = d.getUTCHours();
+
+    totalCost += row.cost || 0;
+    totalTokens += row.tokens_used || 0;
+    totalLatency += row.response_time_ms || 0;
+    if (!row.success) totalErrors++;
+
+    if (!dailyMap[dayKey]) dailyMap[dayKey] = { calls: 0, cost: 0, tokens: 0, errors: 0, latency: 0 };
+    dailyMap[dayKey].calls++;
+    dailyMap[dayKey].cost += row.cost || 0;
+    dailyMap[dayKey].tokens += row.tokens_used || 0;
+    dailyMap[dayKey].latency += row.response_time_ms || 0;
+    if (!row.success) dailyMap[dayKey].errors++;
+
+    hourlyMap[hour] = (hourlyMap[hour] || 0) + 1;
+
+    const feat = row.feature || 'unknown';
+    if (!featureMap[feat]) featureMap[feat] = { calls: 0, cost: 0, tokens: 0 };
+    featureMap[feat].calls++;
+    featureMap[feat].cost += row.cost || 0;
+    featureMap[feat].tokens += row.tokens_used || 0;
+
+    const prov = row.provider || 'unknown';
+    if (!providerMap[prov]) providerMap[prov] = { calls: 0, cost: 0, tokens: 0 };
+    providerMap[prov].calls++;
+    providerMap[prov].cost += row.cost || 0;
+    providerMap[prov].tokens += row.tokens_used || 0;
+
+    if (!dailyProviderMap[dayKey]) dailyProviderMap[dayKey] = {};
+    if (!dailyProviderMap[dayKey][prov]) dailyProviderMap[dayKey][prov] = { calls: 0, cost: 0, tokens: 0 };
+    dailyProviderMap[dayKey][prov].calls++;
+    dailyProviderMap[dayKey][prov].cost += row.cost || 0;
+    dailyProviderMap[dayKey][prov].tokens += row.tokens_used || 0;
+
+    if (!monthlyMap[monthKey]) monthlyMap[monthKey] = { calls: 0, cost: 0, tokens: 0 };
+    monthlyMap[monthKey].calls++;
+    monthlyMap[monthKey].cost += row.cost || 0;
+    monthlyMap[monthKey].tokens += row.tokens_used || 0;
+  }
+
+  // Fill in all days in range with zeros
+  const daily: DailyMetrics[] = [];
+  const start = new Date(startDate);
+  const end = new Date(endDate);
+  const cursor = new Date(start);
+  cursor.setUTCHours(0, 0, 0, 0);
+  while (cursor <= end) {
+    const key = cursor.toISOString().slice(0, 10);
+    const d = dailyMap[key];
+    daily.push({
+      date: key,
+      calls: d?.calls || 0,
+      cost: d?.cost || 0,
+      tokens: d?.tokens || 0,
+      errors: d?.errors || 0,
+      avgLatency: d && d.calls > 0 ? Math.round(d.latency / d.calls) : 0,
+    });
+    cursor.setUTCDate(cursor.getUTCDate() + 1);
+  }
+
+  // Hourly (fill 0-23)
+  const hourly: HourlyDistribution[] = [];
+  for (let h = 0; h < 24; h++) {
+    hourly.push({ hour: h, calls: hourlyMap[h] || 0 });
+  }
+
+  // Peak day
+  let peakDayCalls = 0;
+  let peakDayDate: string | null = null;
+  for (const d of daily) {
+    if (d.calls > peakDayCalls) {
+      peakDayCalls = d.calls;
+      peakDayDate = d.date;
+    }
+  }
+
+  const totalCalls = allRows.length;
+
+  const byFeature: FeatureBreakdown[] = Object.entries(featureMap)
+    .map(([feature, s]) => ({ feature, ...s }))
+    .sort((a, b) => b.calls - a.calls);
+
+  const byProvider: ProviderBreakdown[] = Object.entries(providerMap)
+    .map(([provider, s]) => ({ provider, ...s }))
+    .sort((a, b) => b.calls - a.calls);
+
+  // Ordered providers list (by total cost desc)
+  const providers = [...byProvider]
+    .sort((a, b) => b.cost - a.cost)
+    .map((p) => p.provider);
+
+  // Daily by provider — one row per day, sorted newest first for the table
+  const dailyByProvider: DailyProviderCost[] = Object.keys(dailyProviderMap)
+    .sort((a, b) => b.localeCompare(a))
+    .map((date) => {
+      const perProvider = dailyProviderMap[date] || {};
+      let totalCost = 0;
+      let totalCalls = 0;
+      let totalTokens = 0;
+      for (const p of Object.values(perProvider)) {
+        totalCost += p.cost;
+        totalCalls += p.calls;
+        totalTokens += p.tokens;
+      }
+      return { date, totalCost, totalCalls, totalTokens, perProvider };
+    });
+
+  const monthly = Object.entries(monthlyMap)
+    .map(([month, s]) => ({ month, ...s }))
+    .sort((a, b) => a.month.localeCompare(b.month));
+
+  return {
+    range: { startDate, endDate },
+    kpis: {
+      totalCalls,
+      totalCost,
+      totalTokens,
+      avgCostPerCall: totalCalls > 0 ? totalCost / totalCalls : 0,
+      avgTokensPerCall: totalCalls > 0 ? Math.round(totalTokens / totalCalls) : 0,
+      avgLatency: totalCalls > 0 ? Math.round(totalLatency / totalCalls) : 0,
+      successRate: totalCalls > 0 ? (totalCalls - totalErrors) / totalCalls : 1,
+      peakDayCalls,
+      peakDayDate,
+    },
+    daily,
+    hourly,
+    byFeature,
+    byProvider,
+    dailyByProvider,
+    providers,
+    monthly,
+  };
+}
+
 /* ── Provider Configuration (from admin_settings) ────────────── */
 
 export interface ProviderConfigStatus {
@@ -349,13 +620,9 @@ export async function testProviderConnection(provider: string): Promise<{ error?
   }
 
   if (provider === 'espn') {
-    try {
-      const res = await fetch('https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard?limit=1');
-      if (!res.ok) return { error: `ESPN API returned ${res.status}` };
-      return { success: true, message: 'ESPN API is reachable' };
-    } catch (err) {
-      return { error: err instanceof Error ? err.message : 'ESPN connection failed' };
-    }
+    const { pingScoreboard } = await import('@/lib/providers/espn');
+    const result = await pingScoreboard();
+    return result.ok ? { success: true, message: result.message } : { error: result.message };
   }
 
   if (provider === 'supabase') {

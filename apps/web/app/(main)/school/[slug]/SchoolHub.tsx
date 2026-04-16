@@ -32,6 +32,14 @@ interface SchoolHubProps {
     dynasty_tier: string;
     post_count: number;
   }>;
+  highlights?: Array<{
+    videoId: string;
+    title: string;
+    channelTitle: string;
+    publishedAt: string;
+    thumbnail: string;
+    url: string;
+  }>;
 }
 
 const tierLabels: Record<string, string> = {
@@ -43,7 +51,7 @@ const tierLabels: Record<string, string> = {
   DYNASTY: 'Dynasty',
 };
 
-export function SchoolHub({ school, fanCount, postCount, portalCount, posts, topFans }: SchoolHubProps) {
+export function SchoolHub({ school, fanCount, postCount, portalCount, posts, topFans, highlights = [] }: SchoolHubProps) {
   useEffect(() => {
     trackSchoolVisit(school.id, school.slug);
   }, [school.id, school.slug]);
@@ -118,6 +126,29 @@ export function SchoolHub({ school, fanCount, postCount, portalCount, posts, top
 
         {/* Sidebar */}
         <div className="school-sidebar">
+          {/* YouTube Highlights */}
+          {highlights.length > 0 && (
+            <div className="school-highlights-card">
+              <div className="school-section-title">Recent Highlights</div>
+              <div className="school-highlights-strip">
+                {highlights.map((v) => (
+                  <a
+                    key={v.videoId}
+                    href={v.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="school-highlight-item"
+                    title={v.title}
+                  >
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={v.thumbnail} alt={v.title} loading="lazy" />
+                    <div className="school-highlight-title">{v.title}</div>
+                  </a>
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* Top Fans */}
           <div className="school-fans-card">
             <div className="school-section-title">Top {school.abbreviation} Fans</div>

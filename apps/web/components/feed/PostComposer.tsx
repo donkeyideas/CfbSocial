@@ -7,6 +7,7 @@ import { createClient } from '@/lib/supabase/client';
 import { useAuth } from '@/components/auth/AuthProvider';
 import type { PostType } from '@cfb-social/types';
 import { LinkPreview, extractFirstUrl } from './LinkPreview';
+import { GifPicker } from './GifPicker';
 import { revalidateFeed } from '@/lib/actions/feed';
 
 export function PostComposer() {
@@ -18,6 +19,7 @@ export function PostComposer() {
   const [sidelineGame, setSidelineGame] = useState('');
   const [sidelineQuarter, setSidelineQuarter] = useState('');
   const [sidelineTime, setSidelineTime] = useState('');
+  const [gifPickerOpen, setGifPickerOpen] = useState(false);
 
   if (isLoggedIn === false) {
     return (
@@ -166,6 +168,13 @@ export function PostComposer() {
               {type.label}
             </button>
           ))}
+          <button
+            type="button"
+            onClick={() => setGifPickerOpen(true)}
+            className="composer-tool"
+          >
+            GIF
+          </button>
         </div>
 
         <button
@@ -177,6 +186,14 @@ export function PostComposer() {
           {submitting ? 'Filing...' : 'Publish'}
         </button>
       </div>
+
+      <GifPicker
+        open={gifPickerOpen}
+        onClose={() => setGifPickerOpen(false)}
+        onSelect={(url) => {
+          setContent((prev) => (prev.trim() ? `${prev.trim()}\n${url}` : url));
+        }}
+      />
     </form>
   );
 }

@@ -5,6 +5,10 @@
 // ============================================================
 
 import { createAdminClient } from '@/lib/admin/supabase/admin';
+import { getScoreboard, type ESPNEvent as ProviderEvent } from '@/lib/providers/espn';
+import { getTeamHighlights } from '@/lib/providers/cfbd';
+import { getSubredditHot } from '@/lib/providers/reddit';
+import { getCollegeFootballNews } from '@/lib/providers/newsapi';
 import type { BotPersonality } from './personalities';
 
 // ============================================================
@@ -43,6 +47,9 @@ export interface BotContext {
   localKnowledge: LocalFact[];
   timeOfDay: string;
   contextSummary: string;
+  teamHighlights: string | null;
+  redditChatter: string[];
+  generalNews: string[];
 }
 
 interface SchoolInfo {
@@ -53,38 +60,13 @@ interface SchoolInfo {
 }
 
 // ============================================================
-// ESPN Scoreboard fetcher (reuses War Room pattern)
+// ESPN Scoreboard fetcher (delegates to consolidated provider)
 // ============================================================
 
-interface ESPNCompetition {
-  competitors: Array<{
-    team: { abbreviation: string; displayName: string };
-    score: string;
-    homeAway: string;
-  }>;
-  status: {
-    type: { state: string };
-    displayClock: string;
-    period: number;
-  };
-}
-
-interface ESPNEvent {
-  competitions: ESPNCompetition[];
-}
+type ESPNEvent = ProviderEvent;
 
 async function fetchESPNScoreboard(): Promise<ESPNEvent[]> {
-  try {
-    const res = await fetch(
-      'https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard',
-      { signal: AbortSignal.timeout(5000), next: { revalidate: 300 } }
-    );
-    if (!res.ok) return [];
-    const data = await res.json();
-    return (data.events as ESPNEvent[]) ?? [];
-  } catch {
-    return [];
-  }
+  return getScoreboard();
 }
 
 function findSchoolGame(events: ESPNEvent[], schoolAbbr: string): GameContext | null {
@@ -289,13 +271,19 @@ export async function buildBotContext(
   let moodDescription = personality.moodResponseCurve[mood] || '';
   const portalNews: PortalEvent[] = [];
   const localKnowledge: LocalFact[] = [];
+  let teamHighlights: string | null = null;
+  let redditChatter: string[] = [];
+  let generalNews: string[] = [];
 
   if (school && schoolId) {
-    // Fetch in parallel
-    const [espnEvents, portal, local] = await Promise.all([
+    // Fetch in parallel — external providers return []/null when keys missing
+    const [espnEvents, portal, local, highlights, redditHot, news] = await Promise.all([
       fetchESPNScoreboard(),
       fetchPortalNews(schoolId, school.name),
       fetchLocalKnowledge(schoolId),
+      getTeamHighlights(school.name).catch(() => null),
+      getSubredditHot('CFB', 5).catch(() => []),
+      getCollegeFootballNews('college football', 5).catch(() => []),
     ]);
 
     // Find school's game
@@ -307,6 +295,9 @@ export async function buildBotContext(
 
     portalNews.push(...portal);
     localKnowledge.push(...local);
+    teamHighlights = highlights;
+    redditChatter = redditHot.map((r) => r.title);
+    generalNews = news.map((n) => n.title);
   }
 
   const timeOfDay = getTimeContext();
@@ -337,6 +328,18 @@ export async function buildBotContext(
     }
   }
 
+  if (teamHighlights) {
+    contextSummary += `Team stats: ${teamHighlights}. `;
+  }
+
+  if (redditChatter.length > 0) {
+    contextSummary += `r/CFB is buzzing about: ${redditChatter.slice(0, 3).join(' | ')}. `;
+  }
+
+  if (generalNews.length > 0) {
+    contextSummary += `News headlines: ${generalNews.slice(0, 3).join(' | ')}. `;
+  }
+
   contextSummary += `Time: ${timeOfDay}.`;
 
   return {
@@ -346,6 +349,9 @@ export async function buildBotContext(
     localKnowledge,
     timeOfDay,
     contextSummary,
+    teamHighlights,
+    redditChatter,
+    generalNews,
   };
 }
 

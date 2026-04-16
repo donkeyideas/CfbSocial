@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { aiChat } from '@/lib/admin/ai/deepseek';
+import { aiChat } from '@/lib/admin/ai/router';
 
 export async function POST(request: NextRequest) {
   const supabase = await createClient();

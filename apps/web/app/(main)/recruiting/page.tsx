@@ -1,4 +1,5 @@
 import { RecruitingClient } from './RecruitingClient';
+import { getRecruitingRanks } from '@/lib/providers/cfbd';
 
 export const revalidate = 300; // revalidate every 5 minutes
 
@@ -25,8 +26,10 @@ export default async function RecruitingPage() {
   const { createClient } = await import('@/lib/supabase/server');
   const supabase = await createClient();
 
-  // Fetch schools + portal data in parallel. Only fetch the columns we need.
-  const [schoolsRes, portalPlayersRes, claimsCountsRes, inPortalRes, committedRes] = await Promise.all([
+  const currentYear = new Date().getFullYear();
+  // Fetch schools + portal data + CFBD recruiting ranks in parallel. CFBD returns [] when key is missing.
+  // Try current cycle first; if empty (early in the year before signing day data populates), fall back to last completed cycle.
+  const [schoolsRes, portalPlayersRes, claimsCountsRes, inPortalRes, committedRes, currentRanks] = await Promise.all([
     supabase
       .from('schools')
       .select('id, name, abbreviation, slug, primary_color, secondary_color, conference, mascot')
@@ -51,7 +54,19 @@ export default async function RecruitingPage() {
       .from('portal_players')
       .select('id', { count: 'exact', head: true })
       .eq('status', 'COMMITTED'),
+    getRecruitingRanks(currentYear).catch(() => []),
   ]);
+
+  // Fall back to previous year when current year's class isn't published yet
+  const recruitingRanks = currentRanks.length > 0
+    ? currentRanks
+    : await getRecruitingRanks(currentYear - 1).catch(() => []);
+
+  // Build lookup map from school name → rank
+  const rankMap = new Map<string, number>();
+  for (const r of recruitingRanks) {
+    rankMap.set(r.team.toLowerCase(), r.rank);
+  }
 
   const schools = schoolsRes.data;
   const portalPlayers = portalPlayersRes.data;
@@ -99,6 +114,7 @@ export default async function RecruitingPage() {
       avgStarRating: 0,
       netMovement: gained - lost,
       activityLevel: getActivityLevel(activityScore),
+      recruitingRank: rankMap.get(school.name.toLowerCase()) ?? null,
     };
   });
 

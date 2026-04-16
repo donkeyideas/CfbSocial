@@ -18,6 +18,7 @@ interface SchoolStats {
   avgStarRating: number;
   netMovement: number;
   activityLevel: 'LOW' | 'MODERATE' | 'HIGH' | 'VERY_HIGH';
+  recruitingRank?: number | null;
 }
 
 type SortBy = 'activity' | 'net' | 'stars' | 'name';
@@ -161,6 +162,13 @@ function SchoolCard({ school }: { school: SchoolStats }) {
       {school.avgStarRating > 0 && (
         <div className="recruiting-stars">
           Avg Rating: {school.avgStarRating}
+        </div>
+      )}
+
+      {school.recruitingRank && (
+        <div className="recruiting-rank-badge">
+          <span>{new Date().getFullYear()} Class Rank</span>
+          <strong>#{school.recruitingRank}</strong>
         </div>
       )}
 

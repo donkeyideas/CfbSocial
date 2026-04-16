@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useAuth } from '@/components/auth/AuthProvider';
+import { TurnstileWidget } from '@/components/turnstile/TurnstileWidget';
 
 const reportReasons = [
   { value: 'SPAM', label: 'Spam' },
@@ -25,6 +26,8 @@ export function ReportModal({ postId, onClose }: ReportModalProps) {
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState('');
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
+  const turnstileEnabled = !!process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
 
   async function handleSubmit() {
     if (!reason) return;
@@ -33,6 +36,26 @@ export function ReportModal({ postId, onClose }: ReportModalProps) {
 
     try {
       if (!profile?.id) throw new Error('Not authenticated');
+
+      // Verify Turnstile if enabled
+      if (turnstileEnabled) {
+        if (!turnstileToken) {
+          setError('Please complete the CAPTCHA challenge.');
+          setSubmitting(false);
+          return;
+        }
+        const verifyRes = await fetch('/api/turnstile/verify', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ token: turnstileToken }),
+        });
+        const verifyJson = (await verifyRes.json()) as { success: boolean };
+        if (!verifyJson.success) {
+          setError('CAPTCHA verification failed. Please try again.');
+          setSubmitting(false);
+          return;
+        }
+      }
 
       const res = await fetch('/api/report', {
         method: 'POST',
@@ -214,6 +237,15 @@ export function ReportModal({ postId, onClose }: ReportModalProps) {
             marginBottom: 12,
           }}
         />
+
+        {turnstileEnabled && (
+          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 12 }}>
+            <TurnstileWidget
+              onVerify={(t) => setTurnstileToken(t)}
+              onExpire={() => setTurnstileToken(null)}
+            />
+          </div>
+        )}
 
         {error && (
           <div style={{ color: 'var(--crimson)', fontSize: '0.8rem', fontFamily: 'var(--sans)', marginBottom: 8 }}>

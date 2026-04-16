@@ -1,6 +1,7 @@
 import { notFound } from 'next/navigation';
 import { SchoolHub } from './SchoolHub';
 import { SportsTeamJsonLd, BreadcrumbJsonLd } from '@/components/seo/JsonLd';
+import { searchHighlights } from '@/lib/providers/youtube';
 
 export const revalidate = 60;
 
@@ -46,7 +47,7 @@ export default async function SchoolPage({ params }: SchoolPageProps) {
   // Fetch school first (needed for dependent queries) — select only needed columns
   const { data: school, error } = await supabase
     .from('schools')
-    .select('id, name, abbreviation, slug, conference, mascot, stadium, primary_color, secondary_color, logo_url, is_fbs')
+    .select('id, name, short_name, abbreviation, slug, conference, mascot, stadium, city, state, primary_color, secondary_color, logo_url, is_fbs')
     .eq('slug', slug)
     .single();
 
@@ -96,6 +97,9 @@ export default async function SchoolPage({ params }: SchoolPageProps) {
   const topFans = topFansRes.data;
   const portalCount = portalCountRes.count;
 
+  // Fetch YouTube highlights — returns [] when YOUTUBE_API_KEY is missing
+  const highlights = await searchHighlights(`${school.name} football`, 5).catch(() => []);
+
   return (
     <>
       <SportsTeamJsonLd
@@ -143,6 +147,7 @@ export default async function SchoolPage({ params }: SchoolPageProps) {
         portalCount={portalCount ?? 0}
         posts={posts ?? []}
         topFans={topFans ?? []}
+        highlights={highlights}
       />
     </>
   );

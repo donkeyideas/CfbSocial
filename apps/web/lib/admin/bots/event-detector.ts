@@ -4,38 +4,7 @@
 // ============================================================
 
 import { createAdminClient } from '@/lib/admin/supabase/admin';
-
-interface ESPNCompetition {
-  competitors: Array<{
-    team: { abbreviation: string; displayName: string };
-    score: string;
-    homeAway: string;
-  }>;
-  status: {
-    type: { state: string };
-    displayClock: string;
-    period: number;
-  };
-}
-
-interface ESPNEvent {
-  id: string;
-  competitions: ESPNCompetition[];
-}
-
-async function fetchESPNScoreboard(): Promise<ESPNEvent[]> {
-  try {
-    const res = await fetch(
-      'https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard',
-      { signal: AbortSignal.timeout(5000) }
-    );
-    if (!res.ok) return [];
-    const data = await res.json();
-    return (data.events as ESPNEvent[]) ?? [];
-  } catch {
-    return [];
-  }
-}
+import { getScoreboard } from '@/lib/providers/espn';
 
 /**
  * Detect events from ESPN, portal, and user activity,
@@ -64,7 +33,7 @@ export async function detectAndQueueEvents(): Promise<{ queued: number }> {
   }
 
   // 1. Detect live games and game finals
-  const events = await fetchESPNScoreboard();
+  const events = await getScoreboard();
   for (const event of events) {
     const comp = event.competitions[0];
     if (!comp) continue;
@@ -234,7 +203,7 @@ export async function consumeEventQueue(): Promise<{ consumed: number; actionsEx
   const supabase = createAdminClient();
   const now = new Date().toISOString();
 
-  // Fetch ready events
+  // Fetch ready events (cap at 2 per cycle — previously 5 — to prevent AI cost spikes)
   const { data: readyEvents } = await supabase
     .from('bot_event_queue')
     .select('*')
@@ -242,7 +211,7 @@ export async function consumeEventQueue(): Promise<{ consumed: number; actionsEx
     .lte('scheduled_at', now)
     .gt('expires_at', now)
     .order('priority', { ascending: false })
-    .limit(5);
+    .limit(2);
 
   if (!readyEvents?.length) return { consumed: 0, actionsExecuted: 0 };
 
@@ -270,9 +239,9 @@ export async function consumeEventQueue(): Promise<{ consumed: number; actionsEx
       continue;
     }
 
-    // Pick 1-2 bots to act on this event
+    // Pick 1 bot to act on this event (reduced from 2 to halve AI cost per event)
     const shuffled = unconsumed.sort(() => Math.random() - 0.5);
-    const selected = shuffled.slice(0, Math.min(2, shuffled.length));
+    const selected = shuffled.slice(0, 1);
 
     for (const bot of selected) {
       try {

@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useRealtimeGameChat } from '@cfb-social/api';
+import { WeatherBadge } from '@/components/war-room/WeatherBadge';
 
 interface GameThreadProps {
   thread: {
@@ -205,6 +206,7 @@ export function GameThread({ thread, espnGameId, initialMessages }: GameThreadPr
           <span className="game-scoreboard-title">{thread.title}</span>
           <div className="war-room-viewers">{viewerCount} watching</div>
         </div>
+        <WeatherBadge homeAbbr={thread.home_team} status={status} />
         <div className="game-scoreboard-teams">
           <div className="game-scoreboard-team">
             <span className="game-scoreboard-abbr">{thread.away_team}</span>

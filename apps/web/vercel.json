@@ -2,15 +2,15 @@
   "crons": [
     {
       "path": "/api/cron/bots",
-      "schedule": "*/20 * * * *"
+      "schedule": "*/30 * * * *"
     },
     {
       "path": "/api/cron/bots/engage",
-      "schedule": "*/15 * * * *"
+      "schedule": "*/30 * * * *"
     },
     {
       "path": "/api/cron/bots/rivalry",
-      "schedule": "0 */6 * * *"
+      "schedule": "0 */12 * * *"
     },
     {
       "path": "/api/cron/bots/midnight",

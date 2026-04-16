@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { after } from 'next/server';
 import { createAdminClient } from '@/lib/admin/supabase/admin';
-import { aiChatWithRetry } from '@/lib/admin/ai/deepseek';
+import { aiChatWithRetry } from '@/lib/admin/ai/router';
 import { sendPushToAudience } from '@/lib/firebase/send';
 
 export const runtime = 'nodejs';

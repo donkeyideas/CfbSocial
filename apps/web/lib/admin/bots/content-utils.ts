@@ -3,87 +3,21 @@
 // Multi-source CFB news, content cleaning, fallback content
 // ============================================================
 
+import { getNews as getEspnNews, type ESPNArticle as ProviderArticle, type ESPNArticleLink as ProviderArticleLink } from '@/lib/providers/espn';
+
 // ============================================================
 // News API - Real news data from multiple sources
 // ============================================================
 
-export interface ESPNArticleLink {
-  name: string;
-  url: string;
-  type: 'article' | 'team' | 'athlete';
-}
-
-export interface ESPNArticle {
-  headline: string;
-  description: string;
-  teams: string[];       // e.g., ["LSU Tigers", "Alabama Crimson Tide"]
-  athletes: string[];    // e.g., ["Fernando Mendoza", "Denzel Boston"]
-  published: string;
-  url: string;           // Article URL
-  links: ESPNArticleLink[];  // All extracted links (article, team, player pages)
-  source: string;        // Which outlet this came from
-}
+export type ESPNArticleLink = ProviderArticleLink;
+export type ESPNArticle = ProviderArticle;
 
 /**
  * Fetch real CFB news from ESPN API with team + player metadata.
+ * Thin wrapper around consolidated ESPN provider (cached 10 min).
  */
 async function fetchESPNArticles(): Promise<ESPNArticle[]> {
-  try {
-    const res = await fetch(
-      'https://site.api.espn.com/apis/site/v2/sports/football/college-football/news?limit=20',
-      { signal: AbortSignal.timeout(8000) }
-    );
-    if (!res.ok) return [];
-    /* eslint-disable @typescript-eslint/no-explicit-any */
-    const data = await res.json() as { articles?: any[] };
-
-    return (data.articles || []).map((a: any) => {
-      const categories: any[] = a.categories || [];
-      const extractedLinks: ESPNArticleLink[] = [];
-
-      const articleUrl = a.links?.web?.href || a.links?.web?.self?.href || '';
-      if (articleUrl) {
-        extractedLinks.push({ name: a.headline || 'Article', url: articleUrl, type: 'article' });
-      }
-
-      for (const cat of categories) {
-        if (cat.type === 'team' && cat.team?.links?.web?.teams?.href) {
-          extractedLinks.push({
-            name: cat.description || cat.team?.description || '',
-            url: cat.team.links.web.teams.href,
-            type: 'team',
-          });
-        }
-        if (cat.type === 'athlete' && cat.athlete?.links?.web?.athletes?.href) {
-          extractedLinks.push({
-            name: cat.description || cat.athlete?.description || '',
-            url: cat.athlete.links.web.athletes.href,
-            type: 'athlete',
-          });
-        }
-      }
-
-      return {
-        headline: a.headline || '',
-        description: ((a.description || '') as string).substring(0, 300),
-        teams: categories
-          .filter((c: any) => c.type === 'team')
-          .map((c: any) => (c.description || '') as string)
-          .filter((d: string) => d.length > 0),
-        athletes: categories
-          .filter((c: any) => c.type === 'athlete')
-          .map((c: any) => (c.description || '') as string)
-          .filter((d: string) => d.length > 0),
-        published: a.published || '',
-        url: articleUrl,
-        links: extractedLinks,
-        source: 'ESPN',
-      };
-    });
-    /* eslint-enable @typescript-eslint/no-explicit-any */
-  } catch {
-    return [];
-  }
+  return getEspnNews(20);
 }
 
 /**

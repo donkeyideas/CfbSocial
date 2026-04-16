@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAdmin } from '@/lib/admin/auth-guard';
 import { createAdminClient } from '@/lib/admin/supabase/admin';
-import { aiChatWithRetry } from '@/lib/admin/ai/deepseek';
+import { aiChatWithRetry } from '@/lib/admin/ai/router';
 
 export async function POST(req: NextRequest) {
   const auth = await requireAdmin();

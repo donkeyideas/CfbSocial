@@ -1,5 +1,5 @@
 import { createAdminClient } from '@/lib/admin/supabase/admin';
-import { aiChat } from '@/lib/admin/ai/deepseek';
+import { aiChat } from '@/lib/admin/ai/router';
 import {
   type SocialPlatform,
   type ToneType,
