@@ -603,6 +603,10 @@ export async function postBotTake(botId: string): Promise<{ success: boolean; po
     return { success: false, error: 'AI generation failed — skipping post (no fallback)' };
   }
 
+  // Replace {{school}} placeholders before humanizing
+  const safeSchoolName = bot.school?.name ?? '';
+  content = content.replace(/\{\{school\}\}/g, safeSchoolName);
+
   // Apply humanizer
   content = humanizeContent(content, personality, {
     bot_region: bot.bot_region,
@@ -611,6 +615,9 @@ export async function postBotTake(botId: string): Promise<{ success: boolean; po
     schoolName: bot.school?.name,
     mascotName: bot.school?.mascot,
   });
+
+  // Final safety: reject any post that still has {{school}} placeholder
+  content = content.replace(/\{\{school\}\}/g, safeSchoolName || 'the team');
 
   // Final duplicate check
   const { data: duplicate } = await supabase
