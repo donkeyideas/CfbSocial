@@ -381,13 +381,18 @@ async function renderFeedItems(
       });
   }
 
-  const postItems = posts.map((p) => ({
-    ...p,
-    _feedKey: `post-${p.id}`,
-    _feedTime: p.created_at as string,
-    _repostedBy: null as { username: string; display_name: string | null } | null,
-    _repostTime: null as string | null,
-  }));
+  // Deduplicate: if a post already appears as a repost, skip it from the regular list
+  const repostedPostIds = new Set(repostItems.map((r) => r.id as string));
+
+  const postItems = posts
+    .filter((p) => !repostedPostIds.has(p.id as string))
+    .map((p) => ({
+      ...p,
+      _feedKey: `post-${p.id}`,
+      _feedTime: p.created_at as string,
+      _repostedBy: null as { username: string; display_name: string | null } | null,
+      _repostTime: null as string | null,
+    }));
 
   const merged = [...postItems, ...repostItems]
     .sort((a, b) => new Date(b._feedTime as string).getTime() - new Date(a._feedTime as string).getTime())

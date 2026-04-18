@@ -1006,13 +1006,13 @@ h1, h2, h3, h4, h5, h6,
 }
 
 html.dark .masthead-badge-link {
-  color: var(--cream);
-  border-color: var(--cream);
+  color: var(--school-secondary, var(--gold));
+  border-color: var(--school-secondary, var(--gold));
 }
 
 html.dark .masthead-badge-link:hover {
-  background: var(--cream);
-  color: var(--ink);
+  background: var(--school-secondary, var(--gold));
+  color: var(--dark);
 }
 
 .masthead-left {
@@ -1939,7 +1939,7 @@ html.dark .sideline-field {
    ============================================================ */
 
 .post-card {
-  margin-bottom: 22px;
+  margin-bottom: 14px;
   position: relative;
 }
 
@@ -1947,7 +1947,7 @@ html.dark .sideline-field {
   display: flex;
   align-items: center;
   gap: 10px;
-  margin-bottom: 10px;
+  margin-bottom: 6px;
 }
 
 .post-avatar {
@@ -2021,23 +2021,37 @@ html.dark .sideline-field {
   font-size: 1.02rem;
   line-height: 1.65;
   color: var(--ink);
-  margin-bottom: 14px;
+  margin-bottom: 8px;
   white-space: pre-wrap;
   word-break: break-word;
   overflow-wrap: anywhere;
+  min-width: 0;
+  max-width: 100%;
 }
 
-.post-body-link {
-  text-decoration: none;
-  color: inherit;
-  display: block;
+/* Card-level click-to-navigate (text remains selectable like Twitter) */
+.post-card-clickable {
   cursor: pointer;
 }
-.post-body-link:hover .post-body,
-.post-body-link:hover .prediction-question,
-.post-body-link:hover .aging-quote,
-.post-body-link:hover .pressbox-content {
+.post-body,
+.prediction-question,
+.aging-quote,
+.pressbox-content {
+  user-select: text;
+  cursor: text;
+}
+.post-card-clickable:hover .post-body,
+.post-card-clickable:hover .prediction-question,
+.post-card-clickable:hover .aging-quote,
+.post-card-clickable:hover .pressbox-content {
   color: var(--crimson);
+}
+
+html.dark .post-card-clickable:hover .post-body,
+html.dark .post-card-clickable:hover .prediction-question,
+html.dark .post-card-clickable:hover .aging-quote,
+html.dark .post-card-clickable:hover .pressbox-content {
+  color: var(--school-secondary, var(--gold));
 }
 
 /* Ballot-style reactions */
@@ -2399,7 +2413,7 @@ html.dark .challenge-argument-text {
   background: var(--warm-white);
   border: 1.5px solid rgba(59,47,30,0.2);
   border-radius: 2px;
-  padding: 18px 18px 14px 30px;
+  padding: 14px 14px 10px 26px;
   position: relative;
   box-shadow: 0 1px 4px rgba(59,47,30,0.08);
 }
@@ -2444,7 +2458,7 @@ html.dark .challenge-argument-text {
   background-image:
     linear-gradient(180deg, rgba(212,197,160,0.25) 0%, transparent 30%, transparent 70%, rgba(212,197,160,0.15) 100%);
   border: 1px solid var(--tan);
-  padding: 18px 20px;
+  padding: 14px 16px;
   position: relative;
   transform: rotate(-0.7deg);
   box-shadow: 2px 3px 8px rgba(59,47,30,0.12);
@@ -2578,7 +2592,7 @@ html.dark .receipt-filed-stamp {
     linear-gradient(135deg, rgba(245,212,66,0.15) 0%, transparent 50%);
   border: 3px solid var(--dark-brown);
   border-left: 6px solid var(--penalty-yellow);
-  padding: 18px 20px;
+  padding: 14px 16px;
   position: relative;
 }
 
@@ -2808,7 +2822,7 @@ html.dark .receipt-filed-stamp {
 }
 
 .rivalry-body {
-  padding: 18px 20px;
+  padding: 14px 16px;
 }
 
 .rivalry-question {
@@ -4022,12 +4036,32 @@ html.dark .school-link {
 
 html.dark .chaos-meter {
   background: #252220;
-  border-color: #6b2020;
+  border-color: var(--crimson);
+}
+
+html.dark .chaos-meter-title {
+  color: var(--school-secondary, var(--gold));
+}
+
+html.dark .chaos-meter-value {
+  color: var(--school-secondary, var(--gold)) !important;
+}
+
+html.dark .chaos-meter-labels {
+  color: var(--text-secondary);
+}
+
+html.dark .chaos-meter-detail {
+  color: var(--text-secondary);
+}
+
+html.dark .chaos-meter-bar-fill {
+  background: var(--crimson) !important;
 }
 
 html.dark .chaos-meter-bar-track {
-  background: rgba(200,180,140,0.06);
-  border-color: rgba(200,180,140,0.1);
+  background: rgba(200,180,140,0.10);
+  border-color: rgba(200,180,140,0.15);
 }
 
 /* =============================================
@@ -4240,13 +4274,13 @@ html.dark .chaos-meter-bar-track {
   width: 100%;
   max-width: 540px;
   max-height: 80vh;
-  background: var(--parchment);
-  border: 1px solid var(--ink-light);
+  background: #2a2a2a;
+  border: 1px solid #444;
   border-radius: 6px;
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+  box-shadow: 0 10px 40px rgba(0,0,0,0.4);
 }
 
 .gif-picker-header {
@@ -4254,19 +4288,23 @@ html.dark .chaos-meter-bar-track {
   align-items: center;
   gap: 8px;
   padding: 10px 12px;
-  border-bottom: 1px solid var(--ink-light);
+  border-bottom: 1px solid #444;
 }
 
 .gif-picker-input {
   flex: 1;
-  border: 1px solid var(--ink-light);
-  background: transparent;
-  color: var(--text);
+  border: 1px solid #555;
+  background: #1a1a1a;
+  color: #fff;
   font-family: var(--sans);
   font-size: 0.9rem;
   padding: 8px 10px;
   border-radius: 4px;
   outline: none;
+}
+
+.gif-picker-input::placeholder {
+  color: #999;
 }
 
 .gif-picker-input:focus {
@@ -4276,7 +4314,7 @@ html.dark .chaos-meter-bar-track {
 .gif-picker-close {
   background: none;
   border: none;
-  color: var(--text);
+  color: #fff;
   font-size: 1.5rem;
   line-height: 1;
   cursor: pointer;
@@ -6085,11 +6123,13 @@ html.dark .modal-error {
   border: 1.5px solid rgba(59,47,30,0.15);
   border-radius: 4px;
   overflow: hidden;
-  margin-bottom: 14px;
+  margin-bottom: 6px;
   text-decoration: none;
   color: inherit;
   background: var(--cream, #faf8f3);
   transition: border-color 0.15s, box-shadow 0.15s;
+  min-width: 0;
+  max-width: 100%;
 }
 
 .link-preview:hover {
@@ -6102,7 +6142,7 @@ html.dark .modal-error {
 .link-preview-image {
   position: relative;
   width: 100%;
-  max-height: 280px;
+  max-height: 300px;
   overflow: hidden;
   background: rgba(59,47,30,0.05);
   border-bottom: 1px solid rgba(59,47,30,0.08);
@@ -6112,12 +6152,13 @@ html.dark .modal-error {
   display: block;
   width: 100%;
   height: auto;
-  max-height: 280px;
+  max-height: 500px;
   object-fit: cover;
+  object-position: center top;
 }
 
 .link-preview-info {
-  padding: 12px 14px;
+  padding: 10px 12px;
 }
 
 .link-preview-site {
@@ -6225,6 +6266,8 @@ html.dark .link-preview-desc {
   overflow: hidden;
   border-radius: 6px;
   background: #000;
+  max-width: 100%;
+  width: 100%;
 }
 .link-preview-play-overlay {
   position: absolute;
@@ -6264,6 +6307,7 @@ html.dark .link-preview-skeleton-line {
   color: var(--crimson);
   font-weight: 600;
   text-decoration: none;
+  cursor: pointer;
 }
 .mention-link:hover {
   text-decoration: underline;
@@ -6276,11 +6320,13 @@ html.dark .link-preview-skeleton-line {
   position: absolute;
   left: 0;
   right: 0;
-  z-index: 50;
-  background: var(--parchment);
-  border: 1px solid var(--tan);
+  bottom: 0;
+  transform: translateY(100%);
+  z-index: 100;
+  background: #faf8f3;
+  border: 2px solid #c9b97a;
   border-radius: 4px;
-  box-shadow: 0 4px 12px rgba(59,47,30,0.12);
+  box-shadow: 0 6px 20px rgba(59,47,30,0.25);
   max-height: 240px;
   overflow-y: auto;
 }
@@ -6342,9 +6388,9 @@ html.dark .link-preview-skeleton-line {
   text-overflow: ellipsis;
 }
 html.dark .mention-dropdown {
-  background: var(--dark-surface);
-  border-color: var(--dark-border);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  background: #1a1a2e;
+  border-color: #444;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.5);
 }
 html.dark .mention-dropdown-item:hover,
 html.dark .mention-dropdown-item[data-active="true"] {

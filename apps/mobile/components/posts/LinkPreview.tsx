@@ -21,6 +21,25 @@ interface OgData {
   url: string;
 }
 
+// Detect direct GIF URLs (GIPHY media links, etc.)
+function extractGifUrl(url: string): string | null {
+  try {
+    const u = new URL(url);
+    // Any giphy.com subdomain with giphy.gif in path
+    if (u.hostname.includes('giphy.com') && u.pathname.includes('/giphy.gif')) {
+      return url.split('?')[0]; // strip query params for cleaner URL
+    }
+    // GIPHY page URLs — convert to direct media
+    if ((u.hostname === 'giphy.com' || u.hostname === 'www.giphy.com') && u.pathname.startsWith('/gifs/')) {
+      const match = u.pathname.match(/\/gifs\/(?:.*-)?([a-zA-Z0-9]+)$/);
+      if (match) return `https://media.giphy.com/media/${match[1]}/giphy.gif`;
+    }
+    // Any direct .gif URL
+    if (u.pathname.endsWith('.gif')) return url;
+  } catch { /* ignore */ }
+  return null;
+}
+
 const URL_REGEX = /https?:\/\/[^\s<>"\])}]+/gi;
 
 // In-memory cache — only stores successful results
@@ -184,6 +203,42 @@ async function fetchOgData(url: string): Promise<OgData | null> {
       };
     }
 
+    // Instagram: use oEmbed API for reliable preview
+    if (parsed.hostname.includes('instagram.com')) {
+      try {
+        const oRes = await fetch(`https://api.instagram.com/oembed?url=${encodeURIComponent(url)}&maxwidth=480`);
+        if (oRes.ok) {
+          const d = await oRes.json() as { title?: string; author_name?: string; thumbnail_url?: string };
+          return {
+            title: d.title || d.author_name || 'Instagram Post',
+            description: d.author_name ? `@${d.author_name}` : null,
+            image: d.thumbnail_url || null,
+            siteName: 'Instagram',
+            favicon: 'https://www.instagram.com/favicon.ico',
+            url,
+          };
+        }
+      } catch { /* fall through to HTML scraping */ }
+    }
+
+    // TikTok: use oEmbed API for reliable preview
+    if (parsed.hostname.includes('tiktok.com')) {
+      try {
+        const oRes = await fetch(`https://www.tiktok.com/oembed?url=${encodeURIComponent(url)}`);
+        if (oRes.ok) {
+          const d = await oRes.json() as { title?: string; author_name?: string; thumbnail_url?: string };
+          return {
+            title: d.title || 'TikTok Video',
+            description: d.author_name ? `@${d.author_name}` : null,
+            image: d.thumbnail_url || null,
+            siteName: 'TikTok',
+            favicon: 'https://www.tiktok.com/favicon.ico',
+            url,
+          };
+        }
+      } catch { /* fall through to HTML scraping */ }
+    }
+
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 8000);
 
@@ -220,9 +275,33 @@ interface VideoEmbed {
   embedUrl: string;
 }
 
+// Base URL for YouTube IFrame API — must be a real third-party domain so
+// the WebView origin matches the `origin` playerVar YouTube checks.
+const YT_PLAYER_BASE_URL = 'https://lonelycpp.github.io';
+
+function buildYouTubeHtml(videoId: string): string {
+  return `<!DOCTYPE html><html><head>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<style>*{margin:0;padding:0;overflow:hidden}body{background:#000}#player{width:100vw;height:100vh}</style>
+</head><body>
+<div id="player"></div>
+<script>
+var tag=document.createElement('script');
+tag.src='https://www.youtube.com/iframe_api';
+document.head.appendChild(tag);
+function onYouTubeIframeAPIReady(){
+new YT.Player('player',{
+videoId:'${videoId}',
+playerVars:{playsinline:1,autoplay:1,rel:0,modestbranding:1,fs:1,origin:'${YT_PLAYER_BASE_URL}'},
+events:{onReady:function(e){e.target.playVideo()}}
+});}
+</script>
+</body></html>`;
+}
+
 function detectVideoEmbed(url: string): VideoEmbed | null {
   const ytId = extractYouTubeId(url);
-  if (ytId) return { platform: 'youtube', embedUrl: `https://www.youtube.com/embed/${ytId}?autoplay=1&playsinline=1` };
+  if (ytId) return { platform: 'youtube', embedUrl: ytId }; // store just the video ID for YouTube
 
   try {
     const u = new URL(url);
@@ -231,10 +310,14 @@ function detectVideoEmbed(url: string): VideoEmbed | null {
     if (u.hostname.includes('tiktok.com') && tiktokMatch) {
       return { platform: 'tiktok', embedUrl: `https://www.tiktok.com/embed/v2/${tiktokMatch[1]}` };
     }
+    if (u.hostname === 'vm.tiktok.com') {
+      const shortId = u.pathname.replace(/^\//, '').split('/')[0];
+      if (shortId) return { platform: 'tiktok', embedUrl: url };
+    }
     // Instagram
-    const instaMatch = u.pathname.match(/\/(?:reel|p)\/([A-Za-z0-9_-]+)/);
-    if (u.hostname.includes('instagram.com') && instaMatch) {
-      return { platform: 'instagram', embedUrl: `https://www.instagram.com/p/${instaMatch[1]}/embed` };
+    const instaPost = u.pathname.match(/\/(?:reels?|p)\/([A-Za-z0-9_-]+)/);
+    if (u.hostname.includes('instagram.com') && instaPost) {
+      return { platform: 'instagram', embedUrl: `https://www.instagram.com/p/${instaPost[1]}/embed` };
     }
     // Twitch clips
     const twitchClip = url.match(/clips\.twitch\.tv\/([A-Za-z0-9_-]+)/) || u.pathname.match(/\/clip\/([A-Za-z0-9_-]+)/);
@@ -276,6 +359,9 @@ export const LinkPreview = memo(function LinkPreview({ content }: LinkPreviewPro
   useEffect(() => {
     if (!url) return;
 
+    // Skip OG fetch for GIF URLs — they render directly
+    if (extractGifUrl(url)) return;
+
     const cached = ogCache.get(url);
     if (cached) {
       setOgData(cached);
@@ -306,17 +392,17 @@ export const LinkPreview = memo(function LinkPreview({ content }: LinkPreviewPro
       borderColor: colors.border,
       borderRadius: 6,
       overflow: 'hidden',
-      marginTop: 10,
-      marginBottom: 8,
+      marginTop: 8,
+      marginBottom: 4,
       backgroundColor: colors.surfaceRaised,
     },
     image: {
       width: '100%',
-      height: 160,
+      height: 200,
       backgroundColor: colors.surface,
     },
     info: {
-      padding: 12,
+      padding: 10,
     },
     siteRow: {
       flexDirection: 'row',
@@ -354,8 +440,8 @@ export const LinkPreview = memo(function LinkPreview({ content }: LinkPreviewPro
       borderColor: colors.border,
       borderRadius: 6,
       overflow: 'hidden',
-      marginTop: 10,
-      marginBottom: 8,
+      marginTop: 8,
+      marginBottom: 4,
     },
     skeletonImg: {
       width: '100%',
@@ -372,18 +458,15 @@ export const LinkPreview = memo(function LinkPreview({ content }: LinkPreviewPro
       padding: 12,
     },
     videoContainer: {
-      marginTop: 10,
-      marginBottom: 8,
+      marginTop: 8,
+      marginBottom: 4,
       borderRadius: 6,
       overflow: 'hidden',
-      backgroundColor: '#000',
+      backgroundColor: colors.surface,
     },
     videoWebView: {
       height: 220,
-      backgroundColor: '#000',
-    },
-    videoWebViewVertical: {
-      height: 400,
+      backgroundColor: colors.surface,
     },
     playOverlay: {
       ...StyleSheet.absoluteFillObject,
@@ -412,7 +495,32 @@ export const LinkPreview = memo(function LinkPreview({ content }: LinkPreviewPro
     },
   }), [colors]);
 
-  if (!url || error) return null;
+  const videoEmbed = url ? detectVideoEmbed(url) : null;
+
+  if (!url) return null;
+  // Only hide on error for non-video embeds; video embeds show a play button regardless
+  if (error && !videoEmbed) return null;
+
+  // Fallback OG data for video embeds when OG fetch failed
+  const platformNames: Record<string, string> = { youtube: 'YouTube', instagram: 'Instagram', tiktok: 'TikTok', twitch: 'Twitch' };
+  const effectiveOgData = ogData ?? (error && videoEmbed ? {
+    title: `Watch on ${platformNames[videoEmbed.platform] || 'Video'}`,
+    description: null,
+    image: null,
+    siteName: platformNames[videoEmbed.platform] || null,
+    favicon: null,
+    url: url,
+  } : null);
+
+  // GIF URLs: render image directly, no OG card
+  const gifUrl = url ? extractGifUrl(url) : null;
+  if (gifUrl) {
+    return (
+      <View style={styles.card}>
+        <Image source={{ uri: gifUrl }} style={{ width: '100%', height: 250 }} resizeMode="contain" />
+      </View>
+    );
+  }
 
   if (loading) {
     const opacity = shimmerAnim.interpolate({
@@ -431,21 +539,95 @@ export const LinkPreview = memo(function LinkPreview({ content }: LinkPreviewPro
     );
   }
 
-  if (!ogData) return null;
-
-  const videoEmbed = url ? detectVideoEmbed(url) : null;
+  if (!effectiveOgData) return null;
 
   // If playing, show embedded video
   if (videoEmbed && playing) {
-    const isVertical = videoEmbed.platform === 'tiktok';
+    // YouTube: use IFrame API with third-party baseUrl for proper origin matching
+    if (videoEmbed.platform === 'youtube') {
+      return (
+        <View style={styles.videoContainer}>
+          <WebView
+            source={{ html: buildYouTubeHtml(videoEmbed.embedUrl), baseUrl: YT_PLAYER_BASE_URL }}
+            style={styles.videoWebView}
+            allowsInlineMediaPlayback
+            mediaPlaybackRequiresUserAction={false}
+            javaScriptEnabled
+            domStorageEnabled
+            allowsFullscreenVideo
+            originWhitelist={['*']}
+            mixedContentMode="always"
+          />
+        </View>
+      );
+    }
+
+    // Instagram — iframe wrapper
+    if (videoEmbed.platform === 'instagram') {
+      const instaHtml = `<!DOCTYPE html><html><head>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<style>*{margin:0;padding:0;overflow:hidden}body{background:${colors.surface}}iframe{width:100%;height:100%;border:none}</style>
+</head><body>
+<iframe src="${videoEmbed.embedUrl}" scrolling="no" allowtransparency="true" allowfullscreen></iframe>
+</body></html>`;
+      return (
+        <View style={styles.videoContainer}>
+          <WebView
+            source={{ html: instaHtml }}
+            style={{ height: 480, backgroundColor: colors.surface }}
+            allowsInlineMediaPlayback
+            mediaPlaybackRequiresUserAction={false}
+            javaScriptEnabled
+            domStorageEnabled
+            allowsFullscreenVideo
+            originWhitelist={['*']}
+            mixedContentMode="always"
+            scrollEnabled
+          />
+        </View>
+      );
+    }
+
+    // TikTok — iframe wrapper
+    if (videoEmbed.platform === 'tiktok') {
+      const tiktokHtml = `<!DOCTYPE html><html><head>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<style>*{margin:0;padding:0;overflow:hidden}body{background:${colors.surface}}iframe{width:100%;height:100%;border:none}</style>
+</head><body>
+<iframe src="${videoEmbed.embedUrl}" scrolling="no" allow="autoplay" allowfullscreen></iframe>
+</body></html>`;
+      return (
+        <View style={styles.videoContainer}>
+          <WebView
+            source={{ html: tiktokHtml }}
+            style={{ height: 680, backgroundColor: colors.surface }}
+            allowsInlineMediaPlayback
+            mediaPlaybackRequiresUserAction={false}
+            javaScriptEnabled
+            domStorageEnabled
+            allowsFullscreenVideo
+            originWhitelist={['*']}
+            mixedContentMode="always"
+            scrollEnabled
+            userAgent="Mozilla/5.0 (Linux; Android 13) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36"
+          />
+        </View>
+      );
+    }
+
+    // Twitch and other platforms — load embed URL directly
     return (
       <View style={styles.videoContainer}>
         <WebView
           source={{ uri: videoEmbed.embedUrl }}
-          style={[styles.videoWebView, isVertical && styles.videoWebViewVertical]}
+          style={{ height: 220, backgroundColor: colors.surface }}
           allowsInlineMediaPlayback
           mediaPlaybackRequiresUserAction={false}
           javaScriptEnabled
+          domStorageEnabled
+          allowsFullscreenVideo
+          originWhitelist={['*']}
+          mixedContentMode="always"
         />
       </View>
     );
@@ -453,9 +635,9 @@ export const LinkPreview = memo(function LinkPreview({ content }: LinkPreviewPro
 
   const displayDomain = (() => {
     try {
-      return new URL(ogData.url).hostname.replace(/^www\./, '');
+      return new URL(effectiveOgData.url).hostname.replace(/^www\./, '');
     } catch {
-      return ogData.url;
+      return effectiveOgData.url;
     }
   })();
 
@@ -466,14 +648,14 @@ export const LinkPreview = memo(function LinkPreview({ content }: LinkPreviewPro
         if (videoEmbed) {
           setPlaying(true);
         } else {
-          Linking.openURL(ogData.url);
+          Linking.openURL(effectiveOgData.url);
         }
       }}
     >
-      {ogData.image && !imgError && (
+      {effectiveOgData.image && !imgError ? (
         <View>
           <Image
-            source={{ uri: ogData.image }}
+            source={{ uri: effectiveOgData.image }}
             style={styles.image}
             resizeMode="cover"
             onError={() => setImgError(true)}
@@ -486,28 +668,36 @@ export const LinkPreview = memo(function LinkPreview({ content }: LinkPreviewPro
             </View>
           )}
         </View>
-      )}
+      ) : videoEmbed ? (
+        <View style={{ height: 160, backgroundColor: colors.surface, justifyContent: 'center', alignItems: 'center' }}>
+          <View style={styles.playOverlay}>
+            <View style={styles.playButton}>
+              <View style={styles.playTriangle} />
+            </View>
+          </View>
+        </View>
+      ) : null}
       <View style={styles.info}>
         <View style={styles.siteRow}>
-          {ogData.favicon && (
+          {effectiveOgData.favicon && (
             <Image
-              source={{ uri: ogData.favicon }}
+              source={{ uri: effectiveOgData.favicon }}
               style={styles.favicon}
               resizeMode="contain"
             />
           )}
           <Text style={styles.siteName} numberOfLines={1}>
-            {ogData.siteName || displayDomain}
+            {effectiveOgData.siteName || displayDomain}
           </Text>
         </View>
-        {ogData.title && (
+        {effectiveOgData.title && (
           <Text style={styles.title} numberOfLines={2}>
-            {ogData.title}
+            {effectiveOgData.title}
           </Text>
         )}
-        {ogData.description && (
+        {effectiveOgData.description && (
           <Text style={styles.desc} numberOfLines={2}>
-            {ogData.description}
+            {effectiveOgData.description}
           </Text>
         )}
       </View>

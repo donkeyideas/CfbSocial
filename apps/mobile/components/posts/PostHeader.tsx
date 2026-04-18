@@ -4,10 +4,11 @@ import { useRouter } from 'expo-router';
 import { Avatar } from '@/components/ui/Avatar';
 import { SchoolBadge } from '@/components/ui/SchoolBadge';
 import { DynastyBadge } from '@/components/ui/DynastyBadge';
-import { useColors } from '@/lib/theme/ThemeProvider';
+import { useColors, useTheme } from '@/lib/theme/ThemeProvider';
 import { withAlpha } from '@/lib/theme/utils';
 import { typography } from '@/lib/theme/typography';
 import { timeAgo } from '@/lib/utils/timeAgo';
+import { readableSchoolColor } from '@/lib/utils/colorContrast';
 
 interface PostHeaderProps {
   author: {
@@ -28,9 +29,11 @@ interface PostHeaderProps {
 
 export const PostHeader = memo(function PostHeader({ author, createdAt, invertColors }: PostHeaderProps) {
   const colors = useColors();
+  const { isDark } = useTheme();
   const router = useRouter();
   const displayName = author?.display_name || author?.username || 'Anonymous';
-  const schoolColor = author?.school?.primary_color || colors.crimson;
+  const rawSchoolColor = author?.school?.primary_color || colors.crimson;
+  const schoolColor = readableSchoolColor(rawSchoolColor, isDark);
   const textColor = invertColors ? '#f4efe4' : colors.textPrimary;
   const mutedColor = invertColors ? 'rgba(244,239,228,0.6)' : colors.textMuted;
 
@@ -90,7 +93,7 @@ export const PostHeader = memo(function PostHeader({ author, createdAt, invertCo
           {author?.school && (
             <SchoolBadge
               abbreviation={author.school.abbreviation}
-              color={author.school.primary_color}
+              color={readableSchoolColor(author.school.primary_color, isDark)}
               slug={author.school.slug}
               small
             />

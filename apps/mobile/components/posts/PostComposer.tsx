@@ -321,6 +321,7 @@ export function PostComposer({ visible, onClose, onPostCreated }: PostComposerPr
     },
     toolRow: {
       flexDirection: 'row',
+      flexWrap: 'wrap',
       gap: 8,
     },
     tool: {

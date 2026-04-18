@@ -25,9 +25,10 @@ import { FollowButton } from '@/components/profile/FollowButton';
 import { BlockButton } from '@/components/profile/BlockButton';
 import { ProfileEditButton } from '@/components/profile/ProfileEditButton';
 import { PostCard, type PostData } from '@/components/posts/PostCard';
-import { useColors } from '@/lib/theme/ThemeProvider';
+import { useColors, useTheme } from '@/lib/theme/ThemeProvider';
 import { typography } from '@/lib/theme/typography';
 import { useSchoolTheme } from '@/lib/theme/SchoolThemeProvider';
+import { readableSchoolColor } from '@/lib/utils/colorContrast';
 
 interface ProfileData {
   id: string;
@@ -58,6 +59,7 @@ interface ProfileData {
 
 export default function ProfileScreen() {
   const colors = useColors();
+  const { isDark } = useTheme();
   const { username } = useLocalSearchParams<{ username: string }>();
   const router = useRouter();
   const { userId, profile: authProfile, refreshProfile } = useAuth();
@@ -284,7 +286,9 @@ export default function ProfileScreen() {
   }
 
   const displayName = profile.display_name || profile.username;
-  const schoolColor = profile.school?.primary_color;
+  const schoolColor = profile.school?.primary_color
+    ? readableSchoolColor(profile.school.primary_color, isDark)
+    : undefined;
 
   const headerComponent = (
     <View>

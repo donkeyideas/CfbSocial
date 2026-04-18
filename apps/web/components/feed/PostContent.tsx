@@ -1,24 +1,29 @@
 'use client';
 
-import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
 const MENTION_REGEX = /@([a-zA-Z0-9_]{1,30})/g;
 
 export function PostContent({ content, className }: { content: string; className?: string }) {
+  const router = useRouter();
   const parts = content.split(MENTION_REGEX);
   return (
     <span className={className}>
       {parts.map((part, i) => {
         if (i % 2 === 1) {
           return (
-            <Link
+            <span
               key={i}
-              href={`/profile/${part}`}
+              role="link"
               className="mention-link"
-              onClick={(e) => e.stopPropagation()}
+              onClick={(e) => {
+                e.stopPropagation();
+                e.preventDefault();
+                router.push(`/profile/${part}`);
+              }}
             >
               @{part}
-            </Link>
+            </span>
           );
         }
         return <span key={i}>{part}</span>;

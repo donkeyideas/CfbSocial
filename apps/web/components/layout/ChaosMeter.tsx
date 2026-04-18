@@ -51,7 +51,6 @@ function calculateChaos(stats: ChaosStats): ChaosData {
 }
 
 function getChaosColor(level: number): string {
-  if (level >= 80) return '#8b0000';
   if (level >= 60) return 'var(--crimson)';
   if (level >= 40) return '#cc7722';
   if (level >= 20) return '#b8860b';

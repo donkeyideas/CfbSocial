@@ -1,7 +1,8 @@
 'use client';
 
-import { memo, useEffect, useRef } from 'react';
+import { memo, useCallback, useEffect, useRef } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import type { PostType } from '@cfb-social/types';
 import { BallotButtons } from './BallotButtons';
@@ -11,6 +12,12 @@ import { AgingTakeTimerWrapper } from './AgingTakeTimerWrapper';
 import { LinkPreview, extractFirstUrl, stripFirstUrl } from './LinkPreview';
 import { PostContent } from './PostContent';
 import { trackEvent } from '@/lib/analytics/track';
+import { readableSchoolColor } from '@/lib/utils/color-contrast';
+
+/** Read dark mode state directly from DOM — no hooks, no hot-reload issues */
+function getIsDark(): boolean {
+  return typeof document !== 'undefined' && document.documentElement.classList.contains('dark');
+}
 
 interface PostAuthor {
   id: string;
@@ -68,6 +75,8 @@ interface Post {
 export const PostCard = memo(function PostCard({ post }: { post: Post }) {
   const cardRef = useRef<HTMLDivElement>(null);
   const trackedRef = useRef(false);
+  const isDark = getIsDark();
+  const router = useRouter();
 
   useEffect(() => {
     const el = cardRef.current;
@@ -86,28 +95,45 @@ export const PostCard = memo(function PostCard({ post }: { post: Post }) {
     return () => observer.disconnect();
   }, [post.id]);
 
+  const schoolStyle = post.school?.primary_color
+    ? { '--post-school-color': readableSchoolColor(post.school.primary_color, isDark) } as React.CSSProperties
+    : undefined;
+
   const isFlagged = post.status === 'FLAGGED';
 
   const inner = isFlagged ? (
-    <PenaltyPost post={post} />
+    <PenaltyPost post={post} isDark={isDark} />
   ) : (() => {
     switch (post.post_type) {
       case 'RECEIPT':
-        return <ReceiptPost post={post} />;
+        return <ReceiptPost post={post} schoolStyle={schoolStyle} isDark={isDark} />;
       case 'PREDICTION':
-        return <PredictionPost post={post} />;
+        return <PredictionPost post={post} schoolStyle={schoolStyle} isDark={isDark} />;
       case 'AGING_TAKE':
-        return <AgingTakePost post={post} />;
+        return <AgingTakePost post={post} schoolStyle={schoolStyle} isDark={isDark} />;
       case 'SIDELINE':
-        return <PressBoxPost post={post} />;
+        return <PressBoxPost post={post} schoolStyle={schoolStyle} isDark={isDark} />;
       case 'CHALLENGE_RESULT':
-        return <RivalryPost post={post} />;
+        return <RivalryPost post={post} schoolStyle={schoolStyle} isDark={isDark} />;
       default:
-        return <ClassicPost post={post} />;
+        return <ClassicPost post={post} schoolStyle={schoolStyle} isDark={isDark} />;
     }
   })();
 
-  return <div ref={cardRef}>{inner}</div>;
+  const handleCardClick = useCallback((e: React.MouseEvent) => {
+    if (isFlagged) return;
+    const target = e.target as HTMLElement;
+    if (target.closest('a, button, input, textarea, [role="button"]')) return;
+    const selection = window.getSelection();
+    if (selection && selection.toString().length > 0) return;
+    router.push(`/post/${post.id}`);
+  }, [post.id, isFlagged, router]);
+
+  return (
+    <div ref={cardRef} onClick={handleCardClick} className="post-card-clickable">
+      {inner}
+    </div>
+  );
 });
 
 function RepostStamp({ repostedBy, repostTime }: { repostedBy: { username: string; display_name: string | null }; repostTime?: string | null }) {
@@ -124,11 +150,13 @@ function RepostStamp({ repostedBy, repostTime }: { repostedBy: { username: strin
    Shared: User row
    ============================================= */
 
-function PostUserRow({ post }: { post: Post }) {
+function PostUserRow({ post, isDark }: { post: Post; isDark: boolean }) {
   const authorName = post.author?.display_name ?? post.author?.username ?? 'Unknown';
   const authorUsername = post.author?.username ?? 'unknown';
   const timeAgo = getTimeAgo(new Date(post.created_at));
-  const schoolColor = post.school?.primary_color ?? 'var(--crimson)';
+  const schoolColor = post.school?.primary_color
+    ? readableSchoolColor(post.school.primary_color, isDark)
+    : 'var(--crimson)';
 
   const tierLabels: Record<string, string> = {
     STARTER: 'Starter',
@@ -214,11 +242,7 @@ function PostBottom({ post }: { post: Post }) {
    POST 1 — Classic Take (STANDARD / PREDICTION / AGING_TAKE)
    ============================================= */
 
-const ClassicPost = memo(function ClassicPost({ post }: { post: Post }) {
-  const schoolStyle = post.school?.primary_color
-    ? { '--post-school-color': post.school.primary_color } as React.CSSProperties
-    : undefined;
-
+const ClassicPost = memo(function ClassicPost({ post, schoolStyle, isDark }: { post: Post; schoolStyle?: React.CSSProperties; isDark: boolean }) {
   // Receipt is PUBLIC — if anyone filed a receipt on this post, everyone sees it
   const receipt = post.aging_takes && post.aging_takes.length > 0 ? post.aging_takes[0]! : null;
 
@@ -235,10 +259,8 @@ const ClassicPost = memo(function ClassicPost({ post }: { post: Post }) {
         <div className="receipt-seal">
           <span className="receipt-seal-text">Receipt<br />Filed</span>
         </div>
-        <PostUserRow post={post} />
-        <Link href={`/post/${post.id}`} className="post-body-link">
-          <div className="post-body"><PostContent content={extractFirstUrl(post.content) ? stripFirstUrl(post.content) : post.content} /></div>
-        </Link>
+        <PostUserRow post={post} isDark={isDark} />
+        <div className="post-body"><PostContent content={extractFirstUrl(post.content) ? stripFirstUrl(post.content) : post.content} /></div>
         <LinkPreview content={post.content} />
         <div className="receipt-stamp" suppressHydrationWarning>RECEIPT FILED &mdash; Review {receiptDate}</div>
         <PostBottom post={post} />
@@ -249,10 +271,8 @@ const ClassicPost = memo(function ClassicPost({ post }: { post: Post }) {
   return (
     <article className="post-card post-classic" style={schoolStyle}>
       {post._repostedBy && <RepostStamp repostedBy={post._repostedBy} repostTime={post._repostTime} />}
-      <PostUserRow post={post} />
-      <Link href={`/post/${post.id}`} className="post-body-link">
-        <div className="post-body"><PostContent content={extractFirstUrl(post.content) ? stripFirstUrl(post.content) : post.content} /></div>
-      </Link>
+      <PostUserRow post={post} isDark={isDark} />
+      <div className="post-body"><PostContent content={extractFirstUrl(post.content) ? stripFirstUrl(post.content) : post.content} /></div>
       <LinkPreview content={post.content} />
       <PostBottom post={post} />
     </article>
@@ -263,21 +283,15 @@ const ClassicPost = memo(function ClassicPost({ post }: { post: Post }) {
    POST 2 — Receipt / Newspaper Clipping
    ============================================= */
 
-const ReceiptPost = memo(function ReceiptPost({ post }: { post: Post }) {
-  const schoolStyle = post.school?.primary_color
-    ? { '--post-school-color': post.school.primary_color } as React.CSSProperties
-    : undefined;
-
+const ReceiptPost = memo(function ReceiptPost({ post, schoolStyle, isDark }: { post: Post; schoolStyle?: React.CSSProperties; isDark: boolean }) {
   return (
     <article className="post-card post-receipt" style={schoolStyle}>
       {post._repostedBy && <RepostStamp repostedBy={post._repostedBy} repostTime={post._repostTime} />}
       <div className="receipt-seal">
         <span className="receipt-seal-text">Verified<br />Receipt</span>
       </div>
-      <PostUserRow post={post} />
-      <Link href={`/post/${post.id}`} className="post-body-link">
-        <div className="post-body"><PostContent content={extractFirstUrl(post.content) ? stripFirstUrl(post.content) : post.content} /></div>
-      </Link>
+      <PostUserRow post={post} isDark={isDark} />
+      <div className="post-body"><PostContent content={extractFirstUrl(post.content) ? stripFirstUrl(post.content) : post.content} /></div>
       <LinkPreview content={post.content} />
       <div className="receipt-stamp">RECEIPT CONFIRMED</div>
       <PostBottom post={post} />
@@ -289,7 +303,7 @@ const ReceiptPost = memo(function ReceiptPost({ post }: { post: Post }) {
    POST 3 — Penalty Flag (FLAGGED status)
    ============================================= */
 
-const PenaltyPost = memo(function PenaltyPost({ post }: { post: Post }) {
+const PenaltyPost = memo(function PenaltyPost({ post, isDark }: { post: Post; isDark: boolean }) {
   return (
     <article className="post-card post-penalty">
       <div className="penalty-header">
@@ -301,7 +315,7 @@ const PenaltyPost = memo(function PenaltyPost({ post }: { post: Post }) {
           </div>
         </div>
       </div>
-      <PostUserRow post={post} />
+      <PostUserRow post={post} isDark={isDark} />
       <div className="penalty-body">&ldquo;<PostContent content={post.content} />&rdquo;</div>
       <div className="penalty-ruling">
         WARNING: This play has been nullified. All football, all the time.
@@ -315,7 +329,7 @@ const PenaltyPost = memo(function PenaltyPost({ post }: { post: Post }) {
    POST 4 — Sideline Report / Press Box
    ============================================= */
 
-const PressBoxPost = memo(function PressBoxPost({ post }: { post: Post }) {
+const PressBoxPost = memo(function PressBoxPost({ post, schoolStyle, isDark }: { post: Post; schoolStyle?: React.CSSProperties; isDark: boolean }) {
   const timeStr = new Date(post.created_at).toLocaleTimeString('en-US', {
     hour: '2-digit',
     minute: '2-digit',
@@ -325,10 +339,6 @@ const PressBoxPost = memo(function PressBoxPost({ post }: { post: Post }) {
   const headerTime = post.sideline_quarter
     ? `${post.sideline_quarter} · ${post.sideline_time ? `${post.sideline_time} Remaining` : ''}`
     : timeStr;
-
-  const schoolStyle = post.school?.primary_color
-    ? { '--post-school-color': post.school.primary_color } as React.CSSProperties
-    : undefined;
 
   return (
     <article className="post-card post-pressbox" style={schoolStyle}>
@@ -344,15 +354,13 @@ const PressBoxPost = memo(function PressBoxPost({ post }: { post: Post }) {
         </div>
       )}
       <div className="pressbox-user-row">
-        <PostUserRow post={post} />
+        <PostUserRow post={post} isDark={isDark} />
         <span className="pressbox-verified">
           {post.sideline_verified ? 'VERIFIED — PRESS BOX CONFIRMED' : 'Source Report'}
         </span>
       </div>
       <div className="pressbox-body">
-        <Link href={`/post/${post.id}`} className="post-body-link">
-          <div className="pressbox-content"><PostContent content={post.content} /></div>
-        </Link>
+        <div className="pressbox-content"><PostContent content={post.content} /></div>
         <LinkPreview content={post.content} />
       </div>
       <div className="pressbox-footer">
@@ -366,10 +374,7 @@ const PressBoxPost = memo(function PressBoxPost({ post }: { post: Post }) {
    POST 5 — Rivalry Ring / Fight Card
    ============================================= */
 
-const RivalryPost = memo(function RivalryPost({ post }: { post: Post }) {
-  const schoolStyle = post.school?.primary_color
-    ? { '--post-school-color': post.school.primary_color } as React.CSSProperties
-    : undefined;
+const RivalryPost = memo(function RivalryPost({ post, schoolStyle, isDark }: { post: Post; schoolStyle?: React.CSSProperties; isDark: boolean }) {
 
   return (
     <article className="post-card post-rivalry" style={schoolStyle}>
@@ -379,10 +384,8 @@ const RivalryPost = memo(function RivalryPost({ post }: { post: Post }) {
         <div className="rivalry-title">Challenge Result</div>
       </div>
       <div className="rivalry-body">
-        <PostUserRow post={post} />
-        <Link href={`/post/${post.id}`} className="post-body-link">
-          <div className="post-body"><PostContent content={extractFirstUrl(post.content) ? stripFirstUrl(post.content) : post.content} /></div>
-        </Link>
+        <PostUserRow post={post} isDark={isDark} />
+        <div className="post-body"><PostContent content={extractFirstUrl(post.content) ? stripFirstUrl(post.content) : post.content} /></div>
         <LinkPreview content={post.content} />
         <PostBottom post={post} />
       </div>
@@ -394,10 +397,7 @@ const RivalryPost = memo(function RivalryPost({ post }: { post: Post }) {
    POST 6 — Prediction / Poll
    ============================================= */
 
-const PredictionPost = memo(function PredictionPost({ post }: { post: Post }) {
-  const schoolStyle = post.school?.primary_color
-    ? { '--post-school-color': post.school.primary_color } as React.CSSProperties
-    : undefined;
+const PredictionPost = memo(function PredictionPost({ post, schoolStyle, isDark }: { post: Post; schoolStyle?: React.CSSProperties; isDark: boolean }) {
 
   return (
     <article className="post-card post-prediction" style={schoolStyle}>
@@ -407,10 +407,8 @@ const PredictionPost = memo(function PredictionPost({ post }: { post: Post }) {
         <span className="prediction-tag">PREDICTION</span>
       </div>
       <div className="prediction-body">
-        <PostUserRow post={post} />
-        <Link href={`/post/${post.id}`} className="post-body-link">
-          <div className="prediction-question"><PostContent content={post.content} /></div>
-        </Link>
+        <PostUserRow post={post} isDark={isDark} />
+        <div className="prediction-question"><PostContent content={post.content} /></div>
         <LinkPreview content={post.content} />
       </div>
       <div className="prediction-footer">
@@ -424,16 +422,12 @@ const PredictionPost = memo(function PredictionPost({ post }: { post: Post }) {
    POST 7 — Aging Take / Challenge
    ============================================= */
 
-const AgingTakePost = memo(function AgingTakePost({ post }: { post: Post }) {
+const AgingTakePost = memo(function AgingTakePost({ post, schoolStyle, isDark }: { post: Post; schoolStyle?: React.CSSProperties; isDark: boolean }) {
   const dateStr = new Date(post.created_at).toLocaleDateString('en-US', {
     month: 'short',
     day: 'numeric',
     year: 'numeric',
   });
-
-  const schoolStyle = post.school?.primary_color
-    ? { '--post-school-color': post.school.primary_color } as React.CSSProperties
-    : undefined;
 
   return (
     <article className="post-card post-aging" style={schoolStyle}>
@@ -443,10 +437,8 @@ const AgingTakePost = memo(function AgingTakePost({ post }: { post: Post }) {
         <span className="aging-date" suppressHydrationWarning>Filed {dateStr}</span>
       </div>
       <div className="aging-body">
-        <PostUserRow post={post} />
-        <Link href={`/post/${post.id}`} className="post-body-link">
-          <div className="aging-quote">&ldquo;<PostContent content={post.content} />&rdquo;</div>
-        </Link>
+        <PostUserRow post={post} isDark={isDark} />
+        <div className="aging-quote">&ldquo;<PostContent content={post.content} />&rdquo;</div>
         <LinkPreview content={post.content} />
         <AgingTakeTimerWrapper postId={post.id} />
       </div>

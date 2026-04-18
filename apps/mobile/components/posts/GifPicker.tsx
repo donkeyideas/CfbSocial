@@ -16,7 +16,7 @@ import {
 import { useColors } from '@/lib/theme/ThemeProvider';
 import { useSchoolTheme } from '@/lib/theme/SchoolThemeProvider';
 import { typography } from '@/lib/theme/typography';
-import { WEB_API_URL } from '@/lib/constants';
+const GIPHY_API_KEY = '9I8e3itfVV3EkKtj5aEqxVpkQJNxISuq';
 
 interface GiphyGif {
   id: string;
@@ -26,6 +26,23 @@ interface GiphyGif {
   previewUrl: string;
   width: number;
   height: number;
+}
+
+interface GiphyApiImage {
+  url: string;
+  width: string;
+  height: string;
+}
+
+interface GiphyApiResult {
+  id: string;
+  title: string;
+  url: string;
+  images: {
+    original: GiphyApiImage;
+    fixed_width: GiphyApiImage;
+    fixed_height_small: GiphyApiImage;
+  };
 }
 
 interface GifPickerProps {
@@ -83,12 +100,21 @@ export function GifPicker({ visible, onClose, onSelect }: GifPickerProps) {
     const timer = setTimeout(async () => {
       try {
         const res = await fetch(
-          `${WEB_API_URL}/api/gifs/search?q=${encodeURIComponent(searchQuery)}&limit=20`,
+          `https://api.giphy.com/v1/gifs/search?api_key=${GIPHY_API_KEY}&q=${encodeURIComponent(searchQuery)}&limit=20&rating=pg-13`,
           { signal: controller.signal }
         );
         if (!res.ok) throw new Error('Search failed');
-        const json = (await res.json()) as { gifs: GiphyGif[] };
-        setGifs(json.gifs ?? []);
+        const json = (await res.json()) as { data: GiphyApiResult[] };
+        const mapped: GiphyGif[] = (json.data ?? []).map((g) => ({
+          id: g.id,
+          title: g.title,
+          url: g.url,
+          mediaUrl: g.images.original.url,
+          previewUrl: g.images.fixed_width.url,
+          width: parseInt(g.images.original.width, 10),
+          height: parseInt(g.images.original.height, 10),
+        }));
+        setGifs(mapped);
       } catch (err) {
         if ((err as Error).name !== 'AbortError') {
           setError('Unable to load GIFs.');

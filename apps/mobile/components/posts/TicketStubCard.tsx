@@ -7,9 +7,10 @@ import { PostActions } from './PostActions';
 import { ReportModal } from '../moderation/ReportModal';
 import { LinkPreview, extractFirstUrl, stripFirstUrl } from './LinkPreview';
 import { PostContent } from './PostContent';
-import { useColors } from '@/lib/theme/ThemeProvider';
+import { useColors, useTheme } from '@/lib/theme/ThemeProvider';
 import { typography } from '@/lib/theme/typography';
 import { timeAgo } from '@/lib/utils/timeAgo';
+import { readableSchoolColor } from '@/lib/utils/colorContrast';
 import type { PostData } from './PostCard';
 
 interface TicketStubCardProps {
@@ -19,8 +20,9 @@ interface TicketStubCardProps {
 
 export const TicketStubCard = memo(function TicketStubCard({ post, isDetailView }: TicketStubCardProps) {
   const colors = useColors();
+  const { isDark } = useTheme();
   const router = useRouter();
-  const schoolColor = post.author?.school?.primary_color || colors.crimson;
+  const schoolColor = readableSchoolColor(post.author?.school?.primary_color || colors.crimson, isDark);
   const [reportVisible, setReportVisible] = useState(false);
 
   const navigate = () => {
@@ -32,9 +34,9 @@ export const TicketStubCard = memo(function TicketStubCard({ post, isDetailView 
       backgroundColor: colors.surfaceRaised,
       borderRadius: 6,
       borderLeftWidth: 4,
-      padding: 12,
+      padding: 10,
       marginHorizontal: 12,
-      marginVertical: 6,
+      marginVertical: 4,
       shadowColor: '#000',
       shadowOffset: { width: 0, height: 1 },
       shadowOpacity: 0.08,

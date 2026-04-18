@@ -31,7 +31,7 @@ export const PenaltyFlagCard = memo(function PenaltyFlagCard({ post }: PenaltyFl
   const styles = useMemo(() => StyleSheet.create({
     outerBorder: {
       marginHorizontal: 12,
-      marginVertical: 6,
+      marginVertical: 4,
       borderWidth: 3,
       borderColor: colors.borderStrong,
       borderStyle: 'dashed',
@@ -40,7 +40,7 @@ export const PenaltyFlagCard = memo(function PenaltyFlagCard({ post }: PenaltyFl
     card: {
       backgroundColor: colors.surface,
       borderRadius: 3,
-      padding: 16,
+      padding: 12,
     },
     headerRow: {
       flexDirection: 'row',

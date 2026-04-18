@@ -1,7 +1,14 @@
+'use client';
+
 import Link from 'next/link';
 import { FollowButton } from './FollowButton';
 import { SignOutButton } from './SignOutButton';
 import Image from 'next/image';
+import { readableSchoolColor } from '@/lib/utils/color-contrast';
+
+function getIsDark(): boolean {
+  return typeof document !== 'undefined' && document.documentElement.classList.contains('dark');
+}
 
 interface ProfileHeaderProps {
   user: {
@@ -37,8 +44,15 @@ const tierLabels: Record<string, string> = {
 };
 
 export function ProfileHeader({ user, isOwnProfile = false }: ProfileHeaderProps) {
+  const isDark = getIsDark();
   const displayName = user.display_name ?? user.username;
   const initial = displayName[0]?.toUpperCase() ?? '?';
+  const adjustedPrimary = user.school?.primary_color
+    ? readableSchoolColor(user.school.primary_color, isDark)
+    : null;
+  const adjustedSecondary = user.school?.secondary_color
+    ? readableSchoolColor(user.school.secondary_color, isDark)
+    : null;
 
   return (
     <div className="gridiron-card overflow-hidden">
@@ -51,7 +65,7 @@ export function ProfileHeader({ user, isOwnProfile = false }: ProfileHeaderProps
             : user.banner_color
               ? user.banner_color
               : user.school
-                ? `linear-gradient(135deg, ${user.school.primary_color}, ${user.school.secondary_color})`
+                ? `linear-gradient(135deg, ${adjustedPrimary}, ${adjustedSecondary})`
                 : 'var(--crimson)',
         }}
       />
@@ -71,7 +85,7 @@ export function ProfileHeader({ user, isOwnProfile = false }: ProfileHeaderProps
             ) : (
               <div
                 className="flex h-24 w-24 items-center justify-center rounded-full border-4 border-[var(--surface-raised)] font-serif text-3xl font-bold text-[var(--text-inverse)]"
-                style={{ backgroundColor: user.school?.primary_color ?? 'var(--crimson)' }}
+                style={{ backgroundColor: adjustedPrimary ?? 'var(--crimson)' }}
               >
                 {initial}
               </div>
@@ -111,7 +125,7 @@ export function ProfileHeader({ user, isOwnProfile = false }: ProfileHeaderProps
 
         {/* School */}
         {user.school && (
-          <p className="mt-1 font-serif text-sm font-semibold" style={{ color: user.school.primary_color }}>
+          <p className="mt-1 font-serif text-sm font-semibold" style={{ color: adjustedPrimary! }}>
             {user.school.name}
           </p>
         )}

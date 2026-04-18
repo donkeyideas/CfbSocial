@@ -4,6 +4,11 @@ import { useEffect } from 'react';
 import Link from 'next/link';
 import { PostCard } from '@/components/feed/PostCard';
 import { trackSchoolVisit } from '@/lib/analytics/track';
+import { readableSchoolColor } from '@/lib/utils/color-contrast';
+
+function getIsDark(): boolean {
+  return typeof document !== 'undefined' && document.documentElement.classList.contains('dark');
+}
 
 interface SchoolHubProps {
   school: {
@@ -52,6 +57,10 @@ const tierLabels: Record<string, string> = {
 };
 
 export function SchoolHub({ school, fanCount, postCount, portalCount, posts, topFans, highlights = [] }: SchoolHubProps) {
+  const isDark = getIsDark();
+  const adjustedPrimary = readableSchoolColor(school.primary_color, isDark);
+  const adjustedSecondary = readableSchoolColor(school.secondary_color, isDark);
+
   useEffect(() => {
     trackSchoolVisit(school.id, school.slug);
   }, [school.id, school.slug]);
@@ -62,12 +71,12 @@ export function SchoolHub({ school, fanCount, postCount, portalCount, posts, top
       <div
         className="school-header"
         style={{
-          '--school-bg': school.primary_color,
-          '--school-accent': school.secondary_color,
+          '--school-bg': adjustedPrimary,
+          '--school-accent': adjustedSecondary,
         } as React.CSSProperties}
       >
         <div className="school-header-top">
-          <div className="school-avatar" style={{ backgroundColor: school.primary_color }}>
+          <div className="school-avatar" style={{ backgroundColor: adjustedPrimary }}>
             {school.abbreviation}
           </div>
           <div className="school-info">
@@ -100,7 +109,7 @@ export function SchoolHub({ school, fanCount, postCount, portalCount, posts, top
         <div
           className="school-color-bar"
           style={{
-            background: `linear-gradient(90deg, ${school.primary_color} 60%, ${school.secondary_color} 100%)`,
+            background: `linear-gradient(90deg, ${adjustedPrimary} 60%, ${adjustedSecondary} 100%)`,
           }}
         />
       </div>

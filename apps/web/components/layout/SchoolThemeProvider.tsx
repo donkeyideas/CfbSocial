@@ -3,6 +3,7 @@
 import { useEffect } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useAuth } from '@/components/auth/AuthProvider';
+import { readableSchoolColor } from '@/lib/utils/color-contrast';
 
 /**
  * Darken a hex color by reducing its HSL lightness.
@@ -69,6 +70,7 @@ export function SchoolThemeProvider({ children }: { children: React.ReactNode })
         root.style.setProperty('--school-primary', school.primary_color);
         root.style.setProperty('--school-secondary', school.secondary_color);
         root.style.setProperty('--school-dark', darkenHex(school.primary_color));
+        root.style.setProperty('--school-primary-text', readableSchoolColor(school.primary_color, true, 0.50));
       }
     }
 
@@ -79,6 +81,7 @@ export function SchoolThemeProvider({ children }: { children: React.ReactNode })
       root.style.removeProperty('--school-primary');
       root.style.removeProperty('--school-secondary');
       root.style.removeProperty('--school-dark');
+      root.style.removeProperty('--school-primary-text');
     };
   }, [profile?.school_id]);
 

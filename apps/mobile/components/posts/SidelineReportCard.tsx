@@ -41,7 +41,7 @@ export const SidelineReportCard = memo(function SidelineReportCard({ post, isDet
       borderRadius: 6,
       overflow: 'hidden',
       marginHorizontal: 12,
-      marginVertical: 6,
+      marginVertical: 4,
       shadowColor: '#000',
       shadowOffset: { width: 0, height: 2 },
       shadowOpacity: 0.15,

@@ -403,30 +403,39 @@ async function generateTakeContent(
 
   const temp = personality.temperatureRange[0] + Math.random() * (personality.temperatureRange[1] - personality.temperatureRange[0]);
 
-  // Single generation attempt — retries were causing 2-3x cost spikes when anti-repetition checks failed.
-  // If the post is too similar or fails, we fall back to FALLBACK_TAKES in postBotTake (no extra AI cost).
-  const { system, user, length } = buildTakePrompt(personality, school, context, finalNewsContext, finalSourceType, history, mood, '', localKnowledge);
+  // Attempt up to 3 generations with escalating anti-repetition instructions
+  for (let attempt = 0; attempt < 3; attempt++) {
+    let extraInstructions = '';
+    if (attempt === 1) {
+      extraInstructions = '- Your previous attempt was too similar to existing posts. Write something COMPLETELY different in topic and wording.';
+    } else if (attempt === 2) {
+      extraInstructions = '- CRITICAL: Pick a totally unexpected angle. Surprise the reader. Do NOT write about common topics.';
+    }
 
-  try {
-    const raw = await aiChat(user, {
-      feature: 'bot_posts',
-      subType: 'bot_take',
-      temperature: temp,
-      maxTokens: length.maxTokens,
-      systemPrompt: system,
-    });
-    const cleaned = cleanBotContent(raw, length.maxChars);
-    if (cleaned.length < 10) return null;
+    const { system, user, length } = buildTakePrompt(personality, school, context, finalNewsContext, finalSourceType, history, mood, extraInstructions, localKnowledge);
 
-    // Anti-repetition checks — on miss, return null so caller uses static fallback (zero AI cost).
-    if (isOpenerTooSimilar(cleaned, history.recentOpeners)) return null;
-    if (isTooSimilar(cleaned, recentBotPosts)) return null;
+    try {
+      const raw = await aiChat(user, {
+        feature: 'bot_posts',
+        subType: 'bot_take',
+        temperature: Math.min(temp + attempt * 0.05, 1.0),
+        maxTokens: length.maxTokens,
+        systemPrompt: system,
+      });
+      const cleaned = cleanBotContent(raw, length.maxChars);
+      if (cleaned.length < 10) continue;
 
-    return cleaned;
-  } catch (err) {
-    console.error('[BOT] AI generation failed:', err instanceof Error ? err.message : err);
-    return null;
+      // Anti-repetition checks
+      if (isOpenerTooSimilar(cleaned, history.recentOpeners)) continue;
+      if (isTooSimilar(cleaned, recentBotPosts)) continue;
+
+      return cleaned;
+    } catch (err) {
+      console.error(`[BOT] AI generation attempt ${attempt + 1} failed:`, err instanceof Error ? err.message : err);
+    }
   }
+
+  return null;
 }
 
 async function generateReplyContent(
@@ -584,10 +593,11 @@ export async function postBotTake(botId: string): Promise<{ success: boolean; po
   }
 
   if (recentPosts?.length) {
-    context += 'Recent takes on the timeline (DO NOT repeat):\n' + recentPosts.map((p) => `- ${(p.content as string).slice(0, 150)}`).join('\n');
+    // Sanitize: strip any literal {{school}} from context so the AI never sees/copies it
+    context += 'Recent takes on the timeline (DO NOT repeat):\n' + recentPosts.map((p) => `- ${(p.content as string).replace(/\{\{school\}\}/g, '').slice(0, 150)}`).join('\n');
   }
   if (ownPosts?.length) {
-    context += '\n\nYour own previous takes (MUST NOT repeat):\n' + ownPosts.map((p) => `- ${(p.content as string).slice(0, 150)}`).join('\n');
+    context += '\n\nYour own previous takes (MUST NOT repeat):\n' + ownPosts.map((p) => `- ${(p.content as string).replace(/\{\{school\}\}/g, '').slice(0, 150)}`).join('\n');
   }
 
   // Inject local knowledge into prompt opts via personality override
@@ -599,10 +609,11 @@ export async function postBotTake(botId: string): Promise<{ success: boolean; po
 
   // Fallback
   if (!content) {
+    const schoolName = bot.school?.name ?? '';
     const allFallbacks = shuffleArray([
       ...((FALLBACK_TAKES[personality.type] ?? []) as string[]),
       ...((FALLBACK_TAKES.default ?? []) as string[]),
-    ]);
+    ]).map(t => t.replace(/\{\{school\}\}/g, schoolName));
 
     for (const candidate of allFallbacks) {
       const { data: exists } = await supabase
@@ -620,6 +631,10 @@ export async function postBotTake(botId: string): Promise<{ success: boolean; po
 
   if (!content) return { success: false, error: 'No unique content available' };
 
+  // Safety net: ALWAYS replace {{school}} placeholders (even with empty string)
+  const safeSchoolName = bot.school?.name ?? '';
+  content = content.replace(/\{\{school\}\}/g, safeSchoolName);
+
   // Apply humanizer
   content = humanizeContent(content, personality, {
     bot_region: bot.bot_region,
@@ -629,6 +644,9 @@ export async function postBotTake(botId: string): Promise<{ success: boolean; po
     mascotName: bot.school?.mascot,
   });
 
+  // Final safety net: strip any {{school}} that survived humanizer
+  content = content.replace(/\{\{school\}\}/g, safeSchoolName);
+
   // Final duplicate check
   const { data: duplicate } = await supabase
     .from('posts')
@@ -637,6 +655,11 @@ export async function postBotTake(botId: string): Promise<{ success: boolean; po
     .eq('status', 'PUBLISHED')
     .limit(1);
   if (duplicate?.length) return { success: false, error: 'Duplicate content' };
+
+  // ABSOLUTE final guard: reject any post that still contains {{school}}
+  if (content.includes('{{school}}')) {
+    content = content.replace(/\{\{school\}\}/g, safeSchoolName || 'the team');
+  }
 
   // Insert post
   const { data: post, error: postError } = await supabase

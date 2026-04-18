@@ -5,10 +5,10 @@ import { useSearchParams } from 'next/navigation';
 
 const tabs = [
   { value: 'latest', label: 'Latest' },
+  { value: 'my-school', label: 'My School' },
   { value: 'top', label: 'Top Takes' },
   { value: 'receipts', label: 'Receipts' },
   { value: 'following', label: 'Following' },
-  { value: 'my-school', label: 'My School' },
 ] as const;
 
 export type FeedTab = (typeof tabs)[number]['value'];

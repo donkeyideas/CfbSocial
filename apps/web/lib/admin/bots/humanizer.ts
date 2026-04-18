@@ -322,6 +322,8 @@ function injectShorthand(text: string, ageBracket: string): string {
 // ============================================================
 
 function shortenSentences(text: string, personalityType: string): string {
+  // Only shorten extremely long AI-generated sentences (50+ words)
+  // for homer/hot_take. Other personalities are left alone.
   if (personalityType !== 'homer' && personalityType !== 'hot_take') return text;
 
   const sentences = text.split(/(?<=[.!?])\s+/);
@@ -329,18 +331,15 @@ function shortenSentences(text: string, personalityType: string): string {
 
   for (const sentence of sentences) {
     const words = sentence.split(/\s+/);
-    if (words.length > 25) {
-      // Try to truncate at nearest clause boundary under 20 words
+    if (words.length > 50) {
+      // Try to truncate at nearest clause boundary under 40 words
       let truncated = sentence;
       let found = false;
 
-      // Walk through words looking for comma/semicolon boundaries
-      for (let i = Math.min(19, words.length - 1); i >= 8; i--) {
+      for (let i = Math.min(39, words.length - 1); i >= 15; i--) {
         const word = words[i]!;
         if (/[,;]$/.test(word)) {
-          // Found a clause boundary at or under 20 words
           truncated = words.slice(0, i + 1).join(' ');
-          // Replace trailing comma/semicolon with period
           truncated = truncated.replace(/[,;]$/, '.');
           found = true;
           break;
@@ -348,9 +347,7 @@ function shortenSentences(text: string, personalityType: string): string {
       }
 
       if (!found) {
-        // No clause boundary found; hard cut at 20 words
-        truncated = words.slice(0, 20).join(' ');
-        // Ensure it ends with punctuation
+        truncated = words.slice(0, 40).join(' ');
         if (!/[.!?]$/.test(truncated)) {
           truncated = truncated.replace(/[,;:]$/, '') + '.';
         }
@@ -456,6 +453,11 @@ export function humanizeContent(
     text = text.charAt(0).toUpperCase() + text.slice(1);
   }
 
+  // Strip any {{school}} placeholders that survived — replace with school name or remove
+  if (text.includes('{{school}}')) {
+    text = text.replace(/\{\{school\}\}/g, profile.schoolName || 'the team');
+  }
+
   return text.trim();
 }
 
@@ -493,21 +495,31 @@ export function isOpenerTooSimilar(
 
 /**
  * Check if new content is too similar to any recent post (cross-bot check).
- * Uses word-overlap similarity.
+ * Uses word-overlap similarity, excluding common CFB vocabulary that inflates scores.
  */
+const CFB_STOPWORDS = new Set([
+  'football', 'college', 'team', 'teams', 'season', 'game', 'games', 'coach',
+  'coaching', 'staff', 'player', 'players', 'program', 'conference', 'portal',
+  'transfer', 'recruit', 'recruiting', 'class', 'roster', 'year', 'years',
+  'school', 'this', 'that', 'about', 'their', 'going', 'been', 'have', 'just',
+  'from', 'with', 'they', 'people', 'every', 'know', 'think', 'like', 'more',
+  'most', 'than', 'even', 'still', 'best', 'good', 'real', 'need', 'make',
+]);
+
 export function isTooSimilar(newContent: string, recentPosts: string[]): boolean {
   const newWords = new Set(
-    newContent.toLowerCase().split(/\s+/).filter(w => w.length > 3)
+    newContent.toLowerCase().split(/\s+/).filter(w => w.length > 3 && !CFB_STOPWORDS.has(w))
   );
   if (newWords.size < 3) return false;
 
   for (const existing of recentPosts) {
     const existingWords = new Set(
-      existing.toLowerCase().split(/\s+/).filter(w => w.length > 3)
+      existing.toLowerCase().split(/\s+/).filter(w => w.length > 3 && !CFB_STOPWORDS.has(w))
     );
+    if (existingWords.size < 3) continue;
     const intersection = [...newWords].filter(w => existingWords.has(w));
     const similarity = intersection.length / Math.min(newWords.size, existingWords.size);
-    if (similarity > 0.6) return true;
+    if (similarity > 0.7) return true;
   }
 
   return false;

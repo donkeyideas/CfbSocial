@@ -1,6 +1,8 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
+import { useTheme } from '@/lib/theme/ThemeProvider';
 import { typography } from '@/lib/theme/typography';
+import { readableSchoolColor } from '@/lib/utils/colorContrast';
 
 interface SchoolBadgeProps {
   abbreviation: string;
@@ -11,9 +13,11 @@ interface SchoolBadgeProps {
 
 export function SchoolBadge({ abbreviation, color, slug, small }: SchoolBadgeProps) {
   const router = useRouter();
+  const { isDark } = useTheme();
+  const adjustedColor = readableSchoolColor(color, isDark);
 
   const badge = (
-    <View style={[styles.badge, { backgroundColor: color }, small && styles.small]}>
+    <View style={[styles.badge, { backgroundColor: adjustedColor }, small && styles.small]}>
       <Text style={[styles.text, small && styles.smallText]}>{abbreviation}</Text>
     </View>
   );

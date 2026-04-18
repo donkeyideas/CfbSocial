@@ -206,7 +206,7 @@ export function ReplyComposer({ parentId, parentAuthorId }: ReplyComposerProps) 
 
         {/* Mention autocomplete dropdown */}
         {mentionActive && mentionResults.length > 0 && (
-          <div className="mention-dropdown" style={{ top: '100%', marginTop: 4 }}>
+          <div className="mention-dropdown">
             {mentionResults.map((user, idx) => (
               <button
                 key={user.id}
