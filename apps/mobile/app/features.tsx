@@ -5,88 +5,7 @@ import { useColors } from '@/lib/theme/ThemeProvider';
 import { useSchoolTheme } from '@/lib/theme/SchoolThemeProvider';
 import { typography } from '@/lib/theme/typography';
 import { AppHeader } from '@/components/navigation/AppHeader';
-
-interface FeatureItem {
-  title: string;
-  description: string;
-  route: string;
-  variant: 'classic' | 'rivalry' | 'prediction' | 'aging' | 'receipt' | 'pressbox' | 'penalty' | 'standard';
-}
-
-const FEATURES: FeatureItem[] = [
-  {
-    title: 'The Feed',
-    description: 'Main timeline of takes, receipts, and reports from the press box.',
-    route: '/(tabs)/feed',
-    variant: 'classic',
-  },
-  {
-    title: 'Rivalry Ring',
-    description: 'Head-to-head challenges between fans. Prove your take is king.',
-    route: '/(tabs)/rivalry',
-    variant: 'rivalry',
-  },
-  {
-    title: 'Predictions',
-    description: 'File predictions on games and outcomes. Receipts or busts await.',
-    route: '/predictions',
-    variant: 'prediction',
-  },
-  {
-    title: 'Aging Takes',
-    description: 'Lock in a take and let time be the judge. Receipt or bust.',
-    route: '/(tabs)/feed',
-    variant: 'aging',
-  },
-  {
-    title: 'Receipts',
-    description: 'Pull the receipts on old takes. The newsprint never forgets.',
-    route: '/receipts',
-    variant: 'receipt',
-  },
-  {
-    title: 'Portal Wire',
-    description: 'Track transfer portal entries, claims, and committed players.',
-    route: '/(tabs)/portal',
-    variant: 'pressbox',
-  },
-  {
-    title: 'Moderation',
-    description: 'Community-flagged takes go under review. Appeal or accept the call.',
-    route: '/(tabs)/feed',
-    variant: 'penalty',
-  },
-  {
-    title: 'Dynasty Mode',
-    description: 'Level up your dynasty tier by earning XP through posts and predictions.',
-    route: '/dynasty',
-    variant: 'standard',
-  },
-  {
-    title: 'Hall of Fame',
-    description: 'Top contributors ranked by XP, correct predictions, and community votes.',
-    route: '/hall-of-fame',
-    variant: 'standard',
-  },
-  {
-    title: "Coach's Call",
-    description: 'Community polls and hot-seat debates on coaches and programs.',
-    route: '/coaches-call',
-    variant: 'standard',
-  },
-  {
-    title: 'Recruiting Desk',
-    description: 'Scouting reports and recruiting intel from around the country.',
-    route: '/recruiting',
-    variant: 'standard',
-  },
-  {
-    title: 'The Vault',
-    description: 'Historic moments, legendary takes, and today-in-CFB-history.',
-    route: '/vault',
-    variant: 'standard',
-  },
-];
+import { FEATURE_GUIDES, type FeatureItem } from '@/lib/constants/featureGuides';
 
 export default function FeaturesScreen() {
   const colors = useColors();
@@ -337,15 +256,15 @@ export default function FeaturesScreen() {
     });
   }, [colors]);
 
-  function handleNav(route: string) {
-    router.push(route as never);
+  function handleNav(index: number) {
+    router.push(`/feature-guide?index=${index}` as never);
   }
 
-  function renderCard(feature: FeatureItem) {
+  function renderCard(feature: FeatureItem, index: number) {
     switch (feature.variant) {
       case 'classic':
         return (
-          <Pressable key={feature.title} style={styles.cardClassic} onPress={() => handleNav(feature.route)}>
+          <Pressable key={feature.title} style={styles.cardClassic} onPress={() => handleNav(index)}>
             <Text style={styles.cardName}>{feature.title}</Text>
             <Text style={styles.cardDesc}>{feature.description}</Text>
             <Text style={styles.tapHint}>Tap to open</Text>
@@ -354,7 +273,7 @@ export default function FeaturesScreen() {
 
       case 'rivalry':
         return (
-          <Pressable key={feature.title} style={styles.cardRivalry} onPress={() => handleNav(feature.route)}>
+          <Pressable key={feature.title} style={styles.cardRivalry} onPress={() => handleNav(index)}>
             <View style={styles.rivalryHeader}>
               <Text style={styles.rivalryLabel}>Feature</Text>
               <Text style={styles.rivalryTitle}>{feature.title}</Text>
@@ -368,7 +287,7 @@ export default function FeaturesScreen() {
 
       case 'prediction':
         return (
-          <Pressable key={feature.title} style={styles.cardPrediction} onPress={() => handleNav(feature.route)}>
+          <Pressable key={feature.title} style={styles.cardPrediction} onPress={() => handleNav(index)}>
             <View style={styles.predictionHeader}>
               <Text style={styles.predictionLabel}>{feature.title}</Text>
               <Text style={styles.predictionTag}>Poll</Text>
@@ -382,7 +301,7 @@ export default function FeaturesScreen() {
 
       case 'aging':
         return (
-          <Pressable key={feature.title} style={styles.cardAging} onPress={() => handleNav(feature.route)}>
+          <Pressable key={feature.title} style={styles.cardAging} onPress={() => handleNav(index)}>
             <View style={styles.agingHeader}>
               <Text style={styles.agingLabel}>{feature.title}</Text>
             </View>
@@ -395,7 +314,7 @@ export default function FeaturesScreen() {
 
       case 'receipt':
         return (
-          <Pressable key={feature.title} style={styles.cardReceipt} onPress={() => handleNav(feature.route)}>
+          <Pressable key={feature.title} style={styles.cardReceipt} onPress={() => handleNav(index)}>
             <Text style={styles.cardName}>{feature.title}</Text>
             <Text style={styles.cardDesc}>{feature.description}</Text>
             <Text style={styles.receiptStamp}>CONFIRMED</Text>
@@ -404,7 +323,7 @@ export default function FeaturesScreen() {
 
       case 'pressbox':
         return (
-          <Pressable key={feature.title} style={styles.cardPressbox} onPress={() => handleNav(feature.route)}>
+          <Pressable key={feature.title} style={styles.cardPressbox} onPress={() => handleNav(index)}>
             <View style={styles.pressboxHeader}>
               <Text style={styles.pressboxTitle}>{feature.title}</Text>
             </View>
@@ -417,7 +336,7 @@ export default function FeaturesScreen() {
 
       case 'penalty':
         return (
-          <Pressable key={feature.title} style={styles.cardPenalty} onPress={() => handleNav(feature.route)}>
+          <Pressable key={feature.title} style={styles.cardPenalty} onPress={() => handleNav(index)}>
             <Text style={styles.penaltyTitle}>{feature.title}</Text>
             <Text style={styles.cardDesc}>{feature.description}</Text>
             <Text style={styles.tapHint}>Tap to open</Text>
@@ -427,7 +346,7 @@ export default function FeaturesScreen() {
       case 'standard':
       default:
         return (
-          <Pressable key={feature.title} style={styles.cardStandard} onPress={() => handleNav(feature.route)}>
+          <Pressable key={feature.title} style={styles.cardStandard} onPress={() => handleNav(index)}>
             <Text style={styles.cardName}>{feature.title}</Text>
             <Text style={styles.cardDesc}>{feature.description}</Text>
             <Text style={styles.tapHint}>Tap to open</Text>
@@ -441,7 +360,7 @@ export default function FeaturesScreen() {
       <AppHeader />
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <Text style={styles.sectionTitle}>Features</Text>
-        {FEATURES.map(renderCard)}
+        {FEATURE_GUIDES.map((feature, index) => renderCard(feature, index))}
       </ScrollView>
     </View>
   );

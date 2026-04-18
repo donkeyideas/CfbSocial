@@ -85,21 +85,6 @@ export function MenuOverlay({ visible, onClose }: MenuOverlayProps) {
       backgroundColor: 'rgba(244,239,228,0.2)',
       marginBottom: 8,
     },
-    featuresButton: {
-      marginVertical: 8,
-      paddingVertical: 12,
-      paddingHorizontal: 16,
-      backgroundColor: '#c9a84c',
-      borderRadius: 6,
-      alignItems: 'center',
-    },
-    featuresText: {
-      fontFamily: typography.serifBold,
-      fontSize: 16,
-      color: '#2a1f14',
-      letterSpacing: 2,
-      textTransform: 'uppercase',
-    },
     menuItem: {
       paddingVertical: 13,
       paddingHorizontal: 4,
@@ -111,6 +96,20 @@ export function MenuOverlay({ visible, onClose }: MenuOverlayProps) {
       fontSize: 16,
       color: '#f4efe4',
       letterSpacing: 0.5,
+    },
+    featuresButton: {
+      backgroundColor: '#c9a84c',
+      borderRadius: 8,
+      paddingVertical: 14,
+      alignItems: 'center' as const,
+      marginBottom: 12,
+    },
+    featuresText: {
+      fontFamily: typography.serifBold,
+      fontSize: 16,
+      color: '#2a1f14',
+      textTransform: 'uppercase' as const,
+      letterSpacing: 2,
     },
   }), [colors]);
 
