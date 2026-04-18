@@ -24,8 +24,8 @@ import { typography } from '@/lib/theme/typography';
 
 const RIVALRY_SELECT = `
   *,
-  school_1:schools!rivalries_school_1_id_fkey(id, name, abbreviation, primary_color, slug, logo_url),
-  school_2:schools!rivalries_school_2_id_fkey(id, name, abbreviation, primary_color, slug, logo_url)
+  school_1:schools!rivalries_school_1_id_fkey(id, name, abbreviation, primary_color, secondary_color, slug, logo_url),
+  school_2:schools!rivalries_school_2_id_fkey(id, name, abbreviation, primary_color, secondary_color, slug, logo_url)
 `;
 
 const CHALLENGE_SELECT = `

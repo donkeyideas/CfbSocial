@@ -5,14 +5,23 @@ import { useAuth } from '@/lib/auth/AuthProvider';
 import { useThemedAlert } from '@/lib/AlertProvider';
 import { useSchoolTheme } from '@/lib/theme/SchoolThemeProvider';
 import { VoteBar } from './VoteBar';
-import { useColors } from '@/lib/theme/ThemeProvider';
+import { useColors, useTheme } from '@/lib/theme/ThemeProvider';
 import { typography } from '@/lib/theme/typography';
+import { readableSchoolColor } from '@/lib/utils/colorContrast';
+
+function pickColor(school: { primary_color: string; secondary_color?: string } | null, isDark: boolean, fallback: string): string {
+  if (!school) return fallback;
+  const raw = isDark && school.secondary_color ? school.secondary_color : school.primary_color;
+  if (!isDark) return raw;
+  return readableSchoolColor(raw, true);
+}
 
 interface SchoolInfo {
   id: string;
   name: string;
   abbreviation: string;
   primary_color: string;
+  secondary_color?: string;
   mascot: string | null;
   slug: string;
 }
@@ -57,6 +66,9 @@ export function MatchupCard({ matchup, userVoteSchoolId, onVoted }: MatchupCardP
 
   const s1 = matchup.school_1;
   const s2 = matchup.school_2;
+  const { isDark } = useTheme();
+  const s1Color = pickColor(s1, isDark, colors.crimson);
+  const s2Color = pickColor(s2, isDark, colors.ink);
   const isResolved = matchup.winner_id !== null;
   const hasVoted = localVote !== null;
 
@@ -193,12 +205,12 @@ export function MatchupCard({ matchup, userVoteSchoolId, onVoted }: MatchupCardP
         style={[
           styles.schoolRow,
           localVote === s1.id && styles.schoolRowSelected,
-          localVote === s1.id && { borderColor: s1.primary_color },
+          localVote === s1.id && { borderColor: s1Color },
         ]}
         onPress={() => handleVote(s1.id)}
         disabled={hasVoted || isResolved || voting}
       >
-        <View style={[styles.colorDot, { backgroundColor: s1.primary_color }]} />
+        <View style={[styles.colorDot, { backgroundColor: s1Color }]} />
         <View style={styles.schoolInfo}>
           <Text style={styles.schoolName} numberOfLines={1}>{s1.name}</Text>
           {s1.mascot && (
@@ -206,7 +218,7 @@ export function MatchupCard({ matchup, userVoteSchoolId, onVoted }: MatchupCardP
           )}
         </View>
         {!hasVoted && !isResolved && (
-          <Text style={[styles.voteLabel, { color: s1.primary_color }]}>VOTE</Text>
+          <Text style={[styles.voteLabel, { color: s1Color }]}>VOTE</Text>
         )}
       </Pressable>
 
@@ -218,12 +230,12 @@ export function MatchupCard({ matchup, userVoteSchoolId, onVoted }: MatchupCardP
         style={[
           styles.schoolRow,
           localVote === s2.id && styles.schoolRowSelected,
-          localVote === s2.id && { borderColor: s2.primary_color },
+          localVote === s2.id && { borderColor: s2Color },
         ]}
         onPress={() => handleVote(s2.id)}
         disabled={hasVoted || isResolved || voting}
       >
-        <View style={[styles.colorDot, { backgroundColor: s2.primary_color }]} />
+        <View style={[styles.colorDot, { backgroundColor: s2Color }]} />
         <View style={styles.schoolInfo}>
           <Text style={styles.schoolName} numberOfLines={1}>{s2.name}</Text>
           {s2.mascot && (
@@ -231,14 +243,14 @@ export function MatchupCard({ matchup, userVoteSchoolId, onVoted }: MatchupCardP
           )}
         </View>
         {!hasVoted && !isResolved && (
-          <Text style={[styles.voteLabel, { color: s2.primary_color }]}>VOTE</Text>
+          <Text style={[styles.voteLabel, { color: s2Color }]}>VOTE</Text>
         )}
       </Pressable>
 
       {/* Vote bar */}
       <VoteBar
-        school1Color={s1.primary_color}
-        school2Color={s2.primary_color}
+        school1Color={s1Color}
+        school2Color={s2Color}
         school1Votes={localS1Votes}
         school2Votes={localS2Votes}
       />

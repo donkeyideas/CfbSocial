@@ -9,7 +9,7 @@ import {
   Animated,
 } from 'react-native';
 import { WebView } from 'react-native-webview';
-import { useColors } from '@/lib/theme/ThemeProvider';
+import { useColors, useTheme } from '@/lib/theme/ThemeProvider';
 import { typography } from '@/lib/theme/typography';
 
 interface OgData {
@@ -182,6 +182,13 @@ function isTwitterUrl(url: string): boolean {
   } catch { return false; }
 }
 
+function extractTweetId(url: string): string | null {
+  try {
+    const m = new URL(url).pathname.match(/\/status\/(\d+)/);
+    return m ? m[1] : null;
+  } catch { return null; }
+}
+
 async function fetchOgData(url: string): Promise<OgData | null> {
   try {
     const parsed = new URL(url);
@@ -271,7 +278,7 @@ async function fetchOgData(url: string): Promise<OgData | null> {
 // ---- Video embed detection ----
 
 interface VideoEmbed {
-  platform: 'youtube' | 'instagram' | 'tiktok' | 'twitch';
+  platform: 'youtube' | 'instagram' | 'tiktok' | 'twitch' | 'twitter';
   embedUrl: string;
 }
 
@@ -327,8 +334,41 @@ function detectVideoEmbed(url: string): VideoEmbed | null {
     if (u.hostname.includes('twitch.tv') && twitchClip) {
       return { platform: 'twitch', embedUrl: `https://clips.twitch.tv/embed?clip=${twitchClip[1]}&parent=localhost` };
     }
+    // Twitter/X
+    const tweetId = extractTweetId(url);
+    if (isTwitterUrl(url) && tweetId) {
+      return { platform: 'twitter', embedUrl: tweetId };
+    }
   } catch { /* ignore */ }
   return null;
+}
+
+function buildTwitterEmbedHtml(tweetId: string, darkMode: boolean): string {
+  const theme = darkMode ? 'dark' : 'light';
+  const bg = darkMode ? '#1a1a1a' : '#fff';
+  return `<!DOCTYPE html><html><head>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<style>*{margin:0;padding:0}body{background:${bg};display:flex;justify-content:center;min-height:100vh}</style>
+</head><body><div id="tweet"></div>
+<script src="https://platform.twitter.com/widgets.js"></script>
+<script>
+twttr.ready(function(twttr){
+  twttr.widgets.createTweet('${tweetId}',document.getElementById('tweet'),{
+    theme:'${theme}',dnt:true,align:'center'
+  }).then(function(el){
+    if(el){
+      setTimeout(function(){
+        var h=document.body.scrollHeight;
+        window.ReactNativeWebView.postMessage(JSON.stringify({type:'height',height:h}));
+      },500);
+      setTimeout(function(){
+        var h=document.body.scrollHeight;
+        window.ReactNativeWebView.postMessage(JSON.stringify({type:'height',height:h}));
+      },2000);
+    }
+  });
+});
+</script></body></html>`;
 }
 
 interface LinkPreviewProps {
@@ -337,6 +377,7 @@ interface LinkPreviewProps {
 
 export const LinkPreview = memo(function LinkPreview({ content }: LinkPreviewProps) {
   const colors = useColors();
+  const { isDark } = useTheme();
   const [ogData, setOgData] = useState<OgData | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(false);
@@ -506,7 +547,7 @@ export const LinkPreview = memo(function LinkPreview({ content }: LinkPreviewPro
   if (error && !videoEmbed) return null;
 
   // Fallback OG data for video embeds when OG fetch failed
-  const platformNames: Record<string, string> = { youtube: 'YouTube', instagram: 'Instagram', tiktok: 'TikTok', twitch: 'Twitch' };
+  const platformNames: Record<string, string> = { youtube: 'YouTube', instagram: 'Instagram', tiktok: 'TikTok', twitch: 'Twitch', twitter: 'X (Twitter)' };
   const effectiveOgData = ogData ?? (error && videoEmbed ? {
     title: `Watch on ${platformNames[videoEmbed.platform] || 'Video'}`,
     description: null,
@@ -539,6 +580,32 @@ export const LinkPreview = memo(function LinkPreview({ content }: LinkPreviewPro
           <Animated.View style={[styles.skeletonLine, { width: '80%', opacity }]} />
           <Animated.View style={[styles.skeletonLine, { width: '40%', opacity }]} />
         </View>
+      </View>
+    );
+  }
+
+  // Twitter/X: render native embed immediately (no play button needed)
+  if (videoEmbed?.platform === 'twitter') {
+    const handleTweetHeight = (event: { nativeEvent: { data: string } }) => {
+      try {
+        const data = JSON.parse(event.nativeEvent.data);
+        if (data.type === 'height' && data.height > 100 && data.height < 800) {
+          setEmbedHeight(data.height);
+        }
+      } catch {}
+    };
+    return (
+      <View style={[styles.videoContainer, { height: embedHeight || 350 }]}>
+        <WebView
+          source={{ html: buildTwitterEmbedHtml(videoEmbed.embedUrl, isDark) }}
+          style={{ flex: 1, backgroundColor: isDark ? '#1a1a1a' : '#fff' }}
+          javaScriptEnabled
+          domStorageEnabled
+          originWhitelist={['*']}
+          mixedContentMode="always"
+          scrollEnabled={false}
+          onMessage={handleTweetHeight}
+        />
       </View>
     );
   }

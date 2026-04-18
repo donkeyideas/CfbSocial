@@ -4,6 +4,19 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { VoteBar } from './VoteBar';
+import { readableSchoolColor } from '@/lib/utils/color-contrast';
+
+function getIsDark(): boolean {
+  return typeof document !== 'undefined' && document.documentElement.classList.contains('dark');
+}
+
+/** In dark mode: prefer secondary_color, but if it's still too dark, lighten it */
+function pickColor(school: { primary_color: string; secondary_color?: string } | null, isDark: boolean): string | null {
+  if (!school) return null;
+  const raw = isDark && school.secondary_color ? school.secondary_color : school.primary_color;
+  if (!isDark) return raw;
+  return readableSchoolColor(raw, true);
+}
 
 interface School {
   id: string;
@@ -22,7 +35,7 @@ interface Take {
   downvotes: number;
   created_at: string;
   user: { id: string; username: string; display_name: string | null } | null;
-  school: { id: string; abbreviation: string; primary_color: string } | null;
+  school: { id: string; abbreviation: string; primary_color: string; secondary_color?: string } | null;
 }
 
 interface RivalryDetailProps {
@@ -44,6 +57,9 @@ export function RivalryDetail({ rivalry, takes }: RivalryDetailProps) {
   const router = useRouter();
   const s1 = rivalry.school_1;
   const s2 = rivalry.school_2;
+  const isDark = getIsDark();
+  const color1 = pickColor(s1, isDark) ?? 'var(--dark-brown)';
+  const color2 = pickColor(s2, isDark) ?? 'var(--dark-brown)';
   const [votes1, setVotes1] = useState(rivalry.school_1_vote_count);
   const [votes2, setVotes2] = useState(rivalry.school_2_vote_count);
   const [voted, setVoted] = useState<string | null>(null);
@@ -115,9 +131,9 @@ export function RivalryDetail({ rivalry, takes }: RivalryDetailProps) {
               onClick={() => s1 && handleVote(s1.id)}
               disabled={!!voted}
               style={{
-                background: voted === s1?.id ? s1?.primary_color : 'transparent',
-                color: voted === s1?.id ? '#fff' : s1?.primary_color ?? 'var(--dark-brown)',
-                border: `2px solid ${s1?.primary_color ?? 'var(--dark-brown)'}`,
+                background: voted === s1?.id ? color1 : 'transparent',
+                color: voted === s1?.id ? '#fff' : color1,
+                border: `2px solid ${color1}`,
                 padding: '12px 28px',
                 borderRadius: 2,
                 cursor: voted ? 'default' : 'pointer',
@@ -136,9 +152,9 @@ export function RivalryDetail({ rivalry, takes }: RivalryDetailProps) {
               onClick={() => s2 && handleVote(s2.id)}
               disabled={!!voted}
               style={{
-                background: voted === s2?.id ? s2?.primary_color : 'transparent',
-                color: voted === s2?.id ? '#fff' : s2?.primary_color ?? 'var(--dark-brown)',
-                border: `2px solid ${s2?.primary_color ?? 'var(--dark-brown)'}`,
+                background: voted === s2?.id ? color2 : 'transparent',
+                color: voted === s2?.id ? '#fff' : color2,
+                border: `2px solid ${color2}`,
                 padding: '12px 28px',
                 borderRadius: 2,
                 cursor: voted ? 'default' : 'pointer',
@@ -157,8 +173,8 @@ export function RivalryDetail({ rivalry, takes }: RivalryDetailProps) {
             votesB={votes2}
             labelA={s1?.abbreviation ?? 'A'}
             labelB={s2?.abbreviation ?? 'B'}
-            colorA={s1?.primary_color ?? 'var(--crimson)'}
-            colorB={s2?.primary_color ?? 'var(--dark-brown)'}
+            colorA={color1}
+            colorB={color2}
           />
         </div>
       </div>
@@ -211,8 +227,8 @@ export function RivalryDetail({ rivalry, takes }: RivalryDetailProps) {
                   <span style={{
                     fontSize: '0.65rem',
                     fontWeight: 700,
-                    color: '#fff',
-                    background: take.school.primary_color,
+                    color: isDark ? '#000' : '#fff',
+                    background: pickColor(take.school, isDark) ?? take.school.primary_color,
                     padding: '1px 6px',
                     borderRadius: 2,
                   }}>

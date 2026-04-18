@@ -32,7 +32,7 @@ const POST_SELECT = `
   *,
   author:profiles!posts_author_id_fkey(
     id, username, display_name, avatar_url, dynasty_tier,
-    school:schools!profiles_school_id_fkey(abbreviation, primary_color, slug)
+    school:schools!profiles_school_id_fkey(abbreviation, primary_color, secondary_color, slug)
   ),
   aging_takes(id, user_id, revisit_date, is_surfaced, community_verdict)
 `;

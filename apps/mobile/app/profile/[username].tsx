@@ -53,6 +53,7 @@ interface ProfileData {
     name: string;
     abbreviation: string;
     primary_color: string;
+    secondary_color?: string;
     slug: string | null;
   } | null;
 }
@@ -179,7 +180,7 @@ export default function ProfileScreen() {
         follower_count, following_count,
         correct_predictions, prediction_count,
         school:schools!profiles_school_id_fkey(
-          id, name, abbreviation, primary_color, slug
+          id, name, abbreviation, primary_color, secondary_color, slug
         )
       `)
       .eq('username', username)
@@ -206,7 +207,7 @@ export default function ProfileScreen() {
         author:profiles!posts_author_id_fkey(
           id, username, display_name, avatar_url, dynasty_tier,
           school:schools!profiles_school_id_fkey(
-            abbreviation, primary_color, slug
+            abbreviation, primary_color, secondary_color, slug
           )
         )
       `)
@@ -289,6 +290,10 @@ export default function ProfileScreen() {
   const schoolColor = profile.school?.primary_color
     ? readableSchoolColor(profile.school.primary_color, isDark)
     : undefined;
+  // In dark mode, use school secondary (opposite) color for dynasty accents
+  const dynastyAccent = isDark && profile.school
+    ? readableSchoolColor(profile.school.secondary_color || profile.school.primary_color, true)
+    : schoolColor;
 
   const headerComponent = (
     <View>
@@ -351,7 +356,7 @@ export default function ProfileScreen() {
               slug={profile.school.slug}
             />
           )}
-          <DynastyBadge tier={profile.dynasty_tier} />
+          <DynastyBadge tier={profile.dynasty_tier} accentColor={dynastyAccent} />
         </View>
       </View>
 
@@ -370,7 +375,7 @@ export default function ProfileScreen() {
           level={profile.level}
           xp={profile.xp}
           tier={profile.dynasty_tier}
-          accentColor={schoolColor}
+          accentColor={dynastyAccent}
           posts={profile.post_count}
           touchdowns={profile.touchdown_count}
           predictions={profile.correct_predictions}

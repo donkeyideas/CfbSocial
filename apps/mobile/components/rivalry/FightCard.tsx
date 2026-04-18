@@ -2,16 +2,26 @@ import { useMemo } from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useAuth } from '@/lib/auth/AuthProvider';
-import { useColors } from '@/lib/theme/ThemeProvider';
+import { useColors, useTheme } from '@/lib/theme/ThemeProvider';
 import { typography } from '@/lib/theme/typography';
 import { SchoolBadge } from '@/components/ui/SchoolBadge';
 import { RivalryVoteBar } from './RivalryVoteBar';
+import { readableSchoolColor } from '@/lib/utils/colorContrast';
+
+/** In dark mode: prefer secondary_color, but if it's still too dark, lighten it */
+function pickColor(school: { primary_color: string; secondary_color?: string } | null, isDark: boolean, fallback: string): string {
+  if (!school) return fallback;
+  const raw = isDark && school.secondary_color ? school.secondary_color : school.primary_color;
+  if (!isDark) return raw;
+  return readableSchoolColor(raw, true);
+}
 
 export interface RivalrySchool {
   id: string;
   name: string;
   abbreviation: string;
   primary_color: string;
+  secondary_color?: string;
   slug: string | null;
   logo_url: string | null;
 }
@@ -39,6 +49,7 @@ interface FightCardProps {
 
 export function FightCard({ rivalry, onVote, expanded }: FightCardProps) {
   const colors = useColors();
+  const { isDark } = useTheme();
   const router = useRouter();
   const { session } = useAuth();
 
@@ -50,8 +61,8 @@ export function FightCard({ rivalry, onVote, expanded }: FightCardProps) {
   const pct1 = totalVotes > 0 ? Math.round((votes1 / totalVotes) * 100) : 50;
   const pct2 = totalVotes > 0 ? Math.round((votes2 / totalVotes) * 100) : 50;
 
-  const color1 = school1?.primary_color ?? colors.crimson;
-  const color2 = school2?.primary_color ?? colors.ink;
+  const color1 = pickColor(school1, isDark, colors.crimson);
+  const color2 = pickColor(school2, isDark, colors.ink);
 
   const styles = useMemo(() => StyleSheet.create({
     card: {

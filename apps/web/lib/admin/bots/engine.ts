@@ -597,28 +597,11 @@ export async function postBotTake(botId: string): Promise<{ success: boolean; po
   // Try AI generation with anti-repetition (pass pre-fetched ESPN articles)
   let content = await generateTakeContent(personality, bot.school, context, history, mood, recentBotPostContents, localKnowledgeStrings, espnArticles);
 
-  // Fallback
+  // If AI generation failed, do NOT post fallback one-liners.
+  // Low-quality generic fallbacks hurt the feed more than silence.
   if (!content) {
-    const allFallbacks = shuffleArray([
-      ...((FALLBACK_TAKES[personality.type] ?? []) as string[]),
-      ...((FALLBACK_TAKES.default ?? []) as string[]),
-    ]);
-
-    for (const candidate of allFallbacks) {
-      const { data: exists } = await supabase
-        .from('posts')
-        .select('id')
-        .eq('content', candidate)
-        .eq('status', 'PUBLISHED')
-        .limit(1);
-      if (!exists?.length && !isTooSimilar(candidate, recentBotPostContents)) {
-        content = candidate;
-        break;
-      }
-    }
+    return { success: false, error: 'AI generation failed — skipping post (no fallback)' };
   }
-
-  if (!content) return { success: false, error: 'No unique content available' };
 
   // Apply humanizer
   content = humanizeContent(content, personality, {
@@ -1651,14 +1634,19 @@ function getTimeActivityMultiplier(): number {
   const isSaturday = day === 6;
   const isSunday = day === 0;
 
-  // Increased all rates so bots actually post consistently
-  if (isSaturday && adjustedHour >= 10 && adjustedHour <= 23) return 1.0; // Game day peak
-  if (isSunday && adjustedHour >= 6 && adjustedHour < 14) return 0.8;     // Sunday morning recap
-  if (adjustedHour >= 0 && adjustedHour < 6) return 0.15;                 // Late night: low but not dead
-  if (adjustedHour >= 6 && adjustedHour < 9) return 0.6;                  // Morning ramp-up
-  if (adjustedHour >= 9 && adjustedHour < 17) return 0.75;                // Daytime: active
-  if (adjustedHour >= 17 && adjustedHour <= 23) return 0.85;              // Evening: high activity
-  return 0.7;
+  // NO posting between 1am-6am EST — dead hours
+  if (adjustedHour >= 1 && adjustedHour < 6) return 0;
+
+  // Spread activity naturally throughout the day
+  if (isSaturday && adjustedHour >= 10 && adjustedHour <= 23) return 0.9; // Game day peak
+  if (isSunday && adjustedHour >= 8 && adjustedHour < 14) return 0.6;    // Sunday morning recap
+  if (adjustedHour >= 0 && adjustedHour < 1) return 0.2;                 // Midnight wind-down
+  if (adjustedHour >= 6 && adjustedHour < 9) return 0.4;                 // Morning ramp-up
+  if (adjustedHour >= 9 && adjustedHour < 12) return 0.5;                // Late morning
+  if (adjustedHour >= 12 && adjustedHour < 17) return 0.6;               // Afternoon
+  if (adjustedHour >= 17 && adjustedHour <= 21) return 0.7;              // Evening prime time
+  if (adjustedHour >= 21 && adjustedHour <= 23) return 0.4;              // Late evening wind-down
+  return 0.5;
 }
 
 /**

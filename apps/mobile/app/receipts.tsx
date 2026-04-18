@@ -39,6 +39,7 @@ interface ReceiptPost {
     school: {
       abbreviation: string;
       primary_color: string;
+      secondary_color?: string;
       slug: string | null;
     } | null;
   } | null;
@@ -58,7 +59,7 @@ const AGING_SELECT = `
     touchdown_count, fumble_count, reply_count, created_at,
     author:profiles!posts_author_id_fkey(
       id, username, display_name, avatar_url, dynasty_tier,
-      school:schools!profiles_school_id_fkey(abbreviation, primary_color, slug)
+      school:schools!profiles_school_id_fkey(abbreviation, primary_color, secondary_color, slug)
     )
   )
 `;

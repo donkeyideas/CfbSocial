@@ -28,7 +28,7 @@ const PREDICTION_SELECT = `
     id, content, author_id, created_at,
     author:profiles!posts_author_id_fkey(
       id, username, display_name, avatar_url, dynasty_tier,
-      school:schools!profiles_school_id_fkey(abbreviation, primary_color, slug)
+      school:schools!profiles_school_id_fkey(abbreviation, primary_color, secondary_color, slug)
     )
   )
 `;

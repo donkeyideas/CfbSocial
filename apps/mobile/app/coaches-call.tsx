@@ -17,14 +17,23 @@ import { OrnamentDivider } from '@/components/ui/OrnamentDivider';
 import { SchoolBadge } from '@/components/ui/SchoolBadge';
 import { PostCard, type PostData } from '@/components/posts/PostCard';
 import { RivalryVoteBar } from '@/components/rivalry/RivalryVoteBar';
-import { useColors } from '@/lib/theme/ThemeProvider';
+import { useColors, useTheme } from '@/lib/theme/ThemeProvider';
 import { typography } from '@/lib/theme/typography';
+import { readableSchoolColor } from '@/lib/utils/colorContrast';
+
+function pickColor(school: { primary_color: string; secondary_color?: string } | null, isDark: boolean, fallback: string): string {
+  if (!school) return fallback;
+  const raw = isDark && school.secondary_color ? school.secondary_color : school.primary_color;
+  if (!isDark) return raw;
+  return readableSchoolColor(raw, true);
+}
 
 interface DebateSchool {
   id: string;
   name: string;
   abbreviation: string;
   primary_color: string;
+  secondary_color?: string;
 }
 
 interface DebateRivalry {
@@ -40,20 +49,21 @@ interface DebateRivalry {
 
 const RIVALRY_SELECT = `
   id, name, status, school_1_vote_count, school_2_vote_count, created_at,
-  school_1:schools!rivalries_school_1_id_fkey(id, name, abbreviation, primary_color),
-  school_2:schools!rivalries_school_2_id_fkey(id, name, abbreviation, primary_color)
+  school_1:schools!rivalries_school_1_id_fkey(id, name, abbreviation, primary_color, secondary_color),
+  school_2:schools!rivalries_school_2_id_fkey(id, name, abbreviation, primary_color, secondary_color)
 `;
 
 const POST_SELECT = `
   *,
   author:profiles!posts_author_id_fkey(
     id, username, display_name, avatar_url, dynasty_tier,
-    school:schools!profiles_school_id_fkey(abbreviation, primary_color, slug)
+    school:schools!profiles_school_id_fkey(abbreviation, primary_color, secondary_color, slug)
   )
 `;
 
 export default function CoachesCallScreen() {
   const colors = useColors();
+  const { isDark } = useTheme();
   const router = useRouter();
   const { dark } = useSchoolTheme();
   const [debates, setDebates] = useState<DebateRivalry[]>([]);
@@ -240,8 +250,8 @@ export default function CoachesCallScreen() {
                 const total = votes1 + votes2;
                 const pct1 = total > 0 ? Math.round((votes1 / total) * 100) : 50;
                 const pct2 = total > 0 ? Math.round((votes2 / total) * 100) : 50;
-                const color1 = school1?.primary_color ?? colors.crimson;
-                const color2 = school2?.primary_color ?? colors.ink;
+                const color1 = pickColor(school1, isDark, colors.crimson);
+                const color2 = pickColor(school2, isDark, colors.ink);
 
                 return (
                   <Pressable

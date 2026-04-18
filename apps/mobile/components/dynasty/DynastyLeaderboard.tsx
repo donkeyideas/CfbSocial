@@ -109,7 +109,7 @@ export function DynastyLeaderboard() {
   const fetchLeaderboard = useCallback(async () => {
     const { data, error } = await supabase
       .from('profiles')
-      .select('id, username, display_name, avatar_url, dynasty_tier, xp, level, school:schools!profiles_school_id_fkey(abbreviation, primary_color, slug)')
+      .select('id, username, display_name, avatar_url, dynasty_tier, xp, level, school:schools!profiles_school_id_fkey(abbreviation, primary_color, secondary_color, slug)')
       .order('xp', { ascending: false })
       .limit(25);
 

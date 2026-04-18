@@ -12,15 +12,17 @@ const TIER_CONFIG: Record<string, { label: string; color: string }> = {
 
 interface DynastyBadgeProps {
   tier: string | null;
+  accentColor?: string;
 }
 
-export function DynastyBadge({ tier }: DynastyBadgeProps) {
+export function DynastyBadge({ tier, accentColor }: DynastyBadgeProps) {
   if (!tier) return null;
   const config = TIER_CONFIG[tier] || TIER_CONFIG.WALK_ON;
+  const badgeColor = accentColor || config.color;
 
   return (
-    <View style={[styles.badge, { borderColor: config.color }]}>
-      <Text style={[styles.text, { color: config.color }]}>{config.label}</Text>
+    <View style={[styles.badge, { borderColor: badgeColor }]}>
+      <Text style={[styles.text, { color: badgeColor }]}>{config.label}</Text>
     </View>
   );
 }

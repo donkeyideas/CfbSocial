@@ -41,6 +41,7 @@ export interface PostData {
     school?: {
       abbreviation: string;
       primary_color: string;
+      secondary_color?: string;
       slug: string | null;
     } | null;
   } | null;

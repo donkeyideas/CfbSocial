@@ -315,8 +315,8 @@ html.dark .post-receipt::before {
 }
 
 html.dark .receipt-stamp {
-  border-color: var(--crimson);
-  color: var(--crimson);
+  border-color: var(--school-secondary, var(--crimson));
+  color: var(--school-secondary, var(--crimson));
 }
 
 /* Penalty post */
@@ -553,6 +553,10 @@ html.dark .headline-text {
 
 html.dark .headline-meta {
   color: #807060;
+}
+
+html.dark .headline-number {
+  color: var(--school-secondary, var(--crimson));
 }
 
 html.dark .vault-card {

@@ -88,7 +88,7 @@ async function RivalryContent({ rivalryId }: { rivalryId: string }) {
         id, username, display_name, avatar_url
       ),
       school:school_id (
-        id, abbreviation, primary_color
+        id, abbreviation, primary_color, secondary_color
       )
     `)
     .eq('rivalry_id', rivalryId)

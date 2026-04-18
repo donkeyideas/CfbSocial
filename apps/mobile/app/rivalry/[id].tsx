@@ -22,8 +22,8 @@ import { useSchoolTheme } from '@/lib/theme/SchoolThemeProvider';
 
 const RIVALRY_SELECT = `
   *,
-  school_1:schools!rivalries_school_1_id_fkey(id, name, abbreviation, primary_color, slug, logo_url),
-  school_2:schools!rivalries_school_2_id_fkey(id, name, abbreviation, primary_color, slug, logo_url)
+  school_1:schools!rivalries_school_1_id_fkey(id, name, abbreviation, primary_color, secondary_color, slug, logo_url),
+  school_2:schools!rivalries_school_2_id_fkey(id, name, abbreviation, primary_color, secondary_color, slug, logo_url)
 `;
 
 interface RivalryTake {

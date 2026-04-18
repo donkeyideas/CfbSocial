@@ -20,6 +20,7 @@ interface PostHeaderProps {
     school?: {
       abbreviation: string;
       primary_color: string;
+      secondary_color?: string;
       slug: string | null;
     } | null;
   } | null;
@@ -36,6 +37,10 @@ export const PostHeader = memo(function PostHeader({ author, createdAt, invertCo
   const schoolColor = readableSchoolColor(rawSchoolColor, isDark);
   const textColor = invertColors ? '#f4efe4' : colors.textPrimary;
   const mutedColor = invertColors ? 'rgba(244,239,228,0.6)' : colors.textMuted;
+  // In dark mode, use secondary (opposite) school color for dynasty badge accent
+  const dynastyAccent = isDark && author?.school
+    ? readableSchoolColor(author.school.secondary_color || author.school.primary_color, true)
+    : undefined;
 
   const styles = useMemo(() => StyleSheet.create({
     container: {
@@ -100,7 +105,7 @@ export const PostHeader = memo(function PostHeader({ author, createdAt, invertCo
           )}
 
           {author?.dynasty_tier && (
-            <DynastyBadge tier={author.dynasty_tier} />
+            <DynastyBadge tier={author.dynasty_tier} accentColor={dynastyAccent} />
           )}
         </View>
       </View>

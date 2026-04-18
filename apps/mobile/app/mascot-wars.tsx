@@ -30,8 +30,8 @@ const ROUND_LABELS: Record<number, string> = {
 
 const MATCHUP_SELECT = `
   *,
-  school_1:schools!mascot_matchups_school_1_id_fkey(id, name, abbreviation, primary_color, mascot, slug),
-  school_2:schools!mascot_matchups_school_2_id_fkey(id, name, abbreviation, primary_color, mascot, slug)
+  school_1:schools!mascot_matchups_school_1_id_fkey(id, name, abbreviation, primary_color, secondary_color, mascot, slug),
+  school_2:schools!mascot_matchups_school_2_id_fkey(id, name, abbreviation, primary_color, secondary_color, mascot, slug)
 `;
 
 export default function MascotWarsScreen() {

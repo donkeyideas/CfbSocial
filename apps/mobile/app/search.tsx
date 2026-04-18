@@ -239,7 +239,7 @@ export default function SearchScreen() {
               avatar_url,
               school_id,
               dynasty_tier,
-              school:schools!profiles_school_id_fkey(abbreviation, primary_color, slug)
+              school:schools!profiles_school_id_fkey(abbreviation, primary_color, secondary_color, slug)
             ),
             school:school_id (
               id,
@@ -269,7 +269,7 @@ export default function SearchScreen() {
             avatar_url,
             dynasty_tier,
             school_id,
-            school:schools!profiles_school_id_fkey(abbreviation, primary_color, slug)
+            school:schools!profiles_school_id_fkey(abbreviation, primary_color, secondary_color, slug)
           `)
           .eq('status', 'ACTIVE')
           .or(`username.ilike.${searchTerm},display_name.ilike.${searchTerm}`)
