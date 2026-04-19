@@ -200,20 +200,31 @@ export function ReplyComposer({ postId, onReplySent }: ReplyComposerProps) {
     if (!content.trim() || !activeId) return;
 
     setSubmitting(true);
-    const { error } = await supabase.from('posts').insert({
+    const { data: newReply, error } = await supabase.from('posts').insert({
       content: content.trim(),
       post_type: 'STANDARD',
       author_id: activeId,
       school_id: profile?.school_id ?? null,
       parent_id: postId,
       status: 'PUBLISHED',
-    });
+    }).select('id').single();
 
     setSubmitting(false);
 
     if (error) {
       showAlert('Incomplete Pass', 'Failed to send reply. Please try again.');
       return;
+    }
+
+    // Award XP for creating a reply (fire-and-forget)
+    if (newReply?.id) {
+      supabase.rpc('award_xp', {
+        p_user_id: activeId,
+        p_amount: 10,
+        p_source: 'POST_CREATED',
+        p_reference_id: newReply.id,
+        p_description: 'Created a post',
+      }).then(null, () => {});
     }
 
     // Update reply_count on the parent post

@@ -380,13 +380,24 @@ export function PostComposer({ visible, onClose, onPostCreated }: PostComposerPr
       if (sidelineTime.trim()) insertData.sideline_time = sidelineTime.trim();
     }
 
-    const { error } = await supabase.from('posts').insert(insertData);
+    const { data: newPost, error } = await supabase.from('posts').insert(insertData).select('id').single();
 
     setSubmitting(false);
 
     if (error) {
       showAlert('Incomplete Pass', 'Failed to create post. Please try again.');
       return;
+    }
+
+    // Award XP for creating a post (fire-and-forget)
+    if (newPost?.id) {
+      supabase.rpc('award_xp', {
+        p_user_id: activeId,
+        p_amount: 10,
+        p_source: 'POST_CREATED',
+        p_reference_id: newPost.id,
+        p_description: 'Created a post',
+      }).then(null, () => {});
     }
 
     setContent('');

@@ -143,7 +143,7 @@ export function ReplyComposer({ parentId, parentAuthorId }: ReplyComposerProps) 
 
     const supabase = createClient();
 
-    const { error } = await supabase.from('posts').insert({
+    const { data: newReply, error } = await supabase.from('posts').insert({
       content: content.trim(),
       post_type: 'STANDARD',
       author_id: profile.id,
@@ -151,9 +151,19 @@ export function ReplyComposer({ parentId, parentAuthorId }: ReplyComposerProps) 
       parent_id: parentId,
       root_id: parentId,
       status: 'PUBLISHED',
-    });
+    }).select('id').single();
 
     if (!error) {
+      // Award XP for creating a reply (fire-and-forget)
+      if (newReply?.id) {
+        supabase.rpc('award_xp', {
+          p_user_id: profile.id,
+          p_amount: 10,
+          p_source: 'POST_CREATED',
+          p_reference_id: newReply.id,
+          p_description: 'Created a post',
+        }).then(null, () => {});
+      }
       setContent('');
       setMentionQuery(null);
       setMentionResults([]);

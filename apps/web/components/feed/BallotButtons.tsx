@@ -106,6 +106,17 @@ export function BallotButtons({ postId, authorId, touchdownCount, fumbleCount }:
             body: JSON.stringify({ notificationId: notifRow.id }),
           }).catch(() => {});
         }
+
+        // Award XP to post author for receiving a touchdown (fire-and-forget)
+        if (type === 'TOUCHDOWN') {
+          supabase.rpc('award_xp', {
+            p_user_id: authorId,
+            p_amount: 5,
+            p_source: 'TOUCHDOWN_RECEIVED',
+            p_reference_id: postId,
+            p_description: 'Received a touchdown',
+          }).then(null, () => {});
+        }
       }
     } catch {
       // Rollback optimistic update

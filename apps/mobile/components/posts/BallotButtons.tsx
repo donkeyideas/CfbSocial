@@ -158,7 +158,7 @@ export function BallotButtons({
 
           if (error) throw error;
 
-          // Send notification for TD votes
+          // Send notification + award XP for TD votes
           if (type === 'TOUCHDOWN' && authorId !== userId) {
             await supabase.from('notifications').insert({
               type: 'TD',
@@ -166,6 +166,15 @@ export function BallotButtons({
               actor_id: userId,
               post_id: postId,
             });
+
+            // Award XP to post author (fire-and-forget)
+            supabase.rpc('award_xp', {
+              p_user_id: authorId,
+              p_amount: 5,
+              p_source: 'TOUCHDOWN_RECEIVED',
+              p_reference_id: postId,
+              p_description: 'Received a touchdown',
+            }).then(null, () => {});
           }
         }
       } catch (err) {
