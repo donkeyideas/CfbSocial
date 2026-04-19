@@ -293,7 +293,7 @@ export function UserDetailModal({ open, onClose, user, onRefresh }: UserDetailMo
   const fetchDetail = useCallback(async (userId: string) => {
     setLoading(true);
     try {
-      const res = await fetch(`/api/users/${userId}`);
+      const res = await fetch(`/api/admin/users/${userId}`);
       if (res.ok) {
         const data = await res.json();
         setDetail(data);
@@ -451,7 +451,7 @@ export function UserDetailModal({ open, onClose, user, onRefresh }: UserDetailMo
         setConfirmOpen(false);
         setActionLoading(true);
         try {
-          const res = await fetch(`/api/users/${userId}`, { method: 'DELETE' });
+          const res = await fetch(`/api/admin/users/${userId}`, { method: 'DELETE' });
           if (res.ok) {
             onClose();
             onRefresh();
