@@ -292,7 +292,7 @@ export function PostComposer() {
   const typeButtons: { value: PostType; label: string }[] = [
     { value: 'RECEIPT' as PostType, label: 'Receipt' },
     { value: 'PREDICTION' as PostType, label: 'Poll' },
-    { value: 'SIDELINE' as PostType, label: 'Photo' },
+    { value: 'SIDELINE' as PostType, label: 'Sideline' },
     { value: 'AGING_TAKE' as PostType, label: 'Challenge' },
   ];
 

@@ -45,7 +45,7 @@ interface PostComposerProps {
 const POST_TYPES: { key: PostType; label: string }[] = [
   { key: 'RECEIPT', label: 'Receipt' },
   { key: 'PREDICTION', label: 'Poll' },
-  { key: 'SIDELINE', label: 'Photo' },
+  { key: 'SIDELINE', label: 'Sideline' },
   { key: 'AGING_TAKE', label: 'Challenge' },
 ];
 
@@ -116,9 +116,12 @@ export function PostComposer({ visible, onClose, onPostCreated }: PostComposerPr
         setPendingImages((prev) =>
           prev.map((p) => (p.id === img.id ? { ...p, publicUrl, uploading: false } : p))
         );
-      } catch {
+      } catch (e: any) {
+        const msg = e?.message || 'Unknown error';
+        console.error('Image upload failed:', msg);
+        showAlert('Upload Failed', msg);
         setPendingImages((prev) =>
-          prev.map((p) => (p.id === img.id ? { ...p, uploading: false, error: 'Upload failed' } : p))
+          prev.map((p) => (p.id === img.id ? { ...p, uploading: false, error: msg } : p))
         );
       }
     }

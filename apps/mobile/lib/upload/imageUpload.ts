@@ -11,7 +11,6 @@ export async function uploadImage(
   mimeType?: string,
   fileName?: string | null
 ): Promise<string> {
-  // Use provided mimeType or guess from URI extension
   const ext = uri.split('.').pop()?.toLowerCase() || 'jpg';
   const contentType = mimeType ||
     (ext === 'png' ? 'image/png' :
@@ -21,36 +20,48 @@ export async function uploadImage(
 
   const name = fileName || `photo.${ext}`;
 
-  // Get presigned URL
-  const presignRes = await fetch(`${WEB_API_URL}/api/upload/presign`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${accessToken}`,
-    },
-    body: JSON.stringify({ fileName: name, contentType }),
-  });
+  // Step 1: Get presigned URL
+  let presignData: PresignResponse;
+  try {
+    const presignRes = await fetch(`${WEB_API_URL}/api/upload/presign`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${accessToken}`,
+      },
+      body: JSON.stringify({ fileName: name, contentType }),
+    });
 
-  if (!presignRes.ok) {
-    const data = await presignRes.json().catch(() => ({}));
-    throw new Error(data.error || `Upload failed (${presignRes.status})`);
+    if (!presignRes.ok) {
+      const data = await presignRes.json().catch(() => ({}));
+      throw new Error(data.error || `Presign failed (${presignRes.status})`);
+    }
+
+    presignData = await presignRes.json();
+  } catch (e: any) {
+    throw new Error(`Presign step failed: ${e.message}`);
   }
 
-  const { presignedUrl, publicUrl }: PresignResponse = await presignRes.json();
+  // Step 2: Upload file via XMLHttpRequest (native RN file upload, no extra dependencies)
+  await new Promise<void>((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    xhr.open('PUT', presignData.presignedUrl);
+    xhr.setRequestHeader('Content-Type', contentType);
 
-  // Fetch local file as blob and upload to R2
-  const fileRes = await fetch(uri);
-  const blob = await fileRes.blob();
+    xhr.onload = () => {
+      if (xhr.status >= 200 && xhr.status < 300) {
+        resolve();
+      } else {
+        reject(new Error(`R2 upload failed (${xhr.status})`));
+      }
+    };
 
-  const uploadRes = await fetch(presignedUrl, {
-    method: 'PUT',
-    headers: { 'Content-Type': contentType },
-    body: blob,
+    xhr.onerror = () => reject(new Error('R2 upload network error'));
+    xhr.ontimeout = () => reject(new Error('R2 upload timed out'));
+
+    // React Native XHR natively handles file:// URIs when passed as an object
+    xhr.send({ uri, type: contentType, name } as any);
   });
 
-  if (!uploadRes.ok) {
-    throw new Error(`Failed to upload image (${uploadRes.status})`);
-  }
-
-  return publicUrl;
+  return presignData.publicUrl;
 }
