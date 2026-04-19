@@ -917,17 +917,9 @@ export async function botReplyToPost(botId: string): Promise<{ success: boolean;
     // Generate reply
     let replyContent = await generateReplyContent(personality, bot.school, (post.content as string) + rivalryContext, mood);
 
+    // If AI generation failed, skip — do NOT post generic fallback replies
     if (!replyContent) {
-      // Fallback
-      const { data: existingReplies } = await supabase
-        .from('posts')
-        .select('content')
-        .eq('parent_id', post.id)
-        .eq('status', 'PUBLISHED');
-      const usedContents = new Set((existingReplies ?? []).map((r) => (r.content as string).toLowerCase().trim()));
-      const unused = FALLBACK_REPLIES.find((f) => !usedContents.has(f.toLowerCase().trim()));
-      if (!unused) continue;
-      replyContent = unused;
+      continue;
     }
 
     // Apply humanizer to reply
