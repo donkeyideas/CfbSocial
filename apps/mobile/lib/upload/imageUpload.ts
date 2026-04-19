@@ -7,17 +7,19 @@ interface PresignResponse {
 
 export async function uploadImage(
   uri: string,
-  accessToken: string
+  accessToken: string,
+  mimeType?: string,
+  fileName?: string | null
 ): Promise<string> {
-  // Determine content type from URI
+  // Use provided mimeType or guess from URI extension
   const ext = uri.split('.').pop()?.toLowerCase() || 'jpg';
-  const contentType =
-    ext === 'png' ? 'image/png' :
+  const contentType = mimeType ||
+    (ext === 'png' ? 'image/png' :
     ext === 'webp' ? 'image/webp' :
     ext === 'gif' ? 'image/gif' :
-    'image/jpeg';
+    'image/jpeg');
 
-  const fileName = `photo.${ext}`;
+  const name = fileName || `photo.${ext}`;
 
   // Get presigned URL
   const presignRes = await fetch(`${WEB_API_URL}/api/upload/presign`, {
@@ -26,12 +28,12 @@ export async function uploadImage(
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${accessToken}`,
     },
-    body: JSON.stringify({ fileName, contentType }),
+    body: JSON.stringify({ fileName: name, contentType }),
   });
 
   if (!presignRes.ok) {
-    const data = await presignRes.json();
-    throw new Error(data.error || 'Failed to get upload URL');
+    const data = await presignRes.json().catch(() => ({}));
+    throw new Error(data.error || `Upload failed (${presignRes.status})`);
   }
 
   const { presignedUrl, publicUrl }: PresignResponse = await presignRes.json();
@@ -47,7 +49,7 @@ export async function uploadImage(
   });
 
   if (!uploadRes.ok) {
-    throw new Error('Failed to upload image');
+    throw new Error(`Failed to upload image (${uploadRes.status})`);
   }
 
   return publicUrl;

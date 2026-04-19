@@ -1,7 +1,6 @@
 'use client';
 
 import { useCallback, useState } from 'react';
-import Image from 'next/image';
 
 interface PostImagesProps {
   urls: string[];
@@ -34,12 +33,12 @@ export function PostImages({ urls }: PostImagesProps) {
               setLightboxIdx(idx);
             }}
           >
-            <Image
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
               src={url}
               alt={`Post image ${idx + 1}`}
-              fill
-              sizes="(max-width: 600px) 100vw, 400px"
               className="post-images-img"
+              loading="lazy"
             />
           </button>
         ))}
@@ -68,11 +67,10 @@ export function PostImages({ urls }: PostImagesProps) {
               &lt;
             </button>
           )}
-          <Image
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
             src={urls[lightboxIdx]!}
             alt="Full size"
-            width={1200}
-            height={900}
             className="post-lightbox-img"
             onClick={(e) => e.stopPropagation()}
           />

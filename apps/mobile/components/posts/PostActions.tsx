@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Alert, KeyboardAvoidingView, Modal, Platform, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { KeyboardAvoidingView, Modal, Platform, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useAuth } from '@/lib/auth/AuthProvider';
 import { useThemedAlert } from '@/lib/AlertProvider';
@@ -560,34 +560,32 @@ export function PostActions({
   const handleDelete = useCallback(() => {
     if (!isOwner) return;
 
-    Alert.alert(
-      'Delete Post',
-      'Delete this post? This cannot be undone.',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Delete',
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              const { error } = await supabase
-                .from('posts')
-                .delete()
-                .eq('id', postId);
+    showAlert('Delete Post', 'Delete this post? This cannot be undone.', {
+      confirmLabel: 'DELETE',
+      cancelLabel: 'CANCEL',
+      onConfirm: async () => {
+        try {
+          await supabase.auth.refreshSession();
 
-              if (error) {
-                showAlert('Incomplete Pass', 'Could not delete post.');
-                return;
-              }
+          const { error } = await supabase
+            .from('posts')
+            .update({ status: 'REMOVED' })
+            .eq('id', postId);
 
-              if (onDeleted) onDeleted();
-            } catch {
-              showAlert('Incomplete Pass', 'Could not delete post.');
-            }
-          },
-        },
-      ]
-    );
+          if (error) {
+            console.error('Delete post error:', error.message, error.code);
+            showAlert('Incomplete Pass', error.message || 'Could not delete post.');
+            return;
+          }
+
+          showAlert('Post Deleted', 'Your post has been removed.');
+          if (onDeleted) onDeleted();
+        } catch (e: any) {
+          console.error('Delete post exception:', e);
+          showAlert('Incomplete Pass', e?.message || 'Could not delete post.');
+        }
+      },
+    });
   }, [isOwner, postId, onDeleted, showAlert]);
 
   // Helper: format count for display

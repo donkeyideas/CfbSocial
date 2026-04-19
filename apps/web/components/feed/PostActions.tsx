@@ -35,6 +35,8 @@ export function PostActions({ postId, authorId, replyCount = 0, bookmarkCount = 
   const [editContent, setEditContent] = useState('');
   const [editSaving, setEditSaving] = useState(false);
   const [deleted, setDeleted] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleteLoading, setDeleteLoading] = useState(false);
 
   const isOwner = profileId && authorId && profileId === authorId;
 
@@ -168,12 +170,14 @@ export function PostActions({ postId, authorId, replyCount = 0, bookmarkCount = 
     }
   }
 
-  async function handleDelete() {
+  async function handleDeleteConfirm() {
     if (!isOwner) return;
-    if (!window.confirm('Delete this post? This cannot be undone.')) return;
+    setDeleteLoading(true);
     const supabase = createClient();
-    const { error } = await supabase.from('posts').delete().eq('id', postId);
+    const { error } = await supabase.from('posts').update({ status: 'REMOVED' }).eq('id', postId);
+    setDeleteLoading(false);
     if (!error) {
+      setShowDeleteModal(false);
       setDeleted(true);
       router.refresh();
     }
@@ -216,7 +220,7 @@ export function PostActions({ postId, authorId, replyCount = 0, bookmarkCount = 
             <button className="post-action" onClick={handleEdit} style={showEdit ? { color: 'var(--crimson)' } : undefined}>
               EDIT
             </button>
-            <button className="post-action post-action-delete" onClick={handleDelete}>
+            <button className="post-action post-action-delete" onClick={() => setShowDeleteModal(true)}>
               DELETE
             </button>
           </>
@@ -272,6 +276,26 @@ export function PostActions({ postId, authorId, replyCount = 0, bookmarkCount = 
 
       {showReport && (
         <ReportModal postId={postId} onClose={() => setShowReport(false)} />
+      )}
+
+      {showDeleteModal && (
+        <div className="delete-modal-backdrop" onClick={() => setShowDeleteModal(false)}>
+          <div className="delete-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="delete-modal-header">DELETE POST</div>
+            <div className="delete-modal-body">
+              <p className="delete-modal-message">Delete this post? This cannot be undone.</p>
+              <div className="delete-modal-divider" />
+              <div className="delete-modal-buttons">
+                <button className="delete-modal-cancel" onClick={() => setShowDeleteModal(false)}>
+                  CANCEL
+                </button>
+                <button className="delete-modal-confirm" onClick={handleDeleteConfirm} disabled={deleteLoading}>
+                  {deleteLoading ? 'DELETING...' : 'DELETE'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
       )}
     </>
   );

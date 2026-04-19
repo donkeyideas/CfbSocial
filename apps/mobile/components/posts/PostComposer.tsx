@@ -100,17 +100,19 @@ export function PostComposer({ visible, onClose, onPostCreated }: PostComposerPr
     if (result.canceled || !result.assets?.length) return;
     if (!session?.access_token) return;
 
-    const newImages: PendingImage[] = result.assets.map((asset) => ({
+    const newImages = result.assets.map((asset) => ({
       id: `${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
       uri: asset.uri,
-      uploading: true,
+      mimeType: asset.mimeType,
+      fileName: asset.fileName,
+      uploading: true as const,
     }));
 
     setPendingImages((prev) => [...prev, ...newImages]);
 
     for (const img of newImages) {
       try {
-        const publicUrl = await uploadImage(img.uri, session.access_token);
+        const publicUrl = await uploadImage(img.uri, session.access_token, img.mimeType ?? undefined, img.fileName);
         setPendingImages((prev) =>
           prev.map((p) => (p.id === img.id ? { ...p, publicUrl, uploading: false } : p))
         );
