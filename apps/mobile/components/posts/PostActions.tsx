@@ -7,7 +7,7 @@ import { supabase } from '@/lib/supabase';
 import { useSchoolTheme } from '@/lib/theme/SchoolThemeProvider';
 import { useColors } from '@/lib/theme/ThemeProvider';
 import { typography } from '@/lib/theme/typography';
-import { MAX_POST_CHARS } from '@/lib/constants';
+import { MAX_POST_CHARS, WEB_API_URL } from '@/lib/constants';
 import { FactCheckPanel } from './FactCheckPanel';
 
 const REVISIT_OPTIONS = [7, 14, 30, 60, 90];
@@ -43,7 +43,7 @@ export function PostActions({
   replyCount = 0,
 }: PostActionsProps) {
   const colors = useColors();
-  const { profile } = useAuth();
+  const { profile, session } = useAuth();
   const userId = profile?.id ?? null;
   const { dark } = useSchoolTheme();
   const router = useRouter();
@@ -442,6 +442,27 @@ export function PostActions({
         if (error) {
           showAlert('Incomplete Pass', 'Could not repost.');
           throw error;
+        }
+
+        // Notify post author + dispatch push
+        if (postAuthorId && postAuthorId !== userId) {
+          const { data: notifRow } = await supabase.from('notifications').insert({
+            recipient_id: postAuthorId,
+            actor_id: userId!,
+            type: 'REPOST',
+            post_id: postId,
+          }).select('id').single();
+
+          if (notifRow && session?.access_token) {
+            fetch(`${WEB_API_URL}/api/push/dispatch`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${session.access_token}`,
+              },
+              body: JSON.stringify({ notificationId: notifRow.id }),
+            }).catch(() => {});
+          }
         }
       }
     } catch {

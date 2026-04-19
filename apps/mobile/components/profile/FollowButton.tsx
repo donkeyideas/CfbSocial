@@ -5,6 +5,7 @@ import { useAuth } from '@/lib/auth/AuthProvider';
 import { useSchoolTheme } from '@/lib/theme/SchoolThemeProvider';
 import { useColors } from '@/lib/theme/ThemeProvider';
 import { typography } from '@/lib/theme/typography';
+import { WEB_API_URL } from '@/lib/constants';
 
 interface FollowButtonProps {
   targetUserId: string;
@@ -12,7 +13,7 @@ interface FollowButtonProps {
 
 export function FollowButton({ targetUserId }: FollowButtonProps) {
   const colors = useColors();
-  const { profile } = useAuth();
+  const { profile, session } = useAuth();
   const userId = profile?.id ?? null;
   const { dark } = useSchoolTheme();
   const [isFollowing, setIsFollowing] = useState(false);
@@ -93,12 +94,24 @@ export function FollowButton({ targetUserId }: FollowButtonProps) {
         following_id: targetUserId,
       });
 
-      // Insert FOLLOW notification
-      await supabase.from('notifications').insert({
+      // Insert FOLLOW notification + dispatch push
+      const { data: notifRow } = await supabase.from('notifications').insert({
         recipient_id: targetUserId,
         actor_id: userId,
         type: 'FOLLOW',
-      });
+      }).select('id').single();
+
+      if (notifRow && session?.access_token) {
+        fetch(`${WEB_API_URL}/api/push/dispatch`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${session.access_token}`,
+          },
+          body: JSON.stringify({ notificationId: notifRow.id }),
+        }).catch(() => {});
+      }
+
       setIsFollowing(true);
     }
 

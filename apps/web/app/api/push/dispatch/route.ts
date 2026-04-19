@@ -1,17 +1,39 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/admin/supabase/admin';
 import { dispatchPushNotification } from '@/lib/firebase/dispatcher';
 
 /**
  * POST /api/push/dispatch
  * Called by client components after they insert a notification row.
  * Triggers push notification delivery for that notification.
+ * Supports both cookie-based auth (web) and Bearer token auth (mobile).
  */
 export async function POST(req: NextRequest) {
   try {
+    let userId: string | null = null;
+
+    // Try cookie-based auth (web)
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
+    if (user) {
+      userId = user.id;
+    }
+
+    // Fallback: Bearer token auth (mobile app sends access_token as Bearer)
+    if (!userId) {
+      const authHeader = req.headers.get('authorization');
+      if (authHeader?.startsWith('Bearer ')) {
+        const token = authHeader.slice(7);
+        const admin = createAdminClient();
+        const { data: { user: tokenUser } } = await admin.auth.getUser(token);
+        if (tokenUser) {
+          userId = tokenUser.id;
+        }
+      }
+    }
+
+    if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 

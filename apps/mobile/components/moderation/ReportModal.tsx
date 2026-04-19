@@ -15,6 +15,7 @@ import { typography } from '@/lib/theme/typography';
 import { useSchoolTheme } from '@/lib/theme/SchoolThemeProvider';
 import { useAuth } from '@/lib/auth/AuthProvider';
 import { supabase } from '@/lib/supabase';
+import { WEB_API_URL } from '@/lib/constants';
 
 const REASONS = [
   { value: 'SPAM', label: 'Spam' },
@@ -183,7 +184,7 @@ export function ReportModal({ visible, postId, postAuthorId, onClose }: ReportMo
     },
   }), [colors]);
 
-  const { profile } = useAuth();
+  const { profile, session } = useAuth();
   const userId = profile?.id ?? null;
 
   async function handleSubmit() {
@@ -223,13 +224,24 @@ export function ReportModal({ visible, postId, postAuthorId, onClose }: ReportMo
         .update({ status: 'FLAGGED', flagged_at: new Date().toISOString() })
         .eq('id', postId);
 
-      // Create notification for the post author
+      // Create notification for the post author + dispatch push
       if (postAuthorId && postAuthorId !== userId) {
-        await supabase.from('notifications').insert({
+        const { data: notifRow } = await supabase.from('notifications').insert({
           recipient_id: postAuthorId,
           type: 'POST_FLAGGED',
           post_id: postId,
-        });
+        }).select('id').single();
+
+        if (notifRow && session?.access_token) {
+          fetch(`${WEB_API_URL}/api/push/dispatch`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${session.access_token}`,
+            },
+            body: JSON.stringify({ notificationId: notifRow.id }),
+          }).catch(() => {});
+        }
       }
 
       // Log moderation event

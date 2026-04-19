@@ -6,6 +6,7 @@ import { supabase } from '@/lib/supabase';
 import { useColors } from '@/lib/theme/ThemeProvider';
 import { withAlpha } from '@/lib/theme/utils';
 import { typography } from '@/lib/theme/typography';
+import { WEB_API_URL } from '@/lib/constants';
 
 interface BallotButtonsProps {
   postId: string;
@@ -24,7 +25,7 @@ export function BallotButtons({
   prefetchedVote,
 }: BallotButtonsProps) {
   const colors = useColors();
-  const { profile } = useAuth();
+  const { profile, session } = useAuth();
   const userId = profile?.id ?? null;
   const { showAlert } = useThemedAlert();
   const [voted, setVoted] = useState<'TOUCHDOWN' | 'FUMBLE' | null>(null);
@@ -160,12 +161,24 @@ export function BallotButtons({
 
           // Send notification + award XP for TD votes
           if (type === 'TOUCHDOWN' && authorId !== userId) {
-            await supabase.from('notifications').insert({
-              type: 'TD',
+            const { data: notifRow } = await supabase.from('notifications').insert({
+              type: 'TOUCHDOWN',
               recipient_id: authorId,
               actor_id: userId,
               post_id: postId,
-            });
+            }).select('id').single();
+
+            // Dispatch push notification (fire-and-forget)
+            if (notifRow && session?.access_token) {
+              fetch(`${WEB_API_URL}/api/push/dispatch`, {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                  'Authorization': `Bearer ${session.access_token}`,
+                },
+                body: JSON.stringify({ notificationId: notifRow.id }),
+              }).catch(() => {});
+            }
 
             // Award XP to post author (fire-and-forget)
             supabase.rpc('award_xp', {

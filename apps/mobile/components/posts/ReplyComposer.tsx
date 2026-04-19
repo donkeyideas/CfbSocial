@@ -15,6 +15,7 @@ import { supabase } from '@/lib/supabase';
 import { typography } from '@/lib/theme/typography';
 import { useColors } from '@/lib/theme/ThemeProvider';
 import { Avatar } from '@/components/ui/Avatar';
+import { WEB_API_URL } from '@/lib/constants';
 
 interface MentionProfile {
   id: string;
@@ -235,6 +236,33 @@ export function ReplyComposer({ postId, onReplySent }: ReplyComposerProps) {
       .eq('status', 'PUBLISHED');
     if (count !== null) {
       await supabase.from('posts').update({ reply_count: count }).eq('id', postId);
+    }
+
+    // Notify parent post author + dispatch push
+    const { data: parentPost } = await supabase
+      .from('posts')
+      .select('author_id')
+      .eq('id', postId)
+      .single();
+
+    if (parentPost?.author_id && parentPost.author_id !== activeId) {
+      const { data: notifRow } = await supabase.from('notifications').insert({
+        recipient_id: parentPost.author_id,
+        actor_id: activeId,
+        type: 'REPLY',
+        post_id: postId,
+      }).select('id').single();
+
+      if (notifRow && session?.access_token) {
+        fetch(`${WEB_API_URL}/api/push/dispatch`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${session.access_token}`,
+          },
+          body: JSON.stringify({ notificationId: notifRow.id }),
+        }).catch(() => {});
+      }
     }
 
     setContent('');

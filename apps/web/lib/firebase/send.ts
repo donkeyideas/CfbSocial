@@ -18,6 +18,11 @@ function isExpoToken(token: string): boolean {
   return token.startsWith('ExponentPushToken[') || token.startsWith('ExpoPushToken[');
 }
 
+/** Check if a token is a raw APNs device token (64-char hex string from iOS) */
+function isRawApnsToken(token: string, platform: string): boolean {
+  return platform === 'ios' && /^[0-9a-f]{64}$/i.test(token);
+}
+
 /**
  * Send a push notification to a single FCM token.
  * Returns success/failure and error code if applicable.
@@ -101,9 +106,18 @@ export async function sendPushToUser(
 
   if (!tokens || tokens.length === 0) return result;
 
-  // Separate Expo tokens from FCM tokens
+  // Separate Expo tokens from FCM tokens, skip raw APNs tokens
   const expoTokens = tokens.filter((t) => isExpoToken(t.token));
-  const fcmTokens = tokens.filter((t) => !isExpoToken(t.token));
+  const rawApnsTokens = tokens.filter((t) => !isExpoToken(t.token) && isRawApnsToken(t.token, t.platform));
+  const fcmTokens = tokens.filter((t) => !isExpoToken(t.token) && !isRawApnsToken(t.token, t.platform));
+
+  // Deactivate raw APNs tokens — they can't be sent via FCM or Expo
+  for (const t of rawApnsTokens) {
+    await supabase
+      .from('device_tokens')
+      .update({ is_active: false, updated_at: new Date().toISOString() })
+      .eq('id', t.id);
+  }
 
   // Send to Expo tokens in batch
   if (expoTokens.length > 0) {
