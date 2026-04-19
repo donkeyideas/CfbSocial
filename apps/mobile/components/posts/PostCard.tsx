@@ -15,6 +15,7 @@ export interface PostData {
   fumble_count: number;
   reply_count: number;
   repost_count: number;
+  media_urls?: string[] | null;
   created_at: string;
   moderation_reason: string | null;
   moderation_labels: string[] | null;

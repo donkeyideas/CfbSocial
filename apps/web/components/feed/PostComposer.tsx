@@ -10,6 +10,16 @@ import type { PostType } from '@cfb-social/types';
 import { LinkPreview, extractFirstUrl } from './LinkPreview';
 import { GifPicker } from './GifPicker';
 import { revalidateFeed } from '@/lib/actions/feed';
+import { uploadImage } from '@/lib/upload/imageUpload';
+
+interface PendingImage {
+  id: string;
+  file: File;
+  previewUrl: string;
+  publicUrl?: string;
+  uploading: boolean;
+  error?: string;
+}
 
 interface MentionProfile {
   id: string;
@@ -41,6 +51,52 @@ export function PostComposer() {
   const [sidelineQuarter, setSidelineQuarter] = useState('');
   const [sidelineTime, setSidelineTime] = useState('');
   const [gifPickerOpen, setGifPickerOpen] = useState(false);
+  const [pendingImages, setPendingImages] = useState<PendingImage[]>([]);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const imagesUploading = pendingImages.some((img) => img.uploading);
+
+  const handleImageSelect = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    if (files.length === 0) return;
+
+    const remaining = 4 - pendingImages.length;
+    const toAdd = files.slice(0, remaining);
+
+    const newImages: PendingImage[] = toAdd.map((file) => ({
+      id: `${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+      file,
+      previewUrl: URL.createObjectURL(file),
+      uploading: true,
+    }));
+
+    setPendingImages((prev) => [...prev, ...newImages]);
+
+    // Reset input so same file can be re-selected
+    if (fileInputRef.current) fileInputRef.current.value = '';
+
+    // Upload each image
+    for (const img of newImages) {
+      try {
+        const publicUrl = await uploadImage(img.file);
+        setPendingImages((prev) =>
+          prev.map((p) => (p.id === img.id ? { ...p, publicUrl, uploading: false } : p))
+        );
+      } catch {
+        setPendingImages((prev) =>
+          prev.map((p) => (p.id === img.id ? { ...p, uploading: false, error: 'Upload failed' } : p))
+        );
+      }
+    }
+  }, [pendingImages.length]);
+
+  const removeImage = useCallback((id: string) => {
+    setPendingImages((prev) => {
+      const img = prev.find((p) => p.id === id);
+      if (img) URL.revokeObjectURL(img.previewUrl);
+      return prev.filter((p) => p.id !== id);
+    });
+  }, []);
 
   // Mention autocomplete state
   const [mentionQuery, setMentionQuery] = useState<string | null>(null);
@@ -168,11 +224,15 @@ export function PostComposer() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!content.trim() || submitting || !profile?.id) return;
+    if (!content.trim() || submitting || !profile?.id || imagesUploading) return;
 
     setSubmitting(true);
 
     const supabase = createClient();
+
+    const uploadedUrls = pendingImages
+      .filter((img) => img.publicUrl && !img.error)
+      .map((img) => img.publicUrl!);
 
     const insertData: Record<string, unknown> = {
       content: content.trim(),
@@ -180,6 +240,7 @@ export function PostComposer() {
       author_id: profile.id,
       school_id: profile?.school_id ?? null,
       status: 'PUBLISHED',
+      ...(uploadedUrls.length > 0 && { media_urls: uploadedUrls }),
     };
 
     if (postType === ('SIDELINE' as PostType)) {
@@ -203,6 +264,8 @@ export function PostComposer() {
       setMentionQuery(null);
       setMentionResults([]);
       setMentionActive(false);
+      pendingImages.forEach((img) => URL.revokeObjectURL(img.previewUrl));
+      setPendingImages([]);
       await revalidateFeed();
       router.refresh();
 
@@ -299,6 +362,40 @@ export function PostComposer() {
 
       {extractFirstUrl(content) && <LinkPreview content={content} />}
 
+      {/* Image previews */}
+      {pendingImages.length > 0 && (
+        <div className="composer-image-previews">
+          {pendingImages.map((img) => (
+            <div key={img.id} className="composer-image-thumb">
+              <Image
+                src={img.previewUrl}
+                alt="Upload preview"
+                width={80}
+                height={80}
+                className="composer-image-thumb-img"
+                unoptimized
+              />
+              {img.uploading && (
+                <div className="composer-image-uploading">
+                  <div className="composer-image-spinner" />
+                </div>
+              )}
+              {img.error && (
+                <div className="composer-image-error">!</div>
+              )}
+              <button
+                type="button"
+                className="composer-image-remove"
+                onClick={() => removeImage(img.id)}
+                aria-label="Remove image"
+              >
+                X
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+
       {postType === ('SIDELINE' as PostType) && (
         <div className="sideline-fields">
           <div className="sideline-fields-label">Sideline Report Details</div>
@@ -361,13 +458,30 @@ export function PostComposer() {
           >
             GIF
           </button>
+          <button
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            className="composer-tool"
+            disabled={pendingImages.length >= 4}
+            style={pendingImages.length >= 4 ? { opacity: 0.4 } : undefined}
+          >
+            Image
+          </button>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/jpeg,image/png,image/webp,image/gif"
+            multiple
+            onChange={handleImageSelect}
+            style={{ display: 'none' }}
+          />
         </div>
 
         <button
           type="submit"
-          disabled={!content.trim() || submitting}
+          disabled={!content.trim() || submitting || imagesUploading}
           className="composer-submit"
-          style={{ opacity: !content.trim() || submitting ? 0.5 : 1 }}
+          style={{ opacity: !content.trim() || submitting || imagesUploading ? 0.5 : 1 }}
         >
           {submitting ? 'Filing...' : 'Publish'}
         </button>

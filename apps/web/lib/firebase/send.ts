@@ -126,10 +126,12 @@ export async function sendPushToUser(
       payload
     );
 
-    // Log results for each Expo token
+    // Log results for each Expo token using per-token tracking
     for (const t of expoTokens) {
+      const tokenResult = expoResult.perToken.find((r) => r.token === t.token);
+      const success = tokenResult?.success ?? false;
       const isInvalid = expoResult.invalidTokens.includes(t.token);
-      const success = !isInvalid && expoResult.sent > 0;
+      const errorMessage = tokenResult?.error ?? null;
 
       await supabase.from('push_notification_log').insert({
         notification_id: meta?.notificationId ?? null,
@@ -138,7 +140,7 @@ export async function sendPushToUser(
         device_token: t.token.substring(0, 50),
         platform: t.platform,
         status: success ? 'sent' : 'failed',
-        error_message: isInvalid ? 'DeviceNotRegistered' : null,
+        error_message: errorMessage,
         sent_at: new Date().toISOString(),
       });
 

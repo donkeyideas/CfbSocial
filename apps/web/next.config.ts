@@ -25,6 +25,10 @@ const nextConfig: NextConfig = {
         protocol: 'https',
         hostname: 's.espncdn.com',
       },
+      {
+        protocol: 'https',
+        hostname: 'pub-2bd6dae1883f4e10b8d47653fd542930.r2.dev',
+      },
     ],
   },
 };

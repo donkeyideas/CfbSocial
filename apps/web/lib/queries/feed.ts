@@ -23,6 +23,7 @@ export const FEED_POST_SELECT = `
   sideline_time,
   sideline_game,
   sideline_verified,
+  media_urls,
   author:profiles!posts_author_id_fkey(
     id,
     username,

@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react';
+import { Platform } from 'react-native';
 import Constants, { ExecutionEnvironment } from 'expo-constants';
 import { router } from 'expo-router';
 import { useAuth } from '@/lib/auth/AuthProvider';
@@ -24,6 +25,7 @@ if (!isExpoGo) {
 /**
  * Registers for push notifications on mount (when user is authenticated),
  * and sets up listeners for notification taps.
+ * iOS uses Firebase messaging for tap handling; Android uses Expo notifications.
  * Skips entirely in Expo Go where push is unsupported.
  */
 export function usePushNotifications() {
@@ -34,7 +36,6 @@ export function usePushNotifications() {
   useEffect(() => {
     if (isExpoGo || !session?.access_token) return;
 
-    const Notifications = require('expo-notifications') as typeof import('expo-notifications');
     const { registerForPushNotifications } = require('@/lib/notifications/pushRegistration');
 
     // Register for push notifications
@@ -43,29 +44,63 @@ export function usePushNotifications() {
       async () => session.access_token
     ).catch((err: any) => console.error('[Push] Registration failed:', err));
 
-    // Handle cold-start: check if the app was opened from a notification tap
-    if (!coldStartHandled.current) {
-      coldStartHandled.current = true;
-      Notifications.getLastNotificationResponseAsync().then((response) => {
-        if (response) {
-          // Small delay to let the router initialize
-          setTimeout(() => {
-            router.push('/notifications');
-          }, 500);
-        }
-      });
-    }
+    if (Platform.OS === 'ios') {
+      // iOS: use Firebase messaging for notification tap handling
+      import('@react-native-firebase/messaging').then((messagingModule) => {
+        const messaging = messagingModule.default;
 
-    // Listen for notification taps while app is running (foreground/background)
-    responseListener.current = Notifications.addNotificationResponseReceivedListener(
-      () => {
-        router.push('/notifications');
+        // Handle cold-start: app opened from notification while closed
+        if (!coldStartHandled.current) {
+          coldStartHandled.current = true;
+          messaging().getInitialNotification().then((remoteMessage) => {
+            if (remoteMessage) {
+              setTimeout(() => {
+                router.push('/notifications');
+              }, 500);
+            }
+          });
+        }
+
+        // Handle notification tap while app is in background
+        responseListener.current = messaging().onNotificationOpenedApp(() => {
+          router.push('/notifications');
+        });
+      }).catch((err) => {
+        console.error('[Push] Firebase messaging import failed:', err);
+      });
+    } else {
+      // Android: use Expo notifications for tap handling
+      const Notifications = require('expo-notifications') as typeof import('expo-notifications');
+
+      // Handle cold-start
+      if (!coldStartHandled.current) {
+        coldStartHandled.current = true;
+        Notifications.getLastNotificationResponseAsync().then((response) => {
+          if (response) {
+            setTimeout(() => {
+              router.push('/notifications');
+            }, 500);
+          }
+        });
       }
-    );
+
+      // Listen for notification taps while app is running
+      responseListener.current = Notifications.addNotificationResponseReceivedListener(
+        () => {
+          router.push('/notifications');
+        }
+      );
+    }
 
     return () => {
       if (responseListener.current) {
-        responseListener.current.remove();
+        if (typeof responseListener.current === 'function') {
+          // Firebase returns an unsubscribe function
+          responseListener.current();
+        } else if (responseListener.current.remove) {
+          // Expo returns a subscription object
+          responseListener.current.remove();
+        }
       }
     };
   }, [session?.access_token]);

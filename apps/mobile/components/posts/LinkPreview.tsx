@@ -585,34 +585,34 @@ export const LinkPreview = memo(function LinkPreview({ content }: LinkPreviewPro
     );
   }
 
-  // Twitter/X: render native embed on Android, card on iOS (iOS blocks WebView embeds)
+  // Twitter/X: render native embed via WebView
   if (videoEmbed?.platform === 'twitter') {
-    if (Platform.OS === 'ios') {
-      // Fall through to OG card rendering below — tapping opens in Safari
-    } else {
-      const handleTweetHeight = (event: { nativeEvent: { data: string } }) => {
-        try {
-          const data = JSON.parse(event.nativeEvent.data);
-          if (data.type === 'height' && data.height > 100 && data.height < 800) {
-            setEmbedHeight(data.height);
-          }
-        } catch {}
-      };
-      return (
-        <View style={[styles.videoContainer, { height: embedHeight || 350 }]}>
-          <WebView
-            source={{ html: buildTwitterEmbedHtml(videoEmbed.embedUrl, isDark) }}
-            style={{ flex: 1, backgroundColor: isDark ? '#1a1a1a' : '#fff' }}
-            javaScriptEnabled
-            domStorageEnabled
-            originWhitelist={['*']}
-            mixedContentMode="always"
-            scrollEnabled={false}
-            onMessage={handleTweetHeight}
-          />
-        </View>
-      );
-    }
+    const handleTweetHeight = (event: { nativeEvent: { data: string } }) => {
+      try {
+        const data = JSON.parse(event.nativeEvent.data);
+        if (data.type === 'height' && data.height > 100 && data.height < 800) {
+          setEmbedHeight(data.height);
+        }
+      } catch {}
+    };
+    return (
+      <View style={[styles.videoContainer, { height: embedHeight || 350 }]}>
+        <WebView
+          source={{ html: buildTwitterEmbedHtml(videoEmbed.embedUrl, isDark) }}
+          style={{ flex: 1, backgroundColor: isDark ? '#1a1a1a' : '#fff' }}
+          javaScriptEnabled
+          domStorageEnabled
+          allowsInlineMediaPlayback
+          mediaPlaybackRequiresUserAction={false}
+          allowsFullscreenVideo
+          originWhitelist={['*']}
+          mixedContentMode="always"
+          scrollEnabled={false}
+          onMessage={handleTweetHeight}
+          userAgent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+        />
+      </View>
+    );
   }
 
   if (!effectiveOgData) return null;
@@ -694,6 +694,7 @@ window.addEventListener('message',function(e){
             mixedContentMode="always"
             scrollEnabled={false}
             onMessage={handleHeightMessage}
+            userAgent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
           />
         </View>
       );
@@ -715,7 +716,7 @@ window.addEventListener('message',function(e){
             originWhitelist={['*']}
             mixedContentMode="always"
             scrollEnabled={false}
-            userAgent="Mozilla/5.0 (Linux; Android 13) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36"
+            userAgent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
             onMessage={handleHeightMessage}
           />
         </View>
@@ -755,13 +756,7 @@ window.addEventListener('message',function(e){
       style={styles.card}
       onPress={() => {
         if (videoEmbed) {
-          // Instagram, TikTok & Twitter block WebView embeds on iOS — open in native browser
-          const blockedOnIos = ['instagram', 'tiktok', 'twitter'];
-          if (Platform.OS === 'ios' && blockedOnIos.includes(videoEmbed.platform)) {
-            Linking.openURL(url!);
-          } else {
-            setPlaying(true);
-          }
+          setPlaying(true);
         } else {
           Linking.openURL(effectiveOgData.url);
         }

@@ -7,6 +7,7 @@ import { PostActions } from './PostActions';
 import { ReportModal } from '../moderation/ReportModal';
 import { LinkPreview, extractFirstUrl, stripFirstUrl } from './LinkPreview';
 import { PostContent } from './PostContent';
+import { PostImages } from './PostImages';
 import { useColors } from '@/lib/theme/ThemeProvider';
 import { typography } from '@/lib/theme/typography';
 import { withAlpha } from '@/lib/theme/utils';
@@ -234,6 +235,7 @@ export const NewspaperClippingCard = memo(function NewspaperClippingCard({ post,
       ) : null}
 
       <LinkPreview content={post.content} />
+      {post.media_urls && post.media_urls.length > 0 && <PostImages urls={post.media_urls} />}
 
       {/* Receipt stamp with date for aging takes */}
       {hasAgingTake && receiptDate && (

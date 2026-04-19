@@ -10,8 +10,10 @@ import {
   Platform,
   ActivityIndicator,
   ScrollView,
+  Image as RNImage,
 } from 'react-native';
 import { useRouter } from 'expo-router';
+import * as ImagePicker from 'expo-image-picker';
 import { useAuth } from '@/lib/auth/AuthProvider';
 import { useThemedAlert } from '@/lib/AlertProvider';
 import { useSchoolTheme } from '@/lib/theme/SchoolThemeProvider';
@@ -22,6 +24,15 @@ import { DEFAULT_POST_CHARS } from '@/lib/constants';
 import { LinkPreview, extractFirstUrl } from './LinkPreview';
 import { GifPicker } from './GifPicker';
 import { Avatar } from '@/components/ui/Avatar';
+import { uploadImage } from '@/lib/upload/imageUpload';
+
+interface PendingImage {
+  id: string;
+  uri: string;
+  publicUrl?: string;
+  uploading: boolean;
+  error?: string;
+}
 
 type PostType = 'STANDARD' | 'RECEIPT' | 'PREDICTION' | 'SIDELINE' | 'AGING_TAKE';
 
@@ -72,6 +83,48 @@ export function PostComposer({ visible, onClose, onPostCreated }: PostComposerPr
   const [sidelineQuarter, setSidelineQuarter] = useState('');
   const [sidelineTime, setSidelineTime] = useState('');
   const [gifPickerVisible, setGifPickerVisible] = useState(false);
+  const [pendingImages, setPendingImages] = useState<PendingImage[]>([]);
+  const imagesUploading = pendingImages.some((img) => img.uploading);
+
+  const handlePickImages = useCallback(async () => {
+    const remaining = 4 - pendingImages.length;
+    if (remaining <= 0) return;
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ['images'],
+      allowsMultipleSelection: true,
+      selectionLimit: remaining,
+      quality: 0.8,
+    });
+
+    if (result.canceled || !result.assets?.length) return;
+    if (!session?.access_token) return;
+
+    const newImages: PendingImage[] = result.assets.map((asset) => ({
+      id: `${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+      uri: asset.uri,
+      uploading: true,
+    }));
+
+    setPendingImages((prev) => [...prev, ...newImages]);
+
+    for (const img of newImages) {
+      try {
+        const publicUrl = await uploadImage(img.uri, session.access_token);
+        setPendingImages((prev) =>
+          prev.map((p) => (p.id === img.id ? { ...p, publicUrl, uploading: false } : p))
+        );
+      } catch {
+        setPendingImages((prev) =>
+          prev.map((p) => (p.id === img.id ? { ...p, uploading: false, error: 'Upload failed' } : p))
+        );
+      }
+    }
+  }, [pendingImages.length, session?.access_token]);
+
+  const removeImage = useCallback((id: string) => {
+    setPendingImages((prev) => prev.filter((p) => p.id !== id));
+  }, []);
 
   // Mention autocomplete state
   const [mentionQuery, setMentionQuery] = useState<string | null>(null);
@@ -359,19 +412,76 @@ export function PostComposer({ visible, onClose, onPostCreated }: PostComposerPr
       fontSize: 15,
       color: '#f4efe4',
     },
+    imagePreviews: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: 8,
+      marginBottom: 14,
+    },
+    imageThumb: {
+      width: 72,
+      height: 72,
+      borderRadius: 6,
+      overflow: 'hidden',
+      position: 'relative',
+    },
+    imageThumbImg: {
+      width: 72,
+      height: 72,
+    },
+    imageOverlay: {
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      backgroundColor: 'rgba(0,0,0,0.4)',
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    imageRemove: {
+      position: 'absolute',
+      top: 2,
+      right: 2,
+      width: 20,
+      height: 20,
+      borderRadius: 10,
+      backgroundColor: 'rgba(0,0,0,0.7)',
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    imageRemoveText: {
+      color: '#fff',
+      fontSize: 11,
+      fontWeight: '700',
+    },
+    imageErrorText: {
+      color: '#ff4444',
+      fontSize: 10,
+      fontWeight: '700',
+    },
+    toolDisabled: {
+      opacity: 0.4,
+    },
   }), [colors]);
 
   const handleSubmit = async () => {
     const activeId = profile?.id;
-    if (!content.trim() || !activeId) return;
+    if (!content.trim() || !activeId || imagesUploading) return;
 
     setSubmitting(true);
+
+    const uploadedUrls = pendingImages
+      .filter((img) => img.publicUrl && !img.error)
+      .map((img) => img.publicUrl!);
+
     const insertData: Record<string, unknown> = {
       content: content.trim(),
       post_type: postType,
       author_id: activeId,
       school_id: profile?.school_id ?? null,
       status: 'PUBLISHED',
+      ...(uploadedUrls.length > 0 && { media_urls: uploadedUrls }),
     };
 
     if (postType === 'SIDELINE') {
@@ -408,6 +518,7 @@ export function PostComposer({ visible, onClose, onPostCreated }: PostComposerPr
     setMentionQuery(null);
     setMentionResults([]);
     setMentionActive(false);
+    setPendingImages([]);
     onPostCreated();
     onClose();
   };
@@ -421,6 +532,7 @@ export function PostComposer({ visible, onClose, onPostCreated }: PostComposerPr
     setMentionQuery(null);
     setMentionResults([]);
     setMentionActive(false);
+    setPendingImages([]);
     onClose();
   };
 
@@ -524,6 +636,30 @@ export function PostComposer({ visible, onClose, onPostCreated }: PostComposerPr
               {/* Link preview while composing */}
               {debouncedUrl && <LinkPreview content={content} />}
 
+              {/* Image previews */}
+              {pendingImages.length > 0 && (
+                <View style={styles.imagePreviews}>
+                  {pendingImages.map((img) => (
+                    <View key={img.id} style={styles.imageThumb}>
+                      <RNImage source={{ uri: img.uri }} style={styles.imageThumbImg} />
+                      {img.uploading && (
+                        <View style={styles.imageOverlay}>
+                          <ActivityIndicator size="small" color="#fff" />
+                        </View>
+                      )}
+                      {img.error && (
+                        <View style={styles.imageOverlay}>
+                          <Text style={styles.imageErrorText}>!</Text>
+                        </View>
+                      )}
+                      <Pressable style={styles.imageRemove} onPress={() => removeImage(img.id)}>
+                        <Text style={styles.imageRemoveText}>X</Text>
+                      </Pressable>
+                    </View>
+                  ))}
+                </View>
+              )}
+
               {/* Sideline report fields (Photo type) */}
               {postType === 'SIDELINE' && (
                 <View style={styles.sidelineFields}>
@@ -589,6 +725,13 @@ export function PostComposer({ visible, onClose, onPostCreated }: PostComposerPr
                   >
                     <Text style={styles.toolText}>GIF</Text>
                   </Pressable>
+                  <Pressable
+                    style={[styles.tool, pendingImages.length >= 4 && styles.toolDisabled]}
+                    onPress={handlePickImages}
+                    disabled={pendingImages.length >= 4}
+                  >
+                    <Text style={styles.toolText}>Image</Text>
+                  </Pressable>
                 </View>
 
                 {/* Char count */}
@@ -601,10 +744,10 @@ export function PostComposer({ visible, onClose, onPostCreated }: PostComposerPr
                   style={[
                     styles.submitButton,
                     { backgroundColor: dark },
-                    (!content.trim() || submitting) && styles.submitDisabled,
+                    (!content.trim() || submitting || imagesUploading) && styles.submitDisabled,
                   ]}
                   onPress={handleSubmit}
-                  disabled={!content.trim() || submitting}
+                  disabled={!content.trim() || submitting || imagesUploading}
                 >
                   {submitting ? (
                     <ActivityIndicator size="small" color="#f4efe4" />

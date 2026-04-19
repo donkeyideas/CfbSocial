@@ -7,6 +7,7 @@ import { PostActions } from './PostActions';
 import { ReportModal } from '../moderation/ReportModal';
 import { LinkPreview, extractFirstUrl, stripFirstUrl } from './LinkPreview';
 import { PostContent } from './PostContent';
+import { PostImages } from './PostImages';
 import { useColors, useTheme } from '@/lib/theme/ThemeProvider';
 import { typography } from '@/lib/theme/typography';
 import { timeAgo } from '@/lib/utils/timeAgo';
@@ -106,6 +107,7 @@ export const TicketStubCard = memo(function TicketStubCard({ post, isDetailView 
       </Pressable>
 
       <LinkPreview content={post.content} />
+      {post.media_urls && post.media_urls.length > 0 && <PostImages urls={post.media_urls} />}
 
       <BallotButtons
         postId={post.id}

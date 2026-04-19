@@ -11,6 +11,7 @@ import { AppealForm } from '@/components/moderation/AppealForm';
 import { AgingTakeTimerWrapper } from './AgingTakeTimerWrapper';
 import { LinkPreview, extractFirstUrl, stripFirstUrl } from './LinkPreview';
 import { PostContent } from './PostContent';
+import { PostImages } from './PostImages';
 import { trackEvent } from '@/lib/analytics/track';
 import { readableSchoolColor } from '@/lib/utils/color-contrast';
 
@@ -63,6 +64,7 @@ interface Post {
   sideline_quarter?: string | null;
   sideline_time?: string | null;
   sideline_verified?: boolean | null;
+  media_urls?: string[] | null;
   author?: PostAuthor | null;
   school?: PostSchool | null;
   reactions?: Array<{ count: number }>;
@@ -262,6 +264,7 @@ const ClassicPost = memo(function ClassicPost({ post, schoolStyle, isDark }: { p
         <PostUserRow post={post} isDark={isDark} />
         <div className="post-body"><PostContent content={extractFirstUrl(post.content) ? stripFirstUrl(post.content) : post.content} /></div>
         <LinkPreview content={post.content} />
+        {post.media_urls && post.media_urls.length > 0 && <PostImages urls={post.media_urls} />}
         <div className="receipt-stamp" suppressHydrationWarning>RECEIPT FILED &mdash; Review {receiptDate}</div>
         <PostBottom post={post} />
       </article>
@@ -274,6 +277,7 @@ const ClassicPost = memo(function ClassicPost({ post, schoolStyle, isDark }: { p
       <PostUserRow post={post} isDark={isDark} />
       <div className="post-body"><PostContent content={extractFirstUrl(post.content) ? stripFirstUrl(post.content) : post.content} /></div>
       <LinkPreview content={post.content} />
+      {post.media_urls && post.media_urls.length > 0 && <PostImages urls={post.media_urls} />}
       <PostBottom post={post} />
     </article>
   );
@@ -293,6 +297,7 @@ const ReceiptPost = memo(function ReceiptPost({ post, schoolStyle, isDark }: { p
       <PostUserRow post={post} isDark={isDark} />
       <div className="post-body"><PostContent content={extractFirstUrl(post.content) ? stripFirstUrl(post.content) : post.content} /></div>
       <LinkPreview content={post.content} />
+      {post.media_urls && post.media_urls.length > 0 && <PostImages urls={post.media_urls} />}
       <div className="receipt-stamp">RECEIPT CONFIRMED</div>
       <PostBottom post={post} />
     </article>
@@ -362,6 +367,7 @@ const PressBoxPost = memo(function PressBoxPost({ post, schoolStyle, isDark }: {
       <div className="pressbox-body">
         <div className="pressbox-content"><PostContent content={post.content} /></div>
         <LinkPreview content={post.content} />
+        {post.media_urls && post.media_urls.length > 0 && <PostImages urls={post.media_urls} />}
       </div>
       <div className="pressbox-footer">
         <PostBottom post={post} />
@@ -387,6 +393,7 @@ const RivalryPost = memo(function RivalryPost({ post, schoolStyle, isDark }: { p
         <PostUserRow post={post} isDark={isDark} />
         <div className="post-body"><PostContent content={extractFirstUrl(post.content) ? stripFirstUrl(post.content) : post.content} /></div>
         <LinkPreview content={post.content} />
+        {post.media_urls && post.media_urls.length > 0 && <PostImages urls={post.media_urls} />}
         <PostBottom post={post} />
       </div>
     </article>
@@ -410,6 +417,7 @@ const PredictionPost = memo(function PredictionPost({ post, schoolStyle, isDark 
         <PostUserRow post={post} isDark={isDark} />
         <div className="prediction-question"><PostContent content={post.content} /></div>
         <LinkPreview content={post.content} />
+        {post.media_urls && post.media_urls.length > 0 && <PostImages urls={post.media_urls} />}
       </div>
       <div className="prediction-footer">
         <PostBottom post={post} />
@@ -440,6 +448,7 @@ const AgingTakePost = memo(function AgingTakePost({ post, schoolStyle, isDark }:
         <PostUserRow post={post} isDark={isDark} />
         <div className="aging-quote">&ldquo;<PostContent content={post.content} />&rdquo;</div>
         <LinkPreview content={post.content} />
+        {post.media_urls && post.media_urls.length > 0 && <PostImages urls={post.media_urls} />}
         <AgingTakeTimerWrapper postId={post.id} />
       </div>
       <div className="aging-footer">

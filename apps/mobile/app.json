@@ -18,7 +18,14 @@
       "bundleIdentifier": "com.cfbsocial.app",
       "googleServicesFile": "./GoogleService-Info.plist",
       "infoPlist": {
-        "ITSAppUsesNonExemptEncryption": false
+        "ITSAppUsesNonExemptEncryption": false,
+        "UIBackgroundModes": [
+          "remote-notification",
+          "fetch"
+        ]
+      },
+      "entitlements": {
+        "aps-environment": "production"
       }
     },
     "android": {
@@ -29,7 +36,8 @@
       "package": "com.cfbsocial.app",
       "googleServicesFile": "./google-services.json",
       "permissions": [
-        "android.permission.RECORD_AUDIO"
+        "android.permission.RECORD_AUDIO",
+        "android.permission.POST_NOTIFICATIONS"
       ]
     },
     "web": {
@@ -50,6 +58,9 @@
           "color": "#8b1a1a"
         }
       ],
+      "@react-native-firebase/app",
+      "@react-native-firebase/messaging",
+      "./plugins/withFirebaseNonModularHeaders",
       "./plugins/withSwiftConcurrencyMinimal",
       "./plugins/withRealpathFix"
     ],
