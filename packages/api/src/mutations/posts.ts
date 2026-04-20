@@ -38,7 +38,7 @@ export async function createPost(
   // Award XP for creating a post (fire-and-forget, don't block)
   client.rpc('award_xp', {
     p_user_id: user.id,
-    p_amount: 10,
+    p_amount: 2,
     p_source: 'POST_CREATED',
     p_reference_id: data.id,
     p_description: 'Created a post',
@@ -129,7 +129,7 @@ export async function reactToPost(
         if (post?.author_id && post.author_id !== user.id) {
           return client.rpc('award_xp', {
             p_user_id: post.author_id,
-            p_amount: 5,
+            p_amount: 1,
             p_source: 'TOUCHDOWN_RECEIVED',
             p_reference_id: postId,
             p_description: 'Received a touchdown',

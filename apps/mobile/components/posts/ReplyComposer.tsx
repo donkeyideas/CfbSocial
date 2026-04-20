@@ -221,7 +221,7 @@ export function ReplyComposer({ postId, onReplySent }: ReplyComposerProps) {
     if (newReply?.id) {
       supabase.rpc('award_xp', {
         p_user_id: activeId,
-        p_amount: 10,
+        p_amount: 2,
         p_source: 'POST_CREATED',
         p_reference_id: newReply.id,
         p_description: 'Created a post',

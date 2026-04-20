@@ -183,7 +183,7 @@ export function BallotButtons({
             // Award XP to post author (fire-and-forget)
             supabase.rpc('award_xp', {
               p_user_id: authorId,
-              p_amount: 5,
+              p_amount: 1,
               p_source: 'TOUCHDOWN_RECEIVED',
               p_reference_id: postId,
               p_description: 'Received a touchdown',

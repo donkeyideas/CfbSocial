@@ -279,7 +279,7 @@ export function PostComposer() {
       // Award XP for creating a post (fire-and-forget)
       supabase.rpc('award_xp', {
         p_user_id: insertData.author_id,
-        p_amount: 10,
+        p_amount: 2,
         p_source: 'POST_CREATED',
         p_reference_id: newPost.id,
         p_description: 'Created a post',
