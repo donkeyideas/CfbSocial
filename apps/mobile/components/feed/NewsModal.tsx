@@ -5,6 +5,7 @@ import {
   Text,
   ScrollView,
   Pressable,
+  TouchableWithoutFeedback,
   Image,
   StyleSheet,
   Linking,
@@ -180,13 +181,19 @@ export function NewsModal({ article, onClose }: NewsModalProps) {
       animationType="fade"
       onRequestClose={onClose}
     >
-      <Pressable style={styles.overlay} onPress={onClose}>
-        <Pressable style={styles.modal} onPress={(e) => e.stopPropagation()}>
+      <View style={styles.overlay}>
+        {/* Backdrop — tap to close */}
+        <TouchableWithoutFeedback onPress={onClose}>
+          <View style={StyleSheet.absoluteFill} />
+        </TouchableWithoutFeedback>
+
+        {/* Modal card — scroll works freely */}
+        <View style={styles.modal}>
           <Pressable style={styles.closeBtn} onPress={onClose}>
             <Text style={styles.closeBtnText}>X</Text>
           </Pressable>
 
-          <ScrollView bounces={false}>
+          <ScrollView bounces={false} nestedScrollEnabled>
             {resolvedImage && (
               <Image
                 source={{ uri: resolvedImage }}
@@ -233,9 +240,9 @@ export function NewsModal({ article, onClose }: NewsModalProps) {
                     {p}
                   </Text>
                 ))
-              ) : (
+              ) : article.description ? (
                 <Text style={styles.paragraph}>{article.description}</Text>
-              )}
+              ) : null}
 
               <Pressable
                 style={[styles.readMoreBtn, { backgroundColor: dark }]}
@@ -251,8 +258,8 @@ export function NewsModal({ article, onClose }: NewsModalProps) {
               </Pressable>
             </View>
           </ScrollView>
-        </Pressable>
-      </Pressable>
+        </View>
+      </View>
     </Modal>
   );
 }

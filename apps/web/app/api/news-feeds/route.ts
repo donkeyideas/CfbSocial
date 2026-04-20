@@ -38,6 +38,13 @@ let cached: CacheEntry | null = null;
 const RECRUITING_KEYWORDS = /\b(recruit|recruiting|commitment|commits?|decommit|signing|class of|five.?star|four.?star|three.?star|top.?prospect|flip|crystal ball|offer|visit|nsd|national signing day|early enrollee)\b/i;
 const PORTAL_KEYWORDS = /\b(transfer portal|portal|entered the portal|transfer|transferred|destination|leaving|departs|portal entry|portal tracker)\b/i;
 
+function isGarbageText(text: string): boolean {
+  const words = text.split(/\s+/);
+  const hasLongWord = words.some((w) => w.length > 50);
+  const avgWordLen = text.replace(/\s+/g, '').length / Math.max(words.length, 1);
+  return hasLongWord || avgWordLen > 20;
+}
+
 function categorize(headline: string, description: string): 'recruiting' | 'portal' | 'trending' {
   const text = `${headline} ${description}`;
   if (PORTAL_KEYWORDS.test(text)) return 'portal';
@@ -112,12 +119,16 @@ function parseRSS(xml: string, source: string, limit = 10): NewsArticle[] {
     // Description
     const descCdata = block.match(/<description><!\[CDATA\[(.+?)\]\]><\/description>/s);
     const descPlain = block.match(/<description>([^<]+)<\/description>/);
-    const description = decodeEntities(
+    let description = decodeEntities(
       (descCdata?.[1] || descPlain?.[1] || '')
         .replace(/<[^>]+>/g, '')
         .trim()
         .substring(0, 500)
     );
+    // Strip garbage nav text from RSS descriptions
+    if (isGarbageText(description)) {
+      description = '';
+    }
 
     // Link
     const linkMatch = block.match(/<link>([^<]+)<\/link>/) || block.match(/<link><!\[CDATA\[(.+?)\]\]><\/link>/);

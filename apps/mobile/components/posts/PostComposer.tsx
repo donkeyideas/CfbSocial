@@ -551,8 +551,9 @@ export function PostComposer({ visible, onClose, onPostCreated }: PostComposerPr
       onRequestClose={handleClose}
     >
       <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={styles.overlay}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 24}
       >
         <Pressable style={styles.backdrop} onPress={handleClose} />
         <View style={styles.card}>

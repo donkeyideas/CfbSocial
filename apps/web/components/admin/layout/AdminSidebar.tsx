@@ -24,6 +24,7 @@ const navSections: NavSection[] = [
       { href: '/admin/users', label: 'Users' },
       { href: '/admin/schools', label: 'Schools' },
       { href: '/admin/referrals', label: 'Referrals' },
+      { href: '/admin/xp-economy', label: 'XP Economy' },
     ],
   },
   {

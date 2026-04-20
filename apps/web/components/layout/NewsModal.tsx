@@ -102,9 +102,9 @@ export function NewsModal({ article, onClose }: NewsModalProps) {
             paragraphs.map((p, i) => (
               <p key={i} className="news-modal-desc">{p}</p>
             ))
-          ) : (
+          ) : article.description ? (
             <p className="news-modal-desc">{article.description}</p>
-          )}
+          ) : null}
         </div>
 
         <a

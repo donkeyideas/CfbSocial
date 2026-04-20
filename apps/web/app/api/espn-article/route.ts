@@ -36,6 +36,17 @@ function cleanParagraph(raw: string): string {
   return decodeHTMLEntities(raw.replace(/<[^>]+>/g, '')).trim();
 }
 
+function isGarbageText(text: string): boolean {
+  // Detect concatenated nav text (e.g. "SearchNewsFinanceSportsMoreMailNCAA...")
+  const words = text.split(/\s+/);
+  const hasLongWord = words.some((w) => w.length > 50);
+  const avgWordLen = text.replace(/\s+/g, '').length / Math.max(words.length, 1);
+  if (hasLongWord || avgWordLen > 20) return true;
+  // Reject common nav/menu patterns
+  if (/^(Search|Menu|Navigation|Home|About|Contact)/i.test(text) && text.length < 200) return true;
+  return false;
+}
+
 export async function GET(request: NextRequest) {
   const url = request.nextUrl.searchParams.get('url');
   if (!url) {
@@ -84,7 +95,8 @@ export async function GET(request: NextRequest) {
         !text.includes('Subscribe') &&
         !text.includes('Sign up') &&
         !text.includes('cookie') &&
-        !text.includes('privacy policy')
+        !text.includes('privacy policy') &&
+        !isGarbageText(text)
       ) {
         paragraphs.push(text);
       }
@@ -96,7 +108,7 @@ export async function GET(request: NextRequest) {
       const simplePRegex = /<p>(.*?)<\/p>/gs;
       while ((match = simplePRegex.exec(html)) !== null) {
         const text = cleanParagraph(match[1]!);
-        if (text.length > 50 && !paragraphs.includes(text)) {
+        if (text.length > 50 && !paragraphs.includes(text) && !isGarbageText(text)) {
           paragraphs.push(text);
         }
         if (paragraphs.length >= 5) break;
@@ -110,7 +122,7 @@ export async function GET(request: NextRequest) {
         const articlePRegex = /<p[^>]*>(.*?)<\/p>/gs;
         while ((match = articlePRegex.exec(articleMatch[1]!)) !== null) {
           const text = cleanParagraph(match[1]!);
-          if (text.length > 50 && !paragraphs.includes(text)) {
+          if (text.length > 50 && !paragraphs.includes(text) && !isGarbageText(text)) {
             paragraphs.push(text);
           }
           if (paragraphs.length >= 5) break;

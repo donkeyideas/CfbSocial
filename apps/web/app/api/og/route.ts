@@ -254,7 +254,17 @@ function extractOgData(html: string, baseUrl: URL): OgData {
   }
 
   // Get description: og:description > twitter:description > meta description
-  const description = getMeta('og:description') ?? getMeta('twitter:description') ?? getMeta('description');
+  let description = getMeta('og:description') ?? getMeta('twitter:description') ?? getMeta('description');
+
+  // Sanitize garbage descriptions (nav text, concatenated menu items, etc.)
+  if (description) {
+    const words = description.split(/\s+/);
+    const hasGarbageWord = words.some((w) => w.length > 50);
+    const avgWordLen = description.replace(/\s+/g, '').length / Math.max(words.length, 1);
+    if (hasGarbageWord || avgWordLen > 20) {
+      description = null;
+    }
+  }
 
   // Get image: og:image > twitter:image
   let image = getMeta('og:image') ?? getMeta('twitter:image');
