@@ -3,7 +3,7 @@
     "name": "CFB Social",
     "slug": "cfb-social",
     "scheme": "cfbsocial",
-    "version": "1.3.2",
+    "version": "1.4.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",

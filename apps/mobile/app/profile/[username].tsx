@@ -203,14 +203,14 @@ export default function ProfileScreen() {
     const { data } = await supabase
       .from('posts')
       .select(`
-        id, content, post_type, status, author_id, school_id,
-        touchdown_count, fumble_count, reply_count, repost_count, created_at,
+        *,
         author:profiles!posts_author_id_fkey(
           id, username, display_name, avatar_url, dynasty_tier,
           school:schools!profiles_school_id_fkey(
             abbreviation, primary_color, secondary_color, slug
           )
-        )
+        ),
+        aging_takes(id, user_id, revisit_date, is_surfaced, community_verdict)
       `)
       .eq('author_id', profile.id)
       .neq('status', 'REMOVED')
