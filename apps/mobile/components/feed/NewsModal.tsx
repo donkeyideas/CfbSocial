@@ -17,6 +17,24 @@ import { useSchoolTheme } from '@/lib/theme/SchoolThemeProvider';
 import { typography } from '@/lib/theme/typography';
 import { WEB_API_URL } from '@/lib/constants';
 
+/** Detect concatenated navigation text scraped from Yahoo/CBS pages */
+function isGarbageText(text: string): boolean {
+  const words = text.split(/\s+/);
+  if (words.some((w) => w.length > 40)) return true;
+  const avgWordLen = text.replace(/\s+/g, '').length / Math.max(words.length, 1);
+  if (avgWordLen > 15) return true;
+  for (const w of words) {
+    if (w.length < 15) continue;
+    let transitions = 0;
+    for (let i = 1; i < w.length; i++) {
+      if (/[a-z]/.test(w[i - 1]) && /[A-Z]/.test(w[i])) transitions++;
+    }
+    if (transitions >= 3) return true;
+  }
+  if (/^(Search|Menu|Navigation|Home|About|Contact)/i.test(text) && text.length < 300) return true;
+  return false;
+}
+
 export interface NewsArticle {
   id: string;
   headline: string;
@@ -62,7 +80,7 @@ export function NewsModal({ article, onClose }: NewsModalProps) {
       .then((res) => (res.ok ? res.json() : null))
       .then((data) => {
         if (data?.paragraphs?.length > 0) {
-          setParagraphs(data.paragraphs);
+          setParagraphs(data.paragraphs.filter((p: string) => !isGarbageText(p)));
         }
         if (!article.imageUrl && data?.imageUrl) {
           setResolvedImage(data.imageUrl);
@@ -240,7 +258,7 @@ export function NewsModal({ article, onClose }: NewsModalProps) {
                     {p}
                   </Text>
                 ))
-              ) : article.description ? (
+              ) : article.description && !isGarbageText(article.description) ? (
                 <Text style={styles.paragraph}>{article.description}</Text>
               ) : null}
 

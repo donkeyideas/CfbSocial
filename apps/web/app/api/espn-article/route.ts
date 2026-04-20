@@ -37,13 +37,24 @@ function cleanParagraph(raw: string): string {
 }
 
 function isGarbageText(text: string): boolean {
-  // Detect concatenated nav text (e.g. "SearchNewsFinanceSportsMoreMailNCAA...")
   const words = text.split(/\s+/);
-  const hasLongWord = words.some((w) => w.length > 50);
+  // Any single word over 40 chars is concatenated nav garbage
+  if (words.some((w) => w.length > 40)) return true;
+  // High average word length
   const avgWordLen = text.replace(/\s+/g, '').length / Math.max(words.length, 1);
-  if (hasLongWord || avgWordLen > 20) return true;
+  if (avgWordLen > 15) return true;
+  // CamelCase concatenation: 3+ lowercase→uppercase transitions in one word
+  // e.g. "querySearchNewsFinanceSports" has many transitions = nav text
+  for (const w of words) {
+    if (w.length < 15) continue;
+    let transitions = 0;
+    for (let i = 1; i < w.length; i++) {
+      if (/[a-z]/.test(w[i - 1]) && /[A-Z]/.test(w[i])) transitions++;
+    }
+    if (transitions >= 3) return true;
+  }
   // Reject common nav/menu patterns
-  if (/^(Search|Menu|Navigation|Home|About|Contact)/i.test(text) && text.length < 200) return true;
+  if (/^(Search|Menu|Navigation|Home|About|Contact)/i.test(text) && text.length < 300) return true;
   return false;
 }
 

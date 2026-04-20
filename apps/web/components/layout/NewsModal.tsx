@@ -4,6 +4,23 @@ import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import Image from 'next/image';
 
+function isGarbageText(text: string): boolean {
+  const words = text.split(/\s+/);
+  if (words.some((w) => w.length > 40)) return true;
+  const avgWordLen = text.replace(/\s+/g, '').length / Math.max(words.length, 1);
+  if (avgWordLen > 15) return true;
+  for (const w of words) {
+    if (w.length < 15) continue;
+    let transitions = 0;
+    for (let i = 1; i < w.length; i++) {
+      if (/[a-z]/.test(w[i - 1]) && /[A-Z]/.test(w[i])) transitions++;
+    }
+    if (transitions >= 3) return true;
+  }
+  if (/^(Search|Menu|Navigation|Home|About|Contact)/i.test(text) && text.length < 300) return true;
+  return false;
+}
+
 interface NewsModalProps {
   article: {
     headline: string;
@@ -42,7 +59,7 @@ export function NewsModal({ article, onClose }: NewsModalProps) {
         if (res.ok) {
           const data = await res.json();
           if (data.paragraphs && data.paragraphs.length > 0) {
-            setParagraphs(data.paragraphs);
+            setParagraphs(data.paragraphs.filter((p: string) => !isGarbageText(p)));
           }
           // Use og:image from scraper if RSS didn't have one
           if (!resolvedImage && data.imageUrl) {
@@ -102,7 +119,7 @@ export function NewsModal({ article, onClose }: NewsModalProps) {
             paragraphs.map((p, i) => (
               <p key={i} className="news-modal-desc">{p}</p>
             ))
-          ) : article.description ? (
+          ) : article.description && !isGarbageText(article.description) ? (
             <p className="news-modal-desc">{article.description}</p>
           ) : null}
         </div>
