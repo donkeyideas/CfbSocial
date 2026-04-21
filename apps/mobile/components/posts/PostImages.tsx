@@ -1,273 +1,388 @@
-import { memo, useCallback, useEffect, useMemo, useState } from 'react';
+import { memo, useCallback, useEffect, useRef, useState } from 'react';
 import {
   Dimensions,
   Image,
+  LayoutChangeEvent,
   Modal,
+  NativeScrollEvent,
+  NativeSyntheticEvent,
   Pressable,
+  ScrollView,
   StyleSheet,
   Text,
   View,
 } from 'react-native';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
-const CARD_PADDING = 24;
-const IMAGE_GAP = 4;
+const MAX_SLIDE_HEIGHT = 500;
 
 interface PostImagesProps {
   urls: string[];
 }
 
-/** Single image that auto-sizes to its aspect ratio */
-function AutoImage({ uri, maxWidth, maxHeight, onPress }: {
-  uri: string;
-  maxWidth: number;
-  maxHeight: number;
-  onPress: () => void;
-}) {
-  const [size, setSize] = useState<{ w: number; h: number } | null>(null);
+/** Fetch dimensions for all images, returns array of {w, h} */
+function useImageSizes(urls: string[]) {
+  const [sizes, setSizes] = useState<({ w: number; h: number } | null)[]>(() => urls.map(() => null));
 
   useEffect(() => {
-    Image.getSize(
-      uri,
-      (w, h) => setSize({ w, h }),
-      () => setSize({ w: maxWidth, h: maxWidth * 0.6 }) // fallback
-    );
-  }, [uri, maxWidth]);
+    urls.forEach((uri, i) => {
+      Image.getSize(
+        uri,
+        (w, h) => setSizes((prev) => {
+          const next = [...prev];
+          next[i] = { w, h };
+          return next;
+        }),
+        () => setSizes((prev) => {
+          const next = [...prev];
+          next[i] = { w: 1, h: 1 }; // fallback 1:1
+          return next;
+        }),
+      );
+    });
+  }, [urls.join(',')]);
 
-  if (!size) {
-    return <View style={{ width: maxWidth, height: maxWidth * 0.5, borderRadius: 8, backgroundColor: '#e0e0e0' }} />;
-  }
-
-  const aspect = size.w / size.h;
-  let displayW = maxWidth;
-  let displayH = maxWidth / aspect;
-
-  if (displayH > maxHeight) {
-    displayH = maxHeight;
-    displayW = maxHeight * aspect;
-  }
-
-  return (
-    <Pressable onPress={onPress} style={{ borderRadius: 8, overflow: 'hidden', alignSelf: 'center' }}>
-      <Image
-        source={{ uri }}
-        style={{ width: displayW, height: displayH }}
-        resizeMode="contain"
-      />
-    </Pressable>
-  );
+  return sizes;
 }
 
 export const PostImages = memo(function PostImages({ urls }: PostImagesProps) {
   const [lightboxIdx, setLightboxIdx] = useState<number | null>(null);
+  const [activeSlide, setActiveSlide] = useState(0);
+  const [containerWidth, setContainerWidth] = useState(0);
+  const scrollRef = useRef<ScrollView>(null);
+  const lightboxScrollRef = useRef<ScrollView>(null);
+  const sizes = useImageSizes(urls);
 
   const closeLightbox = useCallback(() => setLightboxIdx(null), []);
 
-  const availableWidth = SCREEN_WIDTH - CARD_PADDING - 20;
-  const halfWidth = (availableWidth - IMAGE_GAP) / 2;
-
-  const styles = useMemo(() => {
-    return StyleSheet.create({
-      container: {
-        marginTop: 8,
-        marginBottom: 4,
-      },
-      grid2: {
-        flexDirection: 'row',
-        gap: IMAGE_GAP,
-        borderRadius: 8,
-        overflow: 'hidden',
-      },
-      img2: {
-        width: halfWidth,
-        height: halfWidth * 0.75,
-      },
-      grid3: {
-        gap: IMAGE_GAP,
-        borderRadius: 8,
-        overflow: 'hidden',
-      },
-      grid3top: {
-        width: availableWidth,
-        height: availableWidth * 0.5,
-      },
-      grid3bottom: {
-        flexDirection: 'row',
-        gap: IMAGE_GAP,
-      },
-      img3bottom: {
-        width: halfWidth,
-        height: halfWidth * 0.6,
-      },
-      grid4: {
-        gap: IMAGE_GAP,
-        borderRadius: 8,
-        overflow: 'hidden',
-      },
-      grid4row: {
-        flexDirection: 'row',
-        gap: IMAGE_GAP,
-      },
-      img4: {
-        width: halfWidth,
-        height: halfWidth * 0.75,
-      },
-      lightboxOverlay: {
-        flex: 1,
-        backgroundColor: 'rgba(0,0,0,0.9)',
-        justifyContent: 'center',
-        alignItems: 'center',
-      },
-      lightboxImg: {
-        width: SCREEN_WIDTH - 32,
-        height: SCREEN_WIDTH - 32,
-        resizeMode: 'contain',
-      },
-      lightboxClose: {
-        position: 'absolute',
-        top: 60,
-        right: 20,
-        width: 36,
-        height: 36,
-        borderRadius: 18,
-        backgroundColor: 'rgba(255,255,255,0.2)',
-        alignItems: 'center',
-        justifyContent: 'center',
-      },
-      lightboxCloseText: {
-        color: '#fff',
-        fontSize: 16,
-        fontWeight: '700',
-      },
-      lightboxNav: {
-        position: 'absolute',
-        top: '50%',
-        width: 40,
-        height: 40,
-        borderRadius: 20,
-        backgroundColor: 'rgba(255,255,255,0.2)',
-        alignItems: 'center',
-        justifyContent: 'center',
-      },
-      lightboxNavText: {
-        color: '#fff',
-        fontSize: 20,
-        fontWeight: '700',
-      },
-    });
-  }, [availableWidth, halfWidth]);
+  const onLayout = useCallback((e: LayoutChangeEvent) => {
+    setContainerWidth(e.nativeEvent.layout.width);
+  }, []);
 
   if (!urls || urls.length === 0) return null;
 
-  const count = Math.min(urls.length, 4);
-  const images = urls.slice(0, 4);
+  const count = urls.length;
+  const slideWidth = containerWidth || (SCREEN_WIDTH - 48);
 
-  const renderGrid = () => {
-    // Single image — use AutoImage for proper aspect ratio sizing
-    if (count === 1) {
-      return (
-        <AutoImage
-          uri={images[0]!}
-          maxWidth={availableWidth}
-          maxHeight={400}
-          onPress={() => setLightboxIdx(0)}
-        />
-      );
+  // Compute each slide's natural height (full width, aspect-ratio height)
+  const slideHeights = sizes.map((s) => {
+    if (!s) return slideWidth * 0.75; // loading placeholder
+    const h = slideWidth / (s.w / s.h);
+    return Math.min(h, MAX_SLIDE_HEIGHT);
+  });
+  // Carousel height = tallest slide so all fit without clipping
+  const carouselHeight = Math.max(...slideHeights);
+  const allLoaded = sizes.every((s) => s !== null);
+
+  const onScroll = useCallback((e: NativeSyntheticEvent<NativeScrollEvent>) => {
+    const offsetX = e.nativeEvent.contentOffset.x;
+    const w = containerWidth || (SCREEN_WIDTH - 48);
+    const idx = Math.round(offsetX / w);
+    setActiveSlide(idx);
+  }, [containerWidth]);
+
+  const goToSlide = useCallback((idx: number) => {
+    const w = containerWidth || (SCREEN_WIDTH - 48);
+    scrollRef.current?.scrollTo({ x: idx * w, animated: true });
+  }, [containerWidth]);
+
+  // Single image — size to its actual aspect ratio
+  if (count === 1) {
+    const s = sizes[0];
+    let imgH = slideWidth * 0.75;
+    if (s) {
+      imgH = Math.min(slideWidth / (s.w / s.h), MAX_SLIDE_HEIGHT);
     }
 
-    if (count === 2) {
-      return (
-        <View style={styles.grid2}>
-          {images.map((uri, i) => (
-            <Pressable key={i} onPress={() => setLightboxIdx(i)}>
-              <Image source={{ uri }} style={styles.img2} resizeMode="cover" />
-            </Pressable>
-          ))}
-        </View>
-      );
-    }
-
-    if (count === 3) {
-      return (
-        <View style={styles.grid3}>
-          <Pressable onPress={() => setLightboxIdx(0)}>
-            <Image source={{ uri: images[0] }} style={styles.grid3top} resizeMode="cover" />
-          </Pressable>
-          <View style={styles.grid3bottom}>
-            {images.slice(1).map((uri, i) => (
-              <Pressable key={i} onPress={() => setLightboxIdx(i + 1)}>
-                <Image source={{ uri }} style={styles.img3bottom} resizeMode="cover" />
-              </Pressable>
-            ))}
-          </View>
-        </View>
-      );
-    }
-
-    // 4 images
     return (
-      <View style={styles.grid4}>
-        <View style={styles.grid4row}>
-          {images.slice(0, 2).map((uri, i) => (
-            <Pressable key={i} onPress={() => setLightboxIdx(i)}>
-              <Image source={{ uri }} style={styles.img4} resizeMode="cover" />
+      <>
+        <View style={styles.container} onLayout={onLayout}>
+          {containerWidth > 0 && (
+            <Pressable
+              onPress={() => setLightboxIdx(0)}
+              style={{ borderRadius: 8, overflow: 'hidden' }}
+            >
+              <Image
+                source={{ uri: urls[0] }}
+                style={{ width: slideWidth, height: imgH }}
+                resizeMode="cover"
+              />
             </Pressable>
-          ))}
+          )}
         </View>
-        <View style={styles.grid4row}>
-          {images.slice(2, 4).map((uri, i) => (
-            <Pressable key={i} onPress={() => setLightboxIdx(i + 2)}>
-              <Image source={{ uri }} style={styles.img4} resizeMode="cover" />
-            </Pressable>
-          ))}
-        </View>
-      </View>
+        <LightboxModal
+          urls={urls}
+          sizes={sizes}
+          idx={lightboxIdx}
+          onClose={closeLightbox}
+          onChange={setLightboxIdx}
+          scrollRef={lightboxScrollRef}
+        />
+      </>
     );
-  };
+  }
 
+  // Multi-image carousel
   return (
     <>
-      <View style={styles.container}>
-        {renderGrid()}
+      <View style={styles.container} onLayout={onLayout}>
+        {containerWidth > 0 && (
+          <>
+            <View style={[styles.carouselWrapper, { width: slideWidth, height: carouselHeight }]}>
+              <ScrollView
+                ref={scrollRef}
+                horizontal
+                pagingEnabled
+                showsHorizontalScrollIndicator={false}
+                onScroll={onScroll}
+                scrollEventThrottle={16}
+                decelerationRate="fast"
+                style={{ width: slideWidth, height: carouselHeight }}
+              >
+                {urls.map((uri, idx) => {
+                  const thisH = slideHeights[idx]!;
+                  return (
+                    <Pressable
+                      key={idx}
+                      onPress={() => setLightboxIdx(idx)}
+                      style={{
+                        width: slideWidth,
+                        height: carouselHeight,
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                      }}
+                    >
+                      <Image
+                        source={{ uri }}
+                        style={{ width: slideWidth, height: thisH, borderRadius: 8 }}
+                        resizeMode="cover"
+                      />
+                    </Pressable>
+                  );
+                })}
+              </ScrollView>
+
+              {/* Counter badge */}
+              <View style={styles.counterBadge}>
+                <Text style={styles.counterText}>{activeSlide + 1}/{count}</Text>
+              </View>
+            </View>
+
+            {/* Dot indicators */}
+            <View style={styles.dotsContainer}>
+              {urls.map((_, idx) => (
+                <Pressable
+                  key={idx}
+                  onPress={() => goToSlide(idx)}
+                  style={[
+                    styles.dot,
+                    idx === activeSlide && styles.dotActive,
+                  ]}
+                />
+              ))}
+            </View>
+          </>
+        )}
       </View>
 
-      <Modal
-        visible={lightboxIdx !== null}
-        transparent
-        animationType="fade"
-        onRequestClose={closeLightbox}
-      >
-        <Pressable style={styles.lightboxOverlay} onPress={closeLightbox}>
-          {lightboxIdx !== null && (
-            <Image
-              source={{ uri: images[lightboxIdx] }}
-              style={styles.lightboxImg}
-            />
-          )}
-
-          <Pressable style={styles.lightboxClose} onPress={closeLightbox}>
-            <Text style={styles.lightboxCloseText}>X</Text>
-          </Pressable>
-
-          {lightboxIdx !== null && lightboxIdx > 0 && (
-            <Pressable
-              style={[styles.lightboxNav, { left: 12 }]}
-              onPress={() => setLightboxIdx(lightboxIdx - 1)}
-            >
-              <Text style={styles.lightboxNavText}>&lt;</Text>
-            </Pressable>
-          )}
-
-          {lightboxIdx !== null && lightboxIdx < images.length - 1 && (
-            <Pressable
-              style={[styles.lightboxNav, { right: 12 }]}
-              onPress={() => setLightboxIdx(lightboxIdx + 1)}
-            >
-              <Text style={styles.lightboxNavText}>&gt;</Text>
-            </Pressable>
-          )}
-        </Pressable>
-      </Modal>
+      <LightboxModal
+        urls={urls}
+        sizes={sizes}
+        idx={lightboxIdx}
+        onClose={closeLightbox}
+        onChange={setLightboxIdx}
+        scrollRef={lightboxScrollRef}
+      />
     </>
   );
+});
+
+/** Full-screen lightbox with swipeable navigation */
+function LightboxModal({
+  urls,
+  sizes,
+  idx,
+  onClose,
+  onChange,
+  scrollRef,
+}: {
+  urls: string[];
+  sizes: ({ w: number; h: number } | null)[];
+  idx: number | null;
+  onClose: () => void;
+  onChange: (idx: number) => void;
+  scrollRef: React.RefObject<ScrollView | null>;
+}) {
+  const screenH = Dimensions.get('window').height;
+
+  const onLightboxScroll = useCallback((e: NativeSyntheticEvent<NativeScrollEvent>) => {
+    const offsetX = e.nativeEvent.contentOffset.x;
+    const newIdx = Math.round(offsetX / SCREEN_WIDTH);
+    onChange(newIdx);
+  }, [onChange]);
+
+  useEffect(() => {
+    if (idx !== null && scrollRef.current) {
+      setTimeout(() => {
+        scrollRef.current?.scrollTo({ x: idx * SCREEN_WIDTH, animated: false });
+      }, 50);
+    }
+  }, [idx !== null]);
+
+  if (idx === null) return null;
+
+  return (
+    <Modal
+      visible
+      transparent
+      animationType="fade"
+      onRequestClose={onClose}
+    >
+      <Pressable style={styles.lightboxOverlay} onPress={onClose}>
+        <ScrollView
+          ref={scrollRef}
+          horizontal
+          pagingEnabled
+          showsHorizontalScrollIndicator={false}
+          onScroll={onLightboxScroll}
+          scrollEventThrottle={16}
+          decelerationRate="fast"
+          contentOffset={{ x: idx * SCREEN_WIDTH, y: 0 }}
+          style={{ width: SCREEN_WIDTH }}
+        >
+          {urls.map((uri, i) => {
+            const s = sizes[i];
+            let imgW = SCREEN_WIDTH;
+            let imgH = SCREEN_WIDTH;
+            if (s) {
+              const aspect = s.w / s.h;
+              // Fit to screen: try full width first, then constrain by height
+              imgW = SCREEN_WIDTH;
+              imgH = SCREEN_WIDTH / aspect;
+              if (imgH > screenH * 0.8) {
+                imgH = screenH * 0.8;
+                imgW = imgH * aspect;
+              }
+            }
+            return (
+              <Pressable key={i} style={styles.lightboxSlide} onPress={(e) => e.stopPropagation()}>
+                <Image
+                  source={{ uri }}
+                  style={{ width: imgW, height: imgH }}
+                  resizeMode="contain"
+                />
+              </Pressable>
+            );
+          })}
+        </ScrollView>
+
+        <Pressable style={styles.lightboxClose} onPress={onClose}>
+          <Text style={styles.lightboxCloseText}>X</Text>
+        </Pressable>
+
+        {urls.length > 1 && (
+          <View style={styles.lightboxDots}>
+            {urls.map((_, i) => (
+              <View
+                key={i}
+                style={[
+                  styles.lightboxDot,
+                  i === idx && styles.lightboxDotActive,
+                ]}
+              />
+            ))}
+          </View>
+        )}
+      </Pressable>
+    </Modal>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    marginTop: 8,
+    marginBottom: 4,
+  },
+  carouselWrapper: {
+    borderRadius: 8,
+    overflow: 'hidden',
+  },
+  counterBadge: {
+    position: 'absolute',
+    top: 10,
+    right: 10,
+    backgroundColor: 'rgba(0,0,0,0.6)',
+    borderRadius: 12,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+  },
+  counterText: {
+    color: '#fff',
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  dotsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 8,
+    gap: 6,
+  },
+  dot: {
+    width: 7,
+    height: 7,
+    borderRadius: 3.5,
+    backgroundColor: '#ccc',
+  },
+  dotActive: {
+    backgroundColor: '#8b0000',
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+  },
+  lightboxOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.95)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  lightboxSlide: {
+    width: SCREEN_WIDTH,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  lightboxClose: {
+    position: 'absolute',
+    top: 60,
+    right: 20,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  lightboxCloseText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '700',
+  },
+  lightboxDots: {
+    position: 'absolute',
+    bottom: 60,
+    flexDirection: 'row',
+    gap: 6,
+  },
+  lightboxDot: {
+    width: 7,
+    height: 7,
+    borderRadius: 3.5,
+    backgroundColor: 'rgba(255,255,255,0.4)',
+  },
+  lightboxDotActive: {
+    backgroundColor: '#fff',
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+  },
 });

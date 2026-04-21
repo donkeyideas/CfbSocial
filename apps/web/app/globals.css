@@ -6912,54 +6912,116 @@ html.dark .search-school-mascot {
 }
 
 /* ============================================================
-   Post Images Grid + Lightbox
+   Post Images Carousel + Lightbox
    ============================================================ */
 
-.post-images {
-  display: grid;
-  gap: 4px;
+.post-carousel-wrapper {
+  position: relative;
+  margin-top: 8px;
   border-radius: 8px;
   overflow: hidden;
-  margin-top: 8px;
-}
-
-.post-images-1 {
-  grid-template-columns: 1fr;
-}
-
-.post-images-2 {
-  grid-template-columns: 1fr 1fr;
-}
-
-.post-images-3 {
-  grid-template-columns: 1fr 1fr;
-  grid-template-rows: auto auto;
-}
-.post-images-3 .post-images-item:first-child {
-  grid-column: 1 / -1;
-}
-
-.post-images-4 {
-  grid-template-columns: 1fr 1fr;
-  grid-template-rows: 1fr 1fr;
-}
-
-.post-images-item {
-  width: 100%;
   background: var(--border);
+}
+
+.post-carousel {
+  display: flex;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+.post-carousel::-webkit-scrollbar {
+  display: none;
+}
+
+.post-carousel-slide {
+  flex: 0 0 100%;
+  width: 100%;
+  min-width: 100%;
   border: none;
   cursor: pointer;
-  overflow: hidden;
   padding: 0;
+  background: var(--border);
+  scroll-snap-align: start;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.post-images-img {
+.post-carousel-img {
   display: block;
   max-width: 100%;
   max-height: 500px;
   width: auto;
   height: auto;
-  margin: 0 auto;
+  object-fit: contain;
+}
+
+/* Arrow buttons */
+.post-carousel-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.5);
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+.post-carousel-wrapper:hover .post-carousel-arrow {
+  opacity: 1;
+}
+.post-carousel-arrow--left {
+  left: 8px;
+}
+.post-carousel-arrow--right {
+  right: 8px;
+}
+
+/* Slide counter badge */
+.post-carousel-counter {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: rgba(0, 0, 0, 0.6);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 10px;
+  z-index: 2;
+  pointer-events: none;
+}
+
+/* Dot indicators */
+.post-carousel-dots {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 0 4px;
+}
+
+.post-carousel-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--border-strong, #ccc);
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.post-carousel-dot--active {
+  background: var(--crimson);
 }
 
 .post-lightbox {
