@@ -84,8 +84,8 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <head>
-        <link rel="preconnect" href="https://lazwferoamyntvrgsqcu.supabase.co" />
-        <link rel="dns-prefetch" href="https://lazwferoamyntvrgsqcu.supabase.co" />
+        <link rel="preconnect" href="https://zjaclcnjgumdgufoakio.supabase.co" />
+        <link rel="dns-prefetch" href="https://zjaclcnjgumdgufoakio.supabase.co" />
         <link rel="preload" href="/logo.png" as="image" />
         <script
           dangerouslySetInnerHTML={{

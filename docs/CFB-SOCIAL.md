@@ -348,8 +348,8 @@ The production Supabase instance is **live** at:
 
 | Resource | Value |
 |---|---|
-| **Project Ref** | `lazwferoamyntvrgsqcu` |
-| **URL** | `https://lazwferoamyntvrgsqcu.supabase.co` |
+| **Project Ref** | `zjaclcnjgumdgufoakio` |
+| **URL** | `https://zjaclcnjgumdgufoakio.supabase.co` |
 | **Region** | Americas |
 | **PostgreSQL** | Version 17 |
 | **Organization** | Donkey ideas |
@@ -359,11 +359,11 @@ The database is fully provisioned with all 24 tables, RLS policies, triggers, fu
 ```bash
 # 4. Link to the live Supabase project
 npx supabase login --token <your-access-token>
-npx supabase link --project-ref lazwferoamyntvrgsqcu
+npx supabase link --project-ref zjaclcnjgumdgufoakio
 
 # 5. Generate TypeScript types from the live schema
 pnpm db:types
-# This runs: supabase gen types typescript --project-id lazwferoamyntvrgsqcu > packages/types/src/database.ts
+# This runs: supabase gen types typescript --project-id zjaclcnjgumdgufoakio > packages/types/src/database.ts
 ```
 
 > **Note**: If `supabase db push` fails with password auth errors, use the Supabase Management API
@@ -1667,7 +1667,7 @@ This key must NEVER be exposed in client-side code or environment variables pref
 ### What's Done
 - Turborepo monorepo scaffolded at `C:\Users\beltr\cfbsocial` with pnpm workspaces
 - All 3 apps (web, admin, mobile) and 4 packages (types, api, moderation, ui) have file structure and initial code
-- Supabase project created and linked (ref: `lazwferoamyntvrgsqcu`)
+- Supabase project created and linked (ref: `zjaclcnjgumdgufoakio`)
 - Database LIVE with 24 app tables + 8 system tables (32 total), all RLS policies, triggers, functions, storage buckets
 - 653 schools seeded across 5 divisions (FBS: 136, FCS: 124, D2: 170, D3: 149, NAIA: 74)
 - 29 achievements seeded

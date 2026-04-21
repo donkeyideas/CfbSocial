@@ -38,6 +38,7 @@ export default function RegisterScreen() {
   const [oauthLoading, setOauthLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [agreedToTerms, setAgreedToTerms] = useState(false);
+  const [confirmationSent, setConfirmationSent] = useState(false);
 
   // Pre-fill referral code from URL query param
   useEffect(() => {
@@ -205,6 +206,35 @@ export default function RegisterScreen() {
       fontSize: 13,
       color: colors.crimson,
     },
+    confirmationCard: {
+      backgroundColor: colors.surfaceRaised,
+      borderWidth: 1,
+      borderColor: colors.border,
+      borderRadius: 12,
+      padding: 28,
+      alignItems: 'center',
+      marginTop: 8,
+    },
+    confirmationIcon: {
+      fontFamily: typography.serifBold,
+      fontSize: 40,
+      color: colors.crimson,
+      marginBottom: 12,
+    },
+    confirmationHeading: {
+      fontFamily: typography.serifBold,
+      fontSize: 22,
+      color: colors.ink,
+      marginBottom: 16,
+    },
+    confirmationBody: {
+      fontFamily: typography.sans,
+      fontSize: 15,
+      color: colors.textSecondary,
+      textAlign: 'center',
+      lineHeight: 22,
+      marginBottom: 12,
+    },
   }), [colors]);
 
   useEffect(() => {
@@ -277,11 +307,20 @@ export default function RegisterScreen() {
       return;
     }
 
+    if (authData.session && schoolId) {
+      // Ensure school_id is set on profile (trigger may not handle it)
+      await supabase
+        .from('profiles')
+        .update({ school_id: schoolId })
+        .eq('id', authData.user!.id)
+        .is('school_id', null);
+    }
+
     if (authData.session) {
       router.replace('/(tabs)/feed');
     } else if (authData.user) {
-      // Email confirmation required
-      setError('Check your email to confirm your account before signing in.');
+      // Email confirmation required — show confirmation screen
+      setConfirmationSent(true);
       setLoading(false);
     }
   }
@@ -381,6 +420,48 @@ export default function RegisterScreen() {
     } finally {
       setOauthLoading(false);
     }
+  }
+
+  // Email confirmation screen
+  if (confirmationSent) {
+    return (
+      <View style={styles.container}>
+        <ScrollView contentContainerStyle={styles.scrollContent}>
+          <Text style={styles.title}>CFB Social</Text>
+          <View style={styles.divider} />
+          <Text style={styles.subtitle}>Check Your Email</Text>
+
+          <View style={styles.confirmationCard}>
+            <Text style={styles.confirmationIcon}>@</Text>
+            <Text style={styles.confirmationHeading}>Confirmation Sent</Text>
+            <Text style={styles.confirmationBody}>
+              We sent a confirmation link to{'\n'}
+              <Text style={{ fontFamily: typography.sansBold }}>{email}</Text>
+            </Text>
+            <Text style={styles.confirmationBody}>
+              Tap the link in the email to activate your account, then come back here and sign in.
+            </Text>
+          </View>
+
+          <Pressable
+            style={[styles.button, { marginTop: 24 }]}
+            onPress={() => router.replace('/(auth)/login')}
+          >
+            <Text style={styles.buttonText}>Go to Sign In</Text>
+          </Pressable>
+
+          <Pressable
+            style={{ marginTop: 16, alignItems: 'center' }}
+            onPress={() => {
+              setConfirmationSent(false);
+              setError(null);
+            }}
+          >
+            <Text style={styles.footerLink}>Back to Registration</Text>
+          </Pressable>
+        </ScrollView>
+      </View>
+    );
   }
 
   return (

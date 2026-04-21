@@ -5,7 +5,7 @@
 
 import { createClient } from '@supabase/supabase-js';
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://lazwferoamyntvrgsqcu.supabase.co';
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://zjaclcnjgumdgufoakio.supabase.co';
 const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
 
 if (!supabaseKey) {

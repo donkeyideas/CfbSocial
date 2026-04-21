@@ -21,6 +21,7 @@ export function RegisterForm() {
   const [error, setError] = useState<string | null>(null);
   const [breachCount, setBreachCount] = useState<number | null>(null);
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
+  const [confirmationSent, setConfirmationSent] = useState(false);
   const turnstileEnabled = !!process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
 
   // Pre-fill referral code from URL query param
@@ -112,6 +113,15 @@ export function RegisterForm() {
     }
 
     if (authData.user) {
+      // Ensure school_id is set on profile (trigger may not handle it)
+      if (schoolId) {
+        fetch('/api/auth/post-signup', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ userId: authData.user.id, schoolId }),
+        }).catch(() => {});
+      }
+
       // Fire-and-forget welcome email (no-op when RESEND_API_KEY is unset)
       fetch('/api/email/welcome', {
         method: 'POST',
@@ -119,9 +129,58 @@ export function RegisterForm() {
         body: JSON.stringify({ to: email, username }),
       }).catch(() => {});
 
-      router.push('/feed');
-      router.refresh();
+      if (authData.session) {
+        // Email confirmation disabled — go straight to feed
+        router.push('/feed');
+        router.refresh();
+      } else {
+        // Email confirmation required — show confirmation screen
+        setConfirmationSent(true);
+        setLoading(false);
+      }
     }
+  }
+
+  if (confirmationSent) {
+    return (
+      <div className="text-center">
+        <h2 className="mb-2 font-serif text-2xl font-semibold text-ink">
+          Check Your Email
+        </h2>
+
+        <div className="mx-auto mt-6 rounded-lg border border-[var(--border)] bg-[var(--surface-raised)] p-8">
+          <div className="mb-4 font-serif text-4xl text-crimson">@</div>
+          <h3 className="mb-4 font-serif text-xl font-semibold text-ink">
+            Confirmation Sent
+          </h3>
+          <p className="mb-3 text-sm text-[var(--text-secondary)]">
+            We sent a confirmation link to<br />
+            <strong>{email}</strong>
+          </p>
+          <p className="text-sm text-[var(--text-secondary)]">
+            Click the link in the email to activate your account, then come back and sign in.
+          </p>
+        </div>
+
+        <Link
+          href="/login"
+          className="btn-crimson mt-6 inline-block w-full py-3 text-center"
+        >
+          Go to Sign In
+        </Link>
+
+        <button
+          type="button"
+          className="mt-4 text-sm font-semibold text-crimson hover:underline"
+          onClick={() => {
+            setConfirmationSent(false);
+            setError(null);
+          }}
+        >
+          Back to Registration
+        </button>
+      </div>
+    );
   }
 
   return (

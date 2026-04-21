@@ -68,14 +68,18 @@ BEGIN
   final_code := base_code || '_' || random_suffix;
 
   -- Create the profile
-  INSERT INTO public.profiles (id, username, display_name, avatar_url, referral_code, owner_id)
+  INSERT INTO public.profiles (id, username, display_name, avatar_url, referral_code, owner_id, school_id)
   VALUES (
     NEW.id,
     COALESCE(NEW.raw_user_meta_data->>'username', 'user_' || LEFT(NEW.id::TEXT, 8)),
     COALESCE(NEW.raw_user_meta_data->>'display_name', NEW.raw_user_meta_data->>'full_name'),
     NEW.raw_user_meta_data->>'avatar_url',
     final_code,
-    NEW.id
+    NEW.id,
+    CASE WHEN NEW.raw_user_meta_data->>'school_id' IS NOT NULL AND NEW.raw_user_meta_data->>'school_id' != ''
+      THEN (NEW.raw_user_meta_data->>'school_id')::UUID
+      ELSE NULL
+    END
   );
 
   -- Process referral code if provided
