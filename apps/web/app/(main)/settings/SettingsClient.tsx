@@ -97,48 +97,44 @@ export function SettingsClient() {
       return;
     }
 
-    // Storage paths use owner_id (auth user ID) as base so RLS passes,
-    // with profile ID subfolder for alt profiles
-    const storageBase = editId === ownerId ? ownerId : `${ownerId}/${editId}`;
-
-    // Upload avatar if selected
+    // Upload avatar if selected (via server API to bypass storage RLS)
     let avatarUrl: string | undefined;
     if (avatarFile) {
-      // Use a fixed filename (no extension variation) to avoid stale cached URLs
-      const filePath = `${storageBase}/avatar`;
+      const form = new FormData();
+      form.append('file', avatarFile);
+      form.append('type', 'avatar');
+      form.append('profileId', editId);
 
-      const { error: uploadError } = await supabase.storage
-        .from('avatars')
-        .upload(filePath, avatarFile, { upsert: true, contentType: avatarFile.type });
+      const res = await fetch('/api/upload/profile-media', { method: 'POST', body: form });
+      const json = await res.json();
 
-      if (uploadError) {
-        setMessage({ type: 'error', text: 'Failed to upload avatar: ' + uploadError.message });
+      if (!res.ok) {
+        setMessage({ type: 'error', text: 'Failed to upload avatar: ' + (json.error || 'Unknown error') });
         setSaving(false);
         return;
       }
 
-      const { data: urlData } = supabase.storage.from('avatars').getPublicUrl(filePath);
-      // Append cache-bust param so browsers pick up the new image
-      avatarUrl = `${urlData.publicUrl}?v=${Date.now()}`;
+      avatarUrl = json.url;
     }
 
-    // Upload banner if selected
+    // Upload banner if selected (via server API to bypass storage RLS)
     let bannerUrl: string | undefined;
     if (bannerFile) {
-      const filePath = `${storageBase}/banner`;
+      const form = new FormData();
+      form.append('file', bannerFile);
+      form.append('type', 'banner');
+      form.append('profileId', editId);
 
-      const { error: uploadError } = await supabase.storage
-        .from('avatars')
-        .upload(filePath, bannerFile, { upsert: true, contentType: bannerFile.type });
+      const res = await fetch('/api/upload/profile-media', { method: 'POST', body: form });
+      const json = await res.json();
 
-      if (uploadError) {
-        setMessage({ type: 'error', text: 'Failed to upload banner: ' + uploadError.message });
+      if (!res.ok) {
+        setMessage({ type: 'error', text: 'Failed to upload banner: ' + (json.error || 'Unknown error') });
         setSaving(false);
         return;
       }
 
-      const { data: urlData } = supabase.storage.from('avatars').getPublicUrl(filePath);
-      bannerUrl = `${urlData.publicUrl}?v=${Date.now()}`;
+      bannerUrl = json.url;
     }
 
     const updatePayload: Record<string, unknown> = {

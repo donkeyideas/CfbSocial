@@ -16,6 +16,7 @@ import {
 import * as ImagePicker from 'expo-image-picker';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/lib/auth/AuthProvider';
+import { WEB_API_URL } from '@/lib/constants';
 import { useSchoolTheme } from '@/lib/theme/SchoolThemeProvider';
 import { Avatar } from '@/components/ui/Avatar';
 import { useColors } from '@/lib/theme/ThemeProvider';
@@ -282,33 +283,43 @@ export function ProfileEditModal({ visible, onClose, onSaved }: ProfileEditModal
     try {
       const asset = result.assets[0];
       const fileExt = asset.uri.split('.').pop() || 'jpg';
-      const fileName = `${userId}_${Date.now()}.${fileExt}`;
+      const contentType = asset.mimeType || `image/${fileExt}`;
 
-      // Read the file as blob
-      const response = await fetch(asset.uri);
-      const blob = await response.blob();
-
-      // Convert blob to ArrayBuffer
-      const arrayBuffer = await new Response(blob).arrayBuffer();
-
-      const { error: uploadError } = await supabase.storage
-        .from('avatars')
-        .upload(fileName, arrayBuffer, {
-          contentType: asset.mimeType || `image/${fileExt}`,
-          upsert: true,
-        });
-
-      if (uploadError) {
-        setError(`Upload failed: ${uploadError.message}`);
+      // Get access token for API auth
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.access_token) {
+        setError('Not authenticated. Please sign in again.');
         setUploadingAvatar(false);
         return;
       }
 
-      const { data: urlData } = supabase.storage
-        .from('avatars')
-        .getPublicUrl(fileName);
+      // Upload via web API (bypasses storage RLS)
+      const form = new FormData();
+      form.append('file', {
+        uri: asset.uri,
+        type: contentType,
+        name: `avatar.${fileExt}`,
+      } as unknown as Blob);
+      form.append('type', 'avatar');
+      if (userId) form.append('profileId', userId);
 
-      setAvatarUrl(urlData.publicUrl);
+      const res = await fetch(`${WEB_API_URL}/api/upload/profile-media`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`,
+        },
+        body: form,
+      });
+
+      const json = await res.json();
+
+      if (!res.ok) {
+        setError(`Upload failed: ${json.error || 'Unknown error'}`);
+        setUploadingAvatar(false);
+        return;
+      }
+
+      setAvatarUrl(json.url);
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Unknown error';
       setError(`Upload failed: ${message}`);

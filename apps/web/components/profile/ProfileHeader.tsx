@@ -58,17 +58,25 @@ export function ProfileHeader({ user, isOwnProfile = false }: ProfileHeaderProps
     <div className="gridiron-card overflow-hidden">
       {/* Profile banner */}
       <div
-        className="h-24"
+        className="relative h-36"
         style={{
-          background: user.banner_url
-            ? `url(${user.banner_url}) center/cover no-repeat`
-            : user.banner_color
-              ? user.banner_color
-              : user.school
-                ? `linear-gradient(135deg, ${adjustedPrimary}, ${adjustedSecondary})`
-                : 'var(--crimson)',
+          background: user.banner_color
+            ? user.banner_color
+            : user.school
+              ? `linear-gradient(135deg, ${adjustedPrimary}, ${adjustedSecondary})`
+              : 'var(--crimson)',
         }}
-      />
+      >
+        {user.banner_url && (
+          <Image
+            src={user.banner_url}
+            alt="Profile banner"
+            fill
+            className="object-cover"
+            unoptimized
+          />
+        )}
+      </div>
 
       <div className="px-6 pb-6">
         {/* Avatar + Follow button row */}
