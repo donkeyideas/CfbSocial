@@ -60,7 +60,7 @@ export function PostComposer() {
     const files = Array.from(e.target.files || []);
     if (files.length === 0) return;
 
-    const remaining = 4 - pendingImages.length;
+    const remaining = 20 - pendingImages.length;
     const toAdd = files.slice(0, remaining);
 
     const newImages: PendingImage[] = toAdd.map((file) => ({
@@ -462,8 +462,8 @@ export function PostComposer() {
             type="button"
             onClick={() => fileInputRef.current?.click()}
             className="composer-tool"
-            disabled={pendingImages.length >= 4}
-            style={pendingImages.length >= 4 ? { opacity: 0.4 } : undefined}
+            disabled={pendingImages.length >= 20}
+            style={pendingImages.length >= 20 ? { opacity: 0.4 } : undefined}
           >
             Image
           </button>

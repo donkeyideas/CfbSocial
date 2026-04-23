@@ -87,7 +87,7 @@ export function PostComposer({ visible, onClose, onPostCreated }: PostComposerPr
   const imagesUploading = pendingImages.some((img) => img.uploading);
 
   const handlePickImages = useCallback(async () => {
-    const remaining = 4 - pendingImages.length;
+    const remaining = 20 - pendingImages.length;
     if (remaining <= 0) return;
 
     const result = await ImagePicker.launchImageLibraryAsync({
@@ -732,9 +732,9 @@ export function PostComposer({ visible, onClose, onPostCreated }: PostComposerPr
                     <Text style={styles.toolText}>GIF</Text>
                   </Pressable>
                   <Pressable
-                    style={[styles.tool, pendingImages.length >= 4 && styles.toolDisabled]}
+                    style={[styles.tool, pendingImages.length >= 20 && styles.toolDisabled]}
                     onPress={handlePickImages}
-                    disabled={pendingImages.length >= 4}
+                    disabled={pendingImages.length >= 20}
                   >
                     <Text style={styles.toolText}>Image</Text>
                   </Pressable>
