@@ -2,6 +2,7 @@
 
 import { useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { PostCard } from '@/components/feed/PostCard';
 import { trackSchoolVisit } from '@/lib/analytics/track';
 import { readableSchoolColor } from '@/lib/utils/color-contrast';
@@ -33,6 +34,7 @@ interface SchoolHubProps {
   topFans: Array<{
     username: string;
     display_name: string | null;
+    avatar_url: string | null;
     xp: number;
     dynasty_tier: string;
     post_count: number;
@@ -169,6 +171,22 @@ export function SchoolHub({ school, fanCount, postCount, portalCount, posts, top
               topFans.map((fan, i) => (
                 <div key={fan.username} className="school-fan-row">
                   <span className="school-fan-rank">{i + 1}</span>
+                  <Link
+                    href={`/profile/${fan.username}`}
+                    style={{
+                      width: 28, height: 28, borderRadius: '50%',
+                      background: school.primary_color || 'var(--ink)',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      fontSize: '0.7rem', fontWeight: 700, color: '#fff',
+                      textDecoration: 'none', flexShrink: 0, overflow: 'hidden',
+                    }}
+                  >
+                    {fan.avatar_url ? (
+                      <Image src={fan.avatar_url} alt="" width={28} height={28} style={{ width: '100%', height: '100%', objectFit: 'cover' }} unoptimized />
+                    ) : (
+                      (fan.display_name || fan.username)[0]?.toUpperCase()
+                    )}
+                  </Link>
                   <div className="school-fan-info">
                     <Link
                       href={`/profile/${fan.username}`}

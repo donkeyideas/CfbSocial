@@ -306,7 +306,11 @@ function MessageRow({ message }: { message: ChatMessage }) {
 
   return (
     <div className="war-room-message">
-      <span className="war-room-msg-avatar">{authorName[0]?.toUpperCase()}</span>
+      {message.author?.avatar_url ? (
+        <img src={message.author.avatar_url} alt="" className="war-room-msg-avatar" style={{ width: 28, height: 28, borderRadius: '50%', objectFit: 'cover' }} />
+      ) : (
+        <span className="war-room-msg-avatar">{authorName[0]?.toUpperCase()}</span>
+      )}
       <div className="war-room-msg-body">
         <span className="war-room-msg-author">@{username}</span>
         <span className="war-room-msg-text">{message.content}</span>

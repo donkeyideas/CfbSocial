@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import { DynastyTierBadge } from './DynastyTierBadge';
 
 interface LeaderboardUser {
@@ -67,9 +68,14 @@ export function DynastyLeaderboard({ users }: { users: LeaderboardUser[] }) {
                 color: 'var(--cream)',
                 textDecoration: 'none',
                 flexShrink: 0,
+                overflow: 'hidden',
               }}
             >
-              {name[0]?.toUpperCase()}
+              {user.avatar_url ? (
+                <Image src={user.avatar_url} alt={name} width={32} height={32} style={{ width: '100%', height: '100%', objectFit: 'cover' }} unoptimized />
+              ) : (
+                name[0]?.toUpperCase()
+              )}
             </Link>
 
             {/* Name + Tier */}

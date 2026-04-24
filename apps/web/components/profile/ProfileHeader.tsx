@@ -78,7 +78,7 @@ export function ProfileHeader({ user, isOwnProfile = false }: ProfileHeaderProps
         )}
       </div>
 
-      <div className="px-6 pb-6">
+      <div className="relative z-10 px-6 pb-6">
         {/* Avatar + Follow button row */}
         <div className="flex items-end justify-between">
           <div className="-mt-12">

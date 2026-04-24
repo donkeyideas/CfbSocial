@@ -81,7 +81,7 @@ export default async function SchoolPage({ params }: SchoolPageProps) {
       .limit(20),
     supabase
       .from('profiles')
-      .select('username, display_name, xp, dynasty_tier, post_count')
+      .select('username, display_name, avatar_url, xp, dynasty_tier, post_count')
       .eq('school_id', school.id)
       .order('xp', { ascending: false })
       .limit(10),

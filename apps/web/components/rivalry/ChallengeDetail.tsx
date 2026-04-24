@@ -212,9 +212,13 @@ export function ChallengeDetail({ challenge, currentUserId, existingVote }: Chal
                 background: 'var(--crimson)', color: '#fff',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 fontFamily: 'var(--serif)', fontWeight: 700, fontSize: '1.1rem',
-                margin: '0 auto 6px',
+                margin: '0 auto 6px', overflow: 'hidden',
               }}>
-                {challengerName[0]?.toUpperCase()}
+                {challenge.challenger?.avatar_url ? (
+                  <img src={challenge.challenger.avatar_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                ) : (
+                  challengerName[0]?.toUpperCase()
+                )}
               </div>
               <div style={{ fontFamily: 'var(--sans)', fontSize: '0.85rem', fontWeight: 600 }}>
                 @{challenge.challenger?.username}
@@ -234,9 +238,13 @@ export function ChallengeDetail({ challenge, currentUserId, existingVote }: Chal
                 background: 'var(--dark-brown)', color: '#fff',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 fontFamily: 'var(--serif)', fontWeight: 700, fontSize: '1.1rem',
-                margin: '0 auto 6px',
+                margin: '0 auto 6px', overflow: 'hidden',
               }}>
-                {challengedName[0]?.toUpperCase()}
+                {challenge.challenged?.avatar_url ? (
+                  <img src={challenge.challenged.avatar_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                ) : (
+                  challengedName[0]?.toUpperCase()
+                )}
               </div>
               <div style={{ fontFamily: 'var(--sans)', fontSize: '0.85rem', fontWeight: 600 }}>
                 @{challenge.challenged?.username}

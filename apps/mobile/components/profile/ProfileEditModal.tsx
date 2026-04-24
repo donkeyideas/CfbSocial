@@ -3,6 +3,7 @@ import {
   View,
   Text,
   TextInput,
+  Image,
   Pressable,
   Modal,
   ScrollView,
@@ -41,6 +42,7 @@ export function ProfileEditModal({ visible, onClose, onSaved }: ProfileEditModal
   const { userId, profile, refreshProfile } = useAuth();
   const { dark } = useSchoolTheme();
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [bannerUrl, setBannerUrl] = useState<string | null>(null);
   const [username, setUsername] = useState('');
   const [displayName, setDisplayName] = useState('');
   const [bio, setBio] = useState('');
@@ -51,6 +53,7 @@ export function ProfileEditModal({ visible, onClose, onSaved }: ProfileEditModal
   const [selectedSchoolName, setSelectedSchoolName] = useState('');
   const [saving, setSaving] = useState(false);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const [uploadingBanner, setUploadingBanner] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const styles = useMemo(() => StyleSheet.create({
@@ -225,6 +228,7 @@ export function ProfileEditModal({ visible, onClose, onSaved }: ProfileEditModal
   useEffect(() => {
     if (visible && profile) {
       setAvatarUrl(profile.avatar_url);
+      setBannerUrl(profile.banner_url ?? null);
       setUsername(profile.username || '');
       setDisplayName(profile.display_name || '');
       setBio(profile.bio || '');
@@ -328,6 +332,66 @@ export function ProfileEditModal({ visible, onClose, onSaved }: ProfileEditModal
     setUploadingAvatar(false);
   }
 
+  // Pick banner
+  async function handlePickBanner() {
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ['images'],
+      allowsEditing: true,
+      aspect: [16, 9],
+      quality: 0.8,
+    });
+
+    if (result.canceled || !result.assets[0]) return;
+
+    setUploadingBanner(true);
+    setError(null);
+
+    try {
+      const asset = result.assets[0];
+      const fileExt = asset.uri.split('.').pop() || 'jpg';
+      const contentType = asset.mimeType || `image/${fileExt}`;
+
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.access_token) {
+        setError('Not authenticated. Please sign in again.');
+        setUploadingBanner(false);
+        return;
+      }
+
+      const form = new FormData();
+      form.append('file', {
+        uri: asset.uri,
+        type: contentType,
+        name: `banner.${fileExt}`,
+      } as unknown as Blob);
+      form.append('type', 'banner');
+      if (userId) form.append('profileId', userId);
+
+      const res = await fetch(`${WEB_API_URL}/api/upload/profile-media`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`,
+        },
+        body: form,
+      });
+
+      const json = await res.json();
+
+      if (!res.ok) {
+        setError(`Banner upload failed: ${json.error || 'Unknown error'}`);
+        setUploadingBanner(false);
+        return;
+      }
+
+      setBannerUrl(json.url);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Unknown error';
+      setError(`Banner upload failed: ${message}`);
+    }
+
+    setUploadingBanner(false);
+  }
+
   // Validate username
   function isValidUsername(val: string): boolean {
     return /^[a-zA-Z0-9_]{3,24}$/.test(val);
@@ -354,6 +418,10 @@ export function ProfileEditModal({ visible, onClose, onSaved }: ProfileEditModal
 
     if (avatarUrl !== profile?.avatar_url) {
       updates.avatar_url = avatarUrl;
+    }
+
+    if (bannerUrl !== (profile?.banner_url ?? null)) {
+      updates.banner_url = bannerUrl;
     }
 
     const { error: updateError } = await supabase
@@ -407,6 +475,56 @@ export function ProfileEditModal({ visible, onClose, onSaved }: ProfileEditModal
               <Text style={styles.errorText}>{error}</Text>
             </View>
           )}
+
+          {/* Banner */}
+          <View style={{ gap: 8 }}>
+            <Text style={styles.label}>Profile Banner</Text>
+            <Pressable
+              onPress={handlePickBanner}
+              disabled={uploadingBanner}
+              style={{
+                height: 100,
+                borderRadius: 8,
+                overflow: 'hidden',
+                backgroundColor: dark || colors.crimson,
+                justifyContent: 'center',
+                alignItems: 'center',
+              }}
+            >
+              {bannerUrl ? (
+                <Image
+                  source={{ uri: bannerUrl }}
+                  style={{ width: '100%', height: '100%' }}
+                  resizeMode="cover"
+                />
+              ) : null}
+              {uploadingBanner ? (
+                <View style={{ position: 'absolute' }}>
+                  <ActivityIndicator size="small" color="#fff" />
+                </View>
+              ) : (
+                <View style={{ position: 'absolute' }}>
+                  <Text style={{
+                    fontFamily: typography.sansSemiBold,
+                    fontSize: 13,
+                    color: '#fff',
+                    textShadowColor: 'rgba(0,0,0,0.5)',
+                    textShadowOffset: { width: 0, height: 1 },
+                    textShadowRadius: 2,
+                  }}>
+                    {bannerUrl ? 'Change Banner' : 'Add Banner'}
+                  </Text>
+                </View>
+              )}
+            </Pressable>
+            {bannerUrl && (
+              <Pressable onPress={() => setBannerUrl(null)}>
+                <Text style={{ fontFamily: typography.sans, fontSize: 12, color: colors.textMuted }}>
+                  Remove banner
+                </Text>
+              </Pressable>
+            )}
+          </View>
 
           {/* Avatar */}
           <View style={styles.avatarSection}>

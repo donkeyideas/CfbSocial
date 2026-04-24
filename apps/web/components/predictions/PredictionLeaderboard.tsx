@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Image from 'next/image';
 
 interface LeaderboardUser {
   id: string;
@@ -92,9 +93,14 @@ export function PredictionLeaderboard({ users }: { users: LeaderboardUser[] }) {
                   color: 'var(--cream)',
                   textDecoration: 'none',
                   flexShrink: 0,
+                  overflow: 'hidden',
                 }}
               >
-                {name[0]?.toUpperCase()}
+                {user.avatar_url ? (
+                  <Image src={user.avatar_url} alt={name} width={28} height={28} style={{ width: '100%', height: '100%', objectFit: 'cover' }} unoptimized />
+                ) : (
+                  name[0]?.toUpperCase()
+                )}
               </Link>
 
               {/* Name */}
