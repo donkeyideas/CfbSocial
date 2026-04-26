@@ -51,7 +51,12 @@ export function OrganizationJsonLd() {
         description:
           'The college football fan community. Debates, predictions, transfer portal tracking, and dynasty building across 653 schools.',
         foundingDate: '2026',
-        sameAs: [],
+        sameAs: [
+          'https://x.com/cfbsocial',
+          'https://www.instagram.com/cfbsocial',
+          'https://www.tiktok.com/@cfbsocial',
+          'https://www.facebook.com/cfbsocial',
+        ],
         contactPoint: {
           '@type': 'ContactPoint',
           contactType: 'customer support',
@@ -199,6 +204,42 @@ export function ProfilePageJsonLd({
           name: 'CFB Social',
           url: 'https://www.cfbsocial.com',
         },
+      }}
+    />
+  );
+}
+
+export function SoftwareApplicationJsonLd() {
+  return (
+    <JsonLd
+      data={{
+        '@context': 'https://schema.org',
+        '@type': 'SoftwareApplication',
+        name: 'CFB Social',
+        alternateName: 'The Gridiron',
+        applicationCategory: 'SocialNetworkingApplication',
+        operatingSystem: 'Web, iOS, Android',
+        url: 'https://www.cfbsocial.com',
+        description:
+          'The #1 college football fan community. Post takes, debate rivalries, file predictions, track the transfer portal, and build your dynasty across all 653 FBS and FCS schools.',
+        offers: {
+          '@type': 'Offer',
+          price: '0',
+          priceCurrency: 'USD',
+        },
+        featureList: [
+          'Rivalry Ring fan debates',
+          'Transfer Portal tracker',
+          'Prediction filing with receipt tracking',
+          'Mascot Wars bracket tournaments',
+          'Dynasty Mode progression system',
+          'Live War Room game threads',
+          'Recruiting heat maps',
+          'School Hub pages for 653 colleges',
+          'Chaos Meter live activity tracking',
+          'Hall of Fame leaderboards',
+        ],
+        screenshot: 'https://www.cfbsocial.com/logo.png',
       }}
     />
   );

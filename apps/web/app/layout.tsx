@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import Script from 'next/script';
 import { Playfair_Display, Source_Sans_3, Special_Elite } from 'next/font/google';
-import { WebsiteJsonLd, OrganizationJsonLd, FAQPageJsonLd } from '@/components/seo/JsonLd';
+import { WebsiteJsonLd, OrganizationJsonLd, FAQPageJsonLd, SoftwareApplicationJsonLd } from '@/components/seo/JsonLd';
 import './globals.css';
 
 const playfair = Playfair_Display({
@@ -38,6 +38,9 @@ export const metadata: Metadata = {
     'college football social media', 'college football fan opinions', 'transfer portal tracker',
     'college football takes', 'top college football forums online', 'join college football discussion',
     'real-time CFB fan reactions', 'college football fan content',
+    'college football debate app', 'CFB social network',
+    'college football dynasty game', 'mascot wars bracket',
+    'college football rivalry debates', 'CFB transfer portal news',
   ],
   openGraph: {
     type: 'website',
@@ -94,12 +97,19 @@ export default function RootLayout({
         />
         <WebsiteJsonLd />
         <OrganizationJsonLd />
+        <SoftwareApplicationJsonLd />
         <FAQPageJsonLd
           questions={[
             { question: 'What is CFB Social?', answer: 'CFB Social is the #1 college football fan community where fans debate rivalries, file predictions, track the transfer portal, and build their dynasty across all 653 FBS and FCS schools.' },
             { question: 'How do I join CFB Social?', answer: 'Create a free account, pick your school, and start posting takes. You can also vote in Mascot Wars, enter Rivalry Ring debates, and climb the Dynasty leaderboard.' },
             { question: 'Is CFB Social free to use?', answer: 'Yes, CFB Social is completely free. Sign up, choose your school, and start engaging with the college football community today.' },
-            { question: 'What features does CFB Social offer?', answer: 'CFB Social offers fan debates in the Rivalry Ring, transfer portal tracking, prediction filing with receipt tracking, Mascot Wars bracket tournaments, Dynasty Mode progression, live War Room game threads, and recruiting heat maps.' },
+            { question: 'What features does CFB Social offer?', answer: 'CFB Social offers fan debates in the Rivalry Ring, transfer portal tracking, prediction filing with receipt tracking, Mascot Wars bracket tournaments, Dynasty Mode progression, live War Room game threads, recruiting heat maps, and School Hub pages for all 653 colleges.' },
+            { question: 'What is Dynasty Mode in CFB Social?', answer: 'Dynasty Mode is a progression system where fans earn XP for posting takes, winning debates, and making correct predictions. Level up through ranks from Walk-On to Heisman contender and compete on the Hall of Fame leaderboard.' },
+            { question: 'What are Mascot Wars?', answer: 'Mascot Wars is a 64-team bracket tournament where fans vote on head-to-head mascot matchups. New brackets run each season, and results are decided entirely by fan voting.' },
+            { question: 'How does the War Room work?', answer: 'The War Room is a live game-day experience with real-time chat, ESPN score updates, and quick reactions during active college football games. Threads are auto-created from ESPN game data.' },
+            { question: 'Can I track the transfer portal on CFB Social?', answer: 'Yes. The Transfer Portal Wire tracks player movements across all FBS and FCS schools. Filter by status, position, and star rating, and file claims on where you think players will land.' },
+            { question: 'What is the Rivalry Ring?', answer: 'The Rivalry Ring is where fans engage in structured debates about rivalries, game outcomes, and hot takes. Challenge other fans, vote on sides, and settle college football arguments.' },
+            { question: 'Is CFB Social available on mobile?', answer: 'Yes. CFB Social is available as a web app at cfbsocial.com and as a native mobile app for iOS and Android with push notifications and full feature parity.' },
           ]}
         />
       </head>
