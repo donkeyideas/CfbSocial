@@ -45,7 +45,7 @@ export async function updateSession(request: NextRequest) {
   const isProtectedRoute =
     pathname.startsWith('/settings') ||
     pathname.startsWith('/notifications');
-  const isAuthRoute = pathname === '/login' || pathname === '/register';
+  const isAuthRoute = pathname === '/login' || pathname === '/register' || pathname === '/forgot-password';
 
   // Public routes (feed, posts, school pages, etc.) pass through instantly
   // without hitting Supabase — prevents MIDDLEWARE_INVOCATION_TIMEOUT when

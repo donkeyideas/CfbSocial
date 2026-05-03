@@ -58,7 +58,7 @@ export function LoginForm() {
       </h2>
 
       {error && (
-        <div className="mb-4 rounded-md bg-[var(--error)]/10 p-3 text-sm text-[var(--error)]">
+        <div className="auth-error">
           {error}
         </div>
       )}
@@ -100,6 +100,12 @@ export function LoginForm() {
         >
           {loading ? 'Signing in...' : 'Sign In'}
         </button>
+
+        <div className="mt-2 text-right">
+          <Link href="/forgot-password" className="text-sm text-crimson hover:underline">
+            Forgot password?
+          </Link>
+        </div>
       </form>
 
       {/* Divider */}

@@ -325,7 +325,7 @@ export default function LoginScreen() {
           </View>
 
           <Pressable
-            style={[styles.button, { backgroundColor: dark }, loading && styles.buttonDisabled]}
+            style={[styles.button, { backgroundColor: colors.crimson }, loading && styles.buttonDisabled]}
             onPress={handleLogin}
             disabled={loading || oauthLoading}
           >
@@ -367,9 +367,18 @@ export default function LoginScreen() {
           )}
         </View>
 
+        {/* Forgot password */}
+        <View style={{ alignItems: 'center', marginTop: 12 }}>
+          <Link href="/(auth)/forgot-password" asChild>
+            <Pressable>
+              <Text style={styles.footerLink}>Forgot password?</Text>
+            </Pressable>
+          </Link>
+        </View>
+
         {/* Register link */}
         <View style={styles.footer}>
-          <Text style={styles.footerText}>New to CFB Social?</Text>
+          <Text style={styles.footerText}>New to CFB Social? </Text>
           <Link href="/(auth)/register" asChild>
             <Pressable>
               <Text style={styles.footerLink}>Create an account</Text>

@@ -1,25 +1,45 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/admin/supabase/admin';
+import { createServerClient } from '@supabase/ssr';
+import { cookies } from 'next/headers';
 
 /**
  * POST /api/auth/post-signup
  * Called after signup to ensure profile has school_id set.
- * Uses service role to bypass RLS (user may not have session yet if email confirm is on).
+ * Authenticated: only the signed-in user can update their own profile.
  */
 export async function POST(req: NextRequest) {
   try {
-    const { userId, schoolId } = await req.json();
+    const { schoolId } = await req.json();
 
-    if (!userId || !schoolId) {
-      return NextResponse.json({ error: 'Missing userId or schoolId' }, { status: 400 });
+    if (!schoolId) {
+      return NextResponse.json({ error: 'Missing schoolId' }, { status: 400 });
     }
 
-    const supabase = createAdminClient();
+    // Verify the caller is authenticated
+    const cookieStore = await cookies();
+    const supabaseAuth = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        cookies: {
+          getAll() { return cookieStore.getAll(); },
+          setAll() {},
+        },
+      },
+    );
+    const { data: { user } } = await supabaseAuth.auth.getUser();
 
-    const { error } = await supabase
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const admin = createAdminClient();
+
+    const { error } = await admin
       .from('profiles')
       .update({ school_id: schoolId })
-      .eq('id', userId)
+      .eq('id', user.id)
       .is('school_id', null);
 
     if (error) {
@@ -27,7 +47,7 @@ export async function POST(req: NextRequest) {
     }
 
     return NextResponse.json({ success: true });
-  } catch (e) {
+  } catch {
     return NextResponse.json({ error: 'Invalid request' }, { status: 400 });
   }
 }

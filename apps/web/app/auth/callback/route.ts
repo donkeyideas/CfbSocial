@@ -35,6 +35,25 @@ export async function GET(request: Request) {
 
     const { error } = await supabase.auth.exchangeCodeForSession(code);
     if (!error) {
+      // For password resets, skip the school check
+      if (next === '/reset-password') {
+        return NextResponse.redirect(`${origin}${next}`);
+      }
+
+      // Check if OAuth user needs school onboarding
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('school_id')
+          .eq('id', user.id)
+          .single();
+
+        if (!profile?.school_id) {
+          return NextResponse.redirect(`${origin}/onboarding/school`);
+        }
+      }
+
       return NextResponse.redirect(`${origin}${next}`);
     }
   }

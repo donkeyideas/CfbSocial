@@ -6,7 +6,11 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { checkPasswordBreaches } from '@/lib/providers/hibp';
 import { TurnstileWidget } from '@/components/turnstile/TurnstileWidget';
-import type { SchoolRow } from '@cfb-social/types';
+
+interface SchoolOption {
+  id: string;
+  name: string;
+}
 
 export function RegisterForm() {
   const router = useRouter();
@@ -16,7 +20,7 @@ export function RegisterForm() {
   const [password, setPassword] = useState('');
   const [schoolId, setSchoolId] = useState('');
   const [referralCode, setReferralCode] = useState('');
-  const [schools, setSchools] = useState<SchoolRow[]>([]);
+  const [schools, setSchools] = useState<SchoolOption[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [breachCount, setBreachCount] = useState<number | null>(null);
@@ -37,7 +41,7 @@ export function RegisterForm() {
       const supabase = createClient();
       const { data } = await supabase
         .from('schools')
-        .select('*')
+        .select('id, name')
         .eq('is_active', true)
         .order('name');
       if (data) setSchools(data);
@@ -94,6 +98,19 @@ export function RegisterForm() {
 
     const supabase = createClient();
 
+    // Check username availability before signup
+    const { data: existing } = await supabase
+      .from('profiles')
+      .select('id')
+      .eq('username', username.toLowerCase())
+      .maybeSingle();
+
+    if (existing) {
+      setError('That username is already taken. Please choose another.');
+      setLoading(false);
+      return;
+    }
+
     const { data: authData, error: signUpError } = await supabase.auth.signUp({
       email,
       password,
@@ -118,7 +135,7 @@ export function RegisterForm() {
         fetch('/api/auth/post-signup', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ userId: authData.user.id, schoolId }),
+          body: JSON.stringify({ schoolId }),
         }).catch(() => {});
       }
 
@@ -190,7 +207,7 @@ export function RegisterForm() {
       </h2>
 
       {error && (
-        <div className="mb-4 rounded-md bg-[var(--error)]/10 p-3 text-sm text-[var(--error)]">
+        <div className="auth-error">
           {error}
         </div>
       )}
