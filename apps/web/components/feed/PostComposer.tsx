@@ -11,6 +11,7 @@ import { LinkPreview, extractFirstUrl } from './LinkPreview';
 import { GifPicker } from './GifPicker';
 import { revalidateFeed } from '@/lib/actions/feed';
 import { uploadImage } from '@/lib/upload/imageUpload';
+import { useSpeechRecognition } from '@/lib/hooks/useSpeechRecognition';
 
 interface PendingImage {
   id: string;
@@ -55,6 +56,26 @@ export function PostComposer() {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const imagesUploading = pendingImages.some((img) => img.uploading);
+
+  const [speechError, setSpeechError] = useState('');
+  const {
+    isSupported: speechSupported,
+    isListening,
+    interimTranscript,
+    startListening,
+    stopListening,
+    elapsedSeconds,
+    audioLevel,
+  } = useSpeechRecognition({
+    onResult: (transcript) => {
+      setContent((prev) => (prev.trim() ? `${prev.trim()} ${transcript}` : transcript));
+      setSpeechError('');
+    },
+    onError: (err) => {
+      setSpeechError(err);
+      setTimeout(() => setSpeechError(''), 4000);
+    },
+  });
 
   const handleImageSelect = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
@@ -224,15 +245,16 @@ export function PostComposer() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!content.trim() || submitting || !profile?.id || imagesUploading) return;
+    const uploadedUrls = pendingImages
+      .filter((img) => img.publicUrl && !img.error)
+      .map((img) => img.publicUrl!);
+    const hasContent = content.trim().length > 0;
+    const hasImages = uploadedUrls.length > 0;
+    if ((!hasContent && !hasImages) || submitting || !profile?.id || imagesUploading) return;
 
     setSubmitting(true);
 
     const supabase = createClient();
-
-    const uploadedUrls = pendingImages
-      .filter((img) => img.publicUrl && !img.error)
-      .map((img) => img.publicUrl!);
 
     const insertData: Record<string, unknown> = {
       content: content.trim(),
@@ -305,11 +327,37 @@ export function PostComposer() {
           onChange={handleTextareaChange}
           onKeyDown={handleKeyDown}
           onSelect={checkForMention}
-          placeholder="File your report from the press box..."
+          placeholder={isListening ? 'Listening...' : 'File your report from the press box...'}
           maxLength={profile?.char_limit ?? 3000}
-          className="composer-input"
+          className={`composer-input${isListening ? ' composer-input-listening' : ''}`}
           rows={3}
         />
+
+        {isListening && (
+          <div className="composer-listening-bar">
+            <span className="composer-listening-label">Listening</span>
+            <span className="composer-listening-time">
+              {Math.floor(elapsedSeconds / 60)}:{String(elapsedSeconds % 60).padStart(2, '0')}
+            </span>
+            <div className="composer-audio-bars">
+              {[0, 1, 2, 3, 4].map((i) => (
+                <span
+                  key={i}
+                  className="composer-audio-bar"
+                  style={{ height: `${Math.max(4, Math.min(20, audioLevel * 100 * (0.6 + Math.random() * 0.4)))}px` }}
+                />
+              ))}
+            </div>
+          </div>
+        )}
+
+        {interimTranscript && (
+          <div className="composer-interim">{interimTranscript}</div>
+        )}
+
+        {speechError && (
+          <div className="composer-speech-error">{speechError}</div>
+        )}
 
         {/* Mention autocomplete dropdown */}
         {mentionActive && mentionResults.length > 0 && (
@@ -475,13 +523,22 @@ export function PostComposer() {
             onChange={handleImageSelect}
             style={{ display: 'none' }}
           />
+          {speechSupported && (
+            <button
+              type="button"
+              onClick={isListening ? stopListening : startListening}
+              className={`composer-tool composer-mic${isListening ? ' composer-mic-active' : ''}`}
+            >
+              {isListening ? 'Stop' : 'Mic'}
+            </button>
+          )}
         </div>
 
         <button
           type="submit"
-          disabled={!content.trim() || submitting || imagesUploading}
+          disabled={(!content.trim() && pendingImages.filter((img) => img.publicUrl && !img.error).length === 0) || submitting || imagesUploading}
           className="composer-submit"
-          style={{ opacity: !content.trim() || submitting || imagesUploading ? 0.5 : 1 }}
+          style={{ opacity: (!content.trim() && pendingImages.filter((img) => img.publicUrl && !img.error).length === 0) || submitting || imagesUploading ? 0.5 : 1 }}
         >
           {submitting ? 'Filing...' : 'Publish'}
         </button>

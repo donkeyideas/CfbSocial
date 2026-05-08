@@ -3,7 +3,7 @@
     "name": "CFB Social",
     "slug": "cfb-social",
     "scheme": "cfbsocial",
-    "version": "1.11.0",
+    "version": "1.12.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
@@ -22,7 +22,9 @@
         "UIBackgroundModes": [
           "remote-notification",
           "fetch"
-        ]
+        ],
+        "NSMicrophoneUsageDescription": "CFB Social uses the microphone for voice-to-text when composing posts.",
+        "NSSpeechRecognitionUsageDescription": "CFB Social uses speech recognition to convert your voice to text when composing posts."
       },
       "entitlements": {
         "aps-environment": "production"
@@ -51,6 +53,7 @@
       "expo-font",
       "expo-apple-authentication",
       "expo-image-picker",
+      "expo-speech-recognition",
       [
         "expo-notifications",
         {

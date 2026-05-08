@@ -26,6 +26,16 @@ import { GifPicker } from './GifPicker';
 import { Avatar } from '@/components/ui/Avatar';
 import { uploadImage } from '@/lib/upload/imageUpload';
 
+// Dynamically load expo-speech-recognition (requires dev build, not Expo Go)
+let speechModule: any = null;
+let useSpeechRecognitionEvent: any = null;
+try {
+  speechModule = require('expo-speech-recognition');
+  useSpeechRecognitionEvent = speechModule.useSpeechRecognitionEvent;
+} catch {
+  // Not available — graceful fallback
+}
+
 interface PendingImage {
   id: string;
   uri: string;
@@ -85,6 +95,57 @@ export function PostComposer({ visible, onClose, onPostCreated }: PostComposerPr
   const [gifPickerVisible, setGifPickerVisible] = useState(false);
   const [pendingImages, setPendingImages] = useState<PendingImage[]>([]);
   const imagesUploading = pendingImages.some((img) => img.uploading);
+
+  // Speech recognition state
+  const [isListening, setIsListening] = useState(false);
+  const preVoiceTextRef = useRef('');
+
+  // Wire up speech events (hooks must be called unconditionally)
+  if (useSpeechRecognitionEvent) {
+    useSpeechRecognitionEvent('result', (event: any) => {
+      if (event.results?.[0]?.transcript) {
+        const transcript = event.results[0].transcript;
+        if (event.isFinal) {
+          const base = preVoiceTextRef.current;
+          setContent(base ? `${base} ${transcript}` : transcript);
+        }
+      }
+    });
+    useSpeechRecognitionEvent('end', () => {
+      setIsListening(false);
+    });
+    useSpeechRecognitionEvent('error', (event: any) => {
+      console.warn('Speech recognition error:', event.error);
+      setIsListening(false);
+    });
+  }
+
+  const startVoice = useCallback(async () => {
+    if (!speechModule) return;
+    try {
+      const perm = await speechModule.requestPermissionsAsync();
+      if (!perm.granted) {
+        showAlert('Permission Needed', 'Microphone access is required for voice input.');
+        return;
+      }
+      preVoiceTextRef.current = content;
+      setIsListening(true);
+      await speechModule.start({ lang: 'en-US', interimResults: true, continuous: false });
+    } catch (e: any) {
+      console.error('Speech start error:', e);
+      setIsListening(false);
+    }
+  }, [content, showAlert]);
+
+  const stopVoice = useCallback(async () => {
+    if (!speechModule) return;
+    try {
+      await speechModule.stop();
+    } catch {
+      // ignore
+    }
+    setIsListening(false);
+  }, []);
 
   const handlePickImages = useCallback(async () => {
     const remaining = 20 - pendingImages.length;
@@ -472,13 +533,14 @@ export function PostComposer({ visible, onClose, onPostCreated }: PostComposerPr
 
   const handleSubmit = async () => {
     const activeId = profile?.id;
-    if (!content.trim() || !activeId || imagesUploading) return;
-
-    setSubmitting(true);
-
     const uploadedUrls = pendingImages
       .filter((img) => img.publicUrl && !img.error)
       .map((img) => img.publicUrl!);
+    const hasContent = content.trim().length > 0;
+    const hasImages = uploadedUrls.length > 0;
+    if ((!hasContent && !hasImages) || !activeId || imagesUploading) return;
+
+    setSubmitting(true);
 
     const insertData: Record<string, unknown> = {
       content: content.trim(),
@@ -597,9 +659,9 @@ export function PostComposer({ visible, onClose, onPostCreated }: PostComposerPr
                 <Text style={styles.pressBoxLabel}>FILE YOUR REPORT</Text>
                 <View style={styles.pressBoxRule} />
                 <TextInput
-                  style={styles.input}
-                  placeholder="File your report from the press box..."
-                  placeholderTextColor={colors.textMuted}
+                  style={[styles.input, isListening && { borderColor: colors.crimson, borderWidth: 1 }]}
+                  placeholder={isListening ? 'Listening...' : 'File your report from the press box...'}
+                  placeholderTextColor={isListening ? colors.crimson : colors.textMuted}
                   multiline
                   maxLength={charLimit}
                   value={content}
@@ -738,6 +800,16 @@ export function PostComposer({ visible, onClose, onPostCreated }: PostComposerPr
                   >
                     <Text style={styles.toolText}>Image</Text>
                   </Pressable>
+                  {speechModule && (
+                    <Pressable
+                      style={[styles.tool, isListening && { borderColor: colors.crimson }]}
+                      onPress={isListening ? stopVoice : startVoice}
+                    >
+                      <Text style={[styles.toolText, isListening && { color: colors.crimson }]}>
+                        {isListening ? 'Stop' : 'Mic'}
+                      </Text>
+                    </Pressable>
+                  )}
                 </View>
 
                 {/* Char count */}
@@ -750,10 +822,10 @@ export function PostComposer({ visible, onClose, onPostCreated }: PostComposerPr
                   style={[
                     styles.submitButton,
                     { backgroundColor: dark },
-                    (!content.trim() || submitting || imagesUploading) && styles.submitDisabled,
+                    ((!content.trim() && pendingImages.filter((img) => img.publicUrl && !img.error).length === 0) || submitting || imagesUploading) && styles.submitDisabled,
                   ]}
                   onPress={handleSubmit}
-                  disabled={!content.trim() || submitting || imagesUploading}
+                  disabled={(!content.trim() && pendingImages.filter((img) => img.publicUrl && !img.error).length === 0) || submitting || imagesUploading}
                 >
                   {submitting ? (
                     <ActivityIndicator size="small" color="#f4efe4" />
