@@ -125,7 +125,7 @@ export const PostCard = memo(function PostCard({ post }: { post: Post }) {
   const handleCardClick = useCallback((e: React.MouseEvent) => {
     if (isFlagged) return;
     const target = e.target as HTMLElement;
-    if (target.closest('a, button, input, textarea, [role="button"]')) return;
+    if (target.closest('a, button, input, textarea, select, label, [role="button"]')) return;
     const selection = window.getSelection();
     if (selection && selection.toString().length > 0) return;
     router.push(`/post/${post.id}`);

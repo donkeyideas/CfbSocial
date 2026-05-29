@@ -196,19 +196,38 @@ export async function GET(request: NextRequest) {
     });
   }
 
-  // Fetch from CFBD
-  let path = '';
-  if (type === 'recruiting') {
-    path = `/recruiting/players?year=${year}`;
-  } else {
-    path = `/player/portal?year=${year}`;
-  }
+  // SPARSE_THRESHOLD: below this we backfill from the previous year so off-season
+  // widgets aren't near-empty (e.g. May 2026 querying the 2027 class).
+  const SPARSE_THRESHOLD = 5;
+  const pathFor = (y: string) => type === 'recruiting'
+    ? `/recruiting/players?year=${y}`
+    : `/player/portal?year=${y}`;
 
-  const rawData = await fetchCFBD(path);
+  const rawData = await fetchCFBD(pathFor(year));
   incrementCounter();
 
-  // Trim server-side: only keep the fields & rows the sidebar needs
-  const data = type === 'recruiting' ? trimRecruits(rawData) : trimTransfers(rawData);
+  let data = type === 'recruiting' ? trimRecruits(rawData) : trimTransfers(rawData);
+
+  // Year fallback — primary year is sparse, blend in the previous year so users
+  // see a populated list during off-season (a sparse upstream is the cause of the
+  // "isn't updating daily" perception when the source legitimately has no new data).
+  if (data.length < SPARSE_THRESHOLD && getCallsRemaining() > 0) {
+    const prevYear = String(Number(year) - 1);
+    const prevCacheKey = `${type}-${prevYear}`;
+    const prevCached = getCached(prevCacheKey);
+    let prevTrimmed: typeof data;
+    if (prevCached) {
+      prevTrimmed = prevCached.data as typeof data;
+    } else {
+      const prevRaw = await fetchCFBD(pathFor(prevYear));
+      incrementCounter();
+      prevTrimmed = type === 'recruiting' ? trimRecruits(prevRaw) : trimTransfers(prevRaw);
+      if (prevTrimmed.length > 0) {
+        cache.set(prevCacheKey, { data: prevTrimmed, fetchedAt: Date.now() });
+      }
+    }
+    data = [...data, ...prevTrimmed].slice(0, 10);
+  }
 
   // Only cache non-empty results — don't let a transient failure lock us out
   if (data.length > 0) {

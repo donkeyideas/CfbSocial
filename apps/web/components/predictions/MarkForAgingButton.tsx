@@ -35,7 +35,7 @@ export function MarkForAgingButton({ postId }: MarkForAgingButtonProps) {
   if (!expanded) {
     return (
       <button
-        onClick={() => setExpanded(true)}
+        onClick={(e) => { e.stopPropagation(); setExpanded(true); }}
         className="post-action"
       >
         REVISIT
@@ -88,6 +88,7 @@ export function MarkForAgingButton({ postId }: MarkForAgingButtonProps) {
 
   return (
     <div
+      onClick={(e) => e.stopPropagation()}
       style={{
         display: 'flex',
         alignItems: 'center',
@@ -97,6 +98,7 @@ export function MarkForAgingButton({ postId }: MarkForAgingButtonProps) {
       <select
         value={days}
         onChange={(e) => setDays(Number(e.target.value))}
+        onClick={(e) => e.stopPropagation()}
         style={{
           padding: '2px 6px',
           fontFamily: 'var(--sans)',
@@ -114,7 +116,7 @@ export function MarkForAgingButton({ postId }: MarkForAgingButtonProps) {
         <option value={90}>90 days</option>
       </select>
       <button
-        onClick={handleSubmit}
+        onClick={(e) => { e.stopPropagation(); handleSubmit(); }}
         disabled={submitting}
         style={{
           padding: '2px 8px',
@@ -134,7 +136,7 @@ export function MarkForAgingButton({ postId }: MarkForAgingButtonProps) {
         {submitting ? '...' : 'Set'}
       </button>
       <button
-        onClick={() => setExpanded(false)}
+        onClick={(e) => { e.stopPropagation(); setExpanded(false); }}
         style={{
           padding: '2px 6px',
           fontFamily: 'var(--sans)',

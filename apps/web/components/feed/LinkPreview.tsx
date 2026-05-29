@@ -94,6 +94,8 @@ const URL_REGEX = /https?:\/\/[^\s<>"\])}]+/gi;
 
 // In-memory cache — only stores successful results
 const ogCache = new Map<string, OgData>();
+// Negative cache — URLs that failed (bot-blocked sites, timeouts, etc.) so we don't retry per-mount
+const ogFailedCache = new Set<string>();
 
 export function extractFirstUrl(text: string): string | null {
   const match = text.match(URL_REGEX);
@@ -134,6 +136,11 @@ export function LinkPreview({ content }: { content: string }) {
       setOgData(cached);
       return;
     }
+    // Short-circuit URLs we already know are unfetchable (bot-blocked, timeouts, etc.)
+    if (ogFailedCache.has(url)) {
+      setError(true);
+      return;
+    }
 
     let cancelled = false;
     setLoading(true);
@@ -150,11 +157,13 @@ export function LinkPreview({ content }: { content: string }) {
           ogCache.set(url, data);
           setOgData(data);
         } else {
+          ogFailedCache.add(url);
           setError(true);
         }
       })
       .catch(() => {
         if (cancelled) return;
+        ogFailedCache.add(url);
         setError(true);
       })
       .finally(() => {
@@ -233,8 +242,8 @@ export function LinkPreview({ content }: { content: string }) {
       >
         <iframe
           src={videoEmbed.embedUrl}
+          title={`${videoEmbed.platform} embed`}
           allow="autoplay; encrypted-media; fullscreen"
-          allowFullScreen
           scrolling="no"
           sandbox="allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox allow-presentation"
           style={{

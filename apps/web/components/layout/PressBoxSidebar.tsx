@@ -75,6 +75,24 @@ const vaultMoments = [
   { year: '1971', text: 'Nebraska and Oklahoma play the "Game of the Century" — the Huskers prevail 35-31.' },
   { year: '2018', text: 'Tua Tagovailoa enters in the second half to lead Alabama past Georgia 26-23 in OT for the national title.' },
   { year: '2005', text: 'Vince Young scores on 4th-and-5 with 19 seconds left to give Texas the national championship over USC.' },
+  { year: '1982', text: 'Cal\'s "The Play" — five laterals through the Stanford band to beat the Cardinal as time expired.' },
+  { year: '2002', text: 'Ohio State upsets Miami 31-24 in double-OT for the BCS title on a controversial pass interference call.' },
+  { year: '2014', text: 'Ohio State, with third-string QB Cardale Jones, wins the first College Football Playoff.' },
+  { year: '1966', text: 'Notre Dame and Michigan State play to a 10-10 tie in the original "Game of the Century."' },
+  { year: '1979', text: 'The Rose Bowl: USC\'s Charles White scores on a phantom touchdown to beat Michigan 17-10.' },
+  { year: '1993', text: 'Charlie Ward leads Florida State to its first national title with a Heisman-winning season.' },
+  { year: '2010', text: 'Cam Newton drags Auburn from a 24-0 hole at Bama to win the Iron Bowl and the national title.' },
+  { year: '1997', text: 'Charles Woodson wins the Heisman over Peyton Manning — the first defensive player to do so.' },
+  { year: '2008', text: 'Texas Tech\'s Michael Crabtree scores with 1 second left to stun #1 Texas 39-33.' },
+  { year: '1988', text: 'Notre Dame\'s "Catholics vs. Convicts" — the Irish beat Miami 31-30 to start their title run.' },
+  { year: '1995', text: 'Nebraska finishes a perfect 12-0 season, blowing out Florida 62-24 in the Fiesta Bowl.' },
+  { year: '2017', text: 'Alabama\'s 2nd & 26 — Tua hits DeVonta Smith for the OT title-winning TD against Georgia.' },
+  { year: '1985', text: 'Bo Jackson runs for 1,786 yards and wins the Heisman at Auburn before a Pro Bowl baseball career.' },
+  { year: '2001', text: 'Miami\'s undefeated juggernaut routs Nebraska 37-14 in the Rose Bowl for the BCS title.' },
+  { year: '1991', text: 'Desmond Howard\'s Heisman pose after a punt return TD against Ohio State — Michigan wins 31-3.' },
+  { year: '2019', text: 'Joe Burrow throws for 5,671 yards and wins the Heisman by the largest margin in history at LSU.' },
+  { year: '1989', text: 'Colorado dedicates its season to the late Sal Aunese and finishes 11-1, falling in the Orange Bowl.' },
+  { year: '2015', text: 'Michigan State blocks a Michigan punt and returns it for a TD as time expires — "Trouble With the Snap."' },
 ];
 
 function getClickCounts(): Record<string, number> {
@@ -207,9 +225,11 @@ export function PressBoxSidebar() {
     setSelectedArticle(article);
   }
 
-  // Pick a random vault moment based on the day
-  const dayIndex = new Date().getDate() % vaultMoments.length;
-  const vault = vaultMoments[dayIndex]!;
+  // Rotate vault moment by day-of-year so adjacent days never collide
+  const now = new Date();
+  const startOfYear = new Date(now.getFullYear(), 0, 0);
+  const dayOfYear = Math.floor((now.getTime() - startOfYear.getTime()) / 86400000);
+  const vault = vaultMoments[dayOfYear % vaultMoments.length]!;
 
   return (
     <div>
