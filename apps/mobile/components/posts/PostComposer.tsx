@@ -16,6 +16,7 @@ import { useRouter } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
 import { useAuth } from '@/lib/auth/AuthProvider';
 import { useThemedAlert } from '@/lib/AlertProvider';
+import { useReviewPrompt } from '@/lib/reviews/ReviewPromptProvider';
 import { useSchoolTheme } from '@/lib/theme/SchoolThemeProvider';
 import { supabase } from '@/lib/supabase';
 import { typography } from '@/lib/theme/typography';
@@ -85,6 +86,7 @@ export function PostComposer({ visible, onClose, onPostCreated }: PostComposerPr
   const { dark, accent } = useSchoolTheme();
   const router = useRouter();
   const { showAlert } = useThemedAlert();
+  const { triggerReviewPrompt } = useReviewPrompt();
   const charLimit = profile?.char_limit ?? DEFAULT_POST_CHARS;
   const [content, setContent] = useState('');
   const [postType, setPostType] = useState<PostType>('STANDARD');
@@ -588,6 +590,10 @@ export function PostComposer({ visible, onClose, onPostCreated }: PostComposerPr
     setPendingImages([]);
     onPostCreated();
     onClose();
+
+    // Ask for a rating after the success — no-ops unless the user is past the
+    // 7-day / 5-session / 90-day-cooldown gates in lib/reviews/state.ts.
+    triggerReviewPrompt();
   };
 
   const handleClose = () => {

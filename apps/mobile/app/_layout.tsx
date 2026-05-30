@@ -9,6 +9,7 @@ import { SchoolThemeProvider, useSchoolTheme } from '@/lib/theme/SchoolThemeProv
 import { ThemeProvider, useTheme } from '@/lib/theme/ThemeProvider';
 import { AlertProvider } from '@/lib/AlertProvider';
 import { MenuProvider } from '@/lib/MenuProvider';
+import { ReviewPromptProvider } from '@/lib/reviews/ReviewPromptProvider';
 import { usePushNotifications } from '@/lib/hooks/usePushNotifications';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import 'react-native-url-polyfill/auto';
@@ -39,50 +40,52 @@ function AppShell() {
   return (
     <AlertProvider>
       <MenuProvider>
-        <StatusBar style={colorMode === 'dark' ? 'light' : 'dark'} />
-        <View style={[styles.root, { backgroundColor: colors.paper }]}>
-          <Stack
-            screenOptions={{
-              headerShown: false,
-              contentStyle: { backgroundColor: colors.paper },
-            }}
-          >
-            <Stack.Screen name="index" />
-            <Stack.Screen name="(auth)" options={{ headerShown: false }} />
-            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-            <Stack.Screen
-              name="settings"
-              options={{
+        <ReviewPromptProvider>
+          <StatusBar style={colorMode === 'dark' ? 'light' : 'dark'} />
+          <View style={[styles.root, { backgroundColor: colors.paper }]}>
+            <Stack
+              screenOptions={{
                 headerShown: false,
-                presentation: 'modal',
+                contentStyle: { backgroundColor: colors.paper },
               }}
-            />
-            <Stack.Screen name="post/[id]" options={{ headerShown: false }} />
-            <Stack.Screen name="profile/[username]" options={{ headerShown: false }} />
-            <Stack.Screen name="rivalry/[id]" options={{ headerShown: false }} />
-            <Stack.Screen name="rivalry/challenge/[id]" options={{ headerShown: false }} />
-            <Stack.Screen name="portal/[id]" options={{ headerShown: false }} />
-            <Stack.Screen name="school/[slug]" options={{ headerShown: false }} />
-            <Stack.Screen name="war-room/index" options={{ headerShown: false }} />
-            <Stack.Screen name="war-room/[gameId]" options={{ headerShown: false }} />
-            <Stack.Screen name="predictions" options={{ headerShown: false }} />
-            <Stack.Screen name="dynasty" options={{ headerShown: false }} />
-            <Stack.Screen name="hall-of-fame" options={{ headerShown: false }} />
-            <Stack.Screen name="mascot-wars" options={{ headerShown: false }} />
-            <Stack.Screen name="recruiting" options={{ headerShown: false }} />
-            <Stack.Screen name="search" options={{ headerShown: false }} />
-            <Stack.Screen name="coaches-call" options={{ headerShown: false }} />
-            <Stack.Screen name="vault" options={{ headerShown: false }} />
-            <Stack.Screen name="features" options={{ headerShown: false }} />
-            <Stack.Screen name="feature-guide" options={{ headerShown: false }} />
-            <Stack.Screen name="receipts" options={{ headerShown: false }} />
-            <Stack.Screen name="contact" options={{ headerShown: false }} />
-            <Stack.Screen name="notifications" options={{ headerShown: false }} />
-            <Stack.Screen name="privacy" options={{ headerShown: false }} />
-            <Stack.Screen name="terms" options={{ headerShown: false }} />
-            <Stack.Screen name="delete-account" options={{ headerShown: false }} />
-          </Stack>
-        </View>
+            >
+              <Stack.Screen name="index" />
+              <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+              <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+              <Stack.Screen
+                name="settings"
+                options={{
+                  headerShown: false,
+                  presentation: 'modal',
+                }}
+              />
+              <Stack.Screen name="post/[id]" options={{ headerShown: false }} />
+              <Stack.Screen name="profile/[username]" options={{ headerShown: false }} />
+              <Stack.Screen name="rivalry/[id]" options={{ headerShown: false }} />
+              <Stack.Screen name="rivalry/challenge/[id]" options={{ headerShown: false }} />
+              <Stack.Screen name="portal/[id]" options={{ headerShown: false }} />
+              <Stack.Screen name="school/[slug]" options={{ headerShown: false }} />
+              <Stack.Screen name="war-room/index" options={{ headerShown: false }} />
+              <Stack.Screen name="war-room/[gameId]" options={{ headerShown: false }} />
+              <Stack.Screen name="predictions" options={{ headerShown: false }} />
+              <Stack.Screen name="dynasty" options={{ headerShown: false }} />
+              <Stack.Screen name="hall-of-fame" options={{ headerShown: false }} />
+              <Stack.Screen name="mascot-wars" options={{ headerShown: false }} />
+              <Stack.Screen name="recruiting" options={{ headerShown: false }} />
+              <Stack.Screen name="search" options={{ headerShown: false }} />
+              <Stack.Screen name="coaches-call" options={{ headerShown: false }} />
+              <Stack.Screen name="vault" options={{ headerShown: false }} />
+              <Stack.Screen name="features" options={{ headerShown: false }} />
+              <Stack.Screen name="feature-guide" options={{ headerShown: false }} />
+              <Stack.Screen name="receipts" options={{ headerShown: false }} />
+              <Stack.Screen name="contact" options={{ headerShown: false }} />
+              <Stack.Screen name="notifications" options={{ headerShown: false }} />
+              <Stack.Screen name="privacy" options={{ headerShown: false }} />
+              <Stack.Screen name="terms" options={{ headerShown: false }} />
+              <Stack.Screen name="delete-account" options={{ headerShown: false }} />
+            </Stack>
+          </View>
+        </ReviewPromptProvider>
       </MenuProvider>
     </AlertProvider>
   );
