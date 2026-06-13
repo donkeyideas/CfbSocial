@@ -104,7 +104,7 @@ export default function GameRoomScreen() {
     try { await shareIssueToFeed(supabase, selected.issue.id); await load(); } finally { setSharing(false); }
   };
 
-  const cardW = (width - 24 - 12) / 2;
+  const cardW = width - 24;
 
   const styles = useMemo(() => StyleSheet.create({
     container: { flex: 1, backgroundColor: colors.paper },
@@ -219,10 +219,9 @@ export default function GameRoomScreen() {
         )}
       </View>
       <FlatList
+        key="moments-list"
         data={moments}
         keyExtractor={(m) => m.id}
-        numColumns={2}
-        columnWrapperStyle={styles.gridRow}
         contentContainerStyle={styles.grid}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={dark} />}
         renderItem={({ item }) => {
@@ -251,6 +250,7 @@ export default function GameRoomScreen() {
         )}
       </View>
       <FlatList
+        key="leagues-list"
         data={leagues}
         keyExtractor={(l) => l.id}
         contentContainerStyle={styles.leaguesList}

@@ -404,7 +404,7 @@ function MomentCard({ m, currentUsername, onEdit, assignment }: { m: MomentItem;
   return (
     <Link href={`/post/${post.id}`} className="gr-card" style={{ ['--m' as string]: accent }}>
       <div className="gr-card-frame">
-        {img && <Image src={img} alt={post.content || 'Moment'} fill className="gr-card-img" sizes="(max-width: 700px) 100vw, 420px" quality={90} />}
+        {img && <Image src={img} alt={post.content || 'Moment'} fill className="gr-card-img" sizes="(max-width: 700px) 100vw, 560px" quality={90} />}
         <span className="gr-card-tag">{tag}</span>
         <span className="gr-card-wm">CFB <span>SOCIAL</span></span>
         {post.media_urls?.length > 1 && <span className="gr-card-count">1/{post.media_urls.length}</span>}

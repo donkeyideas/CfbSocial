@@ -28,7 +28,7 @@ export function MomentCard({ m, width, currentUsername, assignment, onEdit }: Pr
 
   const styles = useMemo(() => StyleSheet.create({
     card: { width, marginBottom: 12, backgroundColor: colors.surfaceRaised, borderRadius: 6, borderLeftWidth: 4, borderLeftColor: accent, overflow: 'hidden', shadowColor: '#000', shadowOpacity: 0.08, shadowRadius: 3, shadowOffset: { width: 0, height: 1 }, elevation: 2 },
-    frame: { width: '100%', aspectRatio: 1.1, backgroundColor: colors.dark, position: 'relative' },
+    frame: { width: '100%', aspectRatio: 16 / 9, backgroundColor: colors.dark, position: 'relative' },
     img: { width: '100%', height: '100%' },
     tag: { position: 'absolute', top: 6, left: 6, backgroundColor: accent, color: '#fff', fontFamily: typography.mono, fontSize: 9, fontWeight: '700', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 3, overflow: 'hidden' },
     count: { position: 'absolute', top: 6, right: 6, backgroundColor: 'rgba(0,0,0,0.6)', color: '#fff', fontFamily: typography.mono, fontSize: 9, paddingHorizontal: 5, paddingVertical: 2, borderRadius: 3, overflow: 'hidden' },

@@ -7416,14 +7416,14 @@ html.dark .search-school-mascot {
 .gr-placeholder p { font-family: var(--serif); font-size: 0.95rem; color: var(--faded-ink); line-height: 1.6; }
 
 /* Moments grid */
-.gr-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.gr-grid { display: grid; grid-template-columns: 1fr; gap: 16px; max-width: 560px; margin: 0 auto; }
 .gr-card {
   --m: var(--crimson);
   background: var(--warm-white, var(--cream)); border: 1.5px solid var(--dark-brown); border-radius: 4px; overflow: hidden;
   box-shadow: 0 2px 8px rgba(59,47,30,0.12); text-decoration: none; color: inherit; display: block; transition: transform 0.15s;
 }
 .gr-card:hover { transform: translateY(-3px); }
-.gr-card-frame { position: relative; border-bottom: 4px solid var(--m); background: #120a1f; height: 158px; }
+.gr-card-frame { position: relative; border-bottom: 4px solid var(--m); background: #120a1f; aspect-ratio: 16 / 9; }
 .gr-card-img { object-fit: cover; }
 .gr-card-tag {
   position: absolute; top: 9px; left: 9px; font-family: var(--sans); font-size: 0.55rem; font-weight: 800;
