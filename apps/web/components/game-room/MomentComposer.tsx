@@ -7,6 +7,7 @@ import { useAuth } from '@/components/auth/AuthProvider';
 import { uploadImage } from '@/lib/upload/imageUpload';
 import { revalidateFeed } from '@/lib/actions/feed';
 import { createMoment } from '@cfb-social/api';
+import { GAME } from '@/lib/constants/game';
 
 interface Props {
   onClose: () => void;
@@ -97,7 +98,7 @@ export function MomentComposer({ onClose, onPosted }: Props) {
         week: week.trim() || null,
         isTeamBuilder,
         momentTags: [],
-        gameVersion: 'CFB 27',
+        gameVersion: GAME.abbr,
       });
       images.forEach((img) => URL.revokeObjectURL(img.previewUrl));
       await revalidateFeed();

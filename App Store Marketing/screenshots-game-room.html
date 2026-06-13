@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CFB Social - Game Room App Store Screenshots (1320x2868)</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=Source+Sans+3:wght@400;600;700;800;900&family=Special+Elite&display=swap');
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #111; font-family: 'Source Sans 3', sans-serif; padding: 40px; }
+
+  .page-title { font-family: 'Playfair Display', serif; font-size: 48px; font-weight: 900; color: #D4A843; text-align: center; letter-spacing: 4px; margin-bottom: 8px; }
+  .page-subtitle { text-align: center; color: rgba(255,255,255,0.4); font-size: 14px; margin-bottom: 12px; letter-spacing: 2px; text-transform: uppercase; }
+  .page-spec { text-align: center; color: rgba(255,255,255,0.25); font-family: 'Special Elite', monospace; font-size: 13px; margin-bottom: 40px; }
+
+  .instructions { max-width: 900px; margin: 0 auto 40px; background: #1a1a1a; border: 1px solid #333; border-radius: 12px; padding: 24px; color: #ccc; font-size: 14px; line-height: 1.6; }
+  .instructions h2 { color: #D4A843; font-family: 'Playfair Display', serif; font-size: 24px; letter-spacing: 2px; margin-bottom: 12px; }
+  .instructions strong { color: #fff; }
+  .instructions code { background: #333; padding: 2px 6px; border-radius: 4px; font-size: 13px; }
+
+  .slide-label { text-align: center; font-family: 'Source Sans 3', sans-serif; font-weight: 700; font-size: 16px; letter-spacing: 3px; text-transform: uppercase; color: #D4A843; margin-bottom: 20px; }
+
+  .zoom-controls { position: fixed; top: 20px; right: 20px; display: flex; gap: 8px; z-index: 100; }
+  .zoom-btn { background: #D4A843; color: #111; border: none; border-radius: 8px; padding: 8px 16px; font-family: 'Source Sans 3', sans-serif; font-weight: 700; font-size: 14px; cursor: pointer; }
+  .zoom-btn:hover { transform: scale(1.05); }
+  .zoom-btn.active { background: #fff; color: #D4A843; }
+
+  .screenshot-slide { width: 1320px; height: 2868px; position: relative; overflow: hidden; margin: 0 auto 60px; display: flex; flex-direction: column; align-items: center; }
+
+  /* Phone frame holding a real app screenshot */
+  .phone-frame { width: 380px; height: 822px; background: #1a1714; border-radius: 46px; overflow: hidden; position: relative; border: 5px solid #2a2a2a; box-shadow: 0 0 0 2px #111, 0 40px 80px rgba(0,0,0,0.25), 0 20px 40px rgba(0,0,0,0.2); flex-shrink: 0; }
+  .phone-frame img { width: 100%; height: 100%; object-fit: cover; object-position: top center; display: block; }
+
+  .headline { font-family: 'Playfair Display', serif; color: #fff; text-align: center; font-weight: 900; letter-spacing: 3px; line-height: 1.1; text-transform: uppercase; }
+  .headline .accent { color: #000; }
+  .subheadline { font-family: 'Source Sans 3', sans-serif; font-weight: 500; color: rgba(255,255,255,0.55); text-align: center; line-height: 1.5; }
+
+  .deco-circle { position: absolute; border-radius: 50%; border: 3px solid rgba(255,255,255,0.15); }
+  .deco-circle-fill { position: absolute; border-radius: 50%; background: rgba(255,255,255,0.06); }
+  .deco-line { position: absolute; height: 3px; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent); }
+  .deco-dot { position: absolute; width: 8px; height: 8px; border-radius: 50%; background: rgba(255,255,255,0.3); }
+  .deco-football { position: absolute; border-radius: 50%; border: 3px solid rgba(255,255,255,0.15); overflow: hidden; }
+  .deco-football::before { content: ''; position: absolute; top: 0; left: 35%; right: 35%; bottom: 0; border-right: 2px solid rgba(255,255,255,0.15); border-left: 2px solid rgba(255,255,255,0.15); }
+  .deco-football::after { content: ''; position: absolute; top: 35%; bottom: 35%; left: 0; right: 0; border-top: 2px solid rgba(255,255,255,0.15); border-bottom: 2px solid rgba(255,255,255,0.15); }
+
+  .feat-row { display: flex; align-items: center; gap: 30px; background: rgba(0,0,0,0.15); border: 1px solid rgba(255,255,255,0.1); border-radius: 24px; padding: 34px 38px; }
+  .feat-ic { width: 68px; height: 68px; border-radius: 50%; background: rgba(255,255,255,0.15); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .feat-title { font-family: 'Playfair Display', serif; font-size: 28px; font-weight: 900; color: #fff; margin-bottom: 6px; }
+  .feat-sub { font-family: 'Source Sans 3', sans-serif; font-size: 20px; color: rgba(0,0,0,0.5); line-height: 1.4; }
+</style>
+</head>
+<body>
+
+<div class="zoom-controls">
+  <button class="zoom-btn" onclick="setZoom(0.35)">35%</button>
+  <button class="zoom-btn active" onclick="setZoom(0.5)">50%</button>
+  <button class="zoom-btn" onclick="setZoom(0.75)">75%</button>
+  <button class="zoom-btn" onclick="setZoom(1)">100%</button>
+</div>
+
+<h1 class="page-title">CFB SOCIAL — GAME ROOM</h1>
+<p class="page-subtitle">Apple App Store Screenshots</p>
+<p class="page-spec">iPhone 16 Pro Max 6.7" -- 1320 x 2868 px -- JPEG/PNG, no alpha</p>
+
+<div class="instructions">
+  <h2>Export Instructions</h2>
+  <p>1. Click <strong>100%</strong> zoom above.</p>
+  <p>2. Right-click a slide and select <strong>Inspect</strong>.</p>
+  <p>3. In DevTools, right-click the <code>.screenshot-slide</code> element and select <strong>Capture node screenshot</strong>.</p>
+  <p>4. Upload the PNGs to App Store Connect (these promote the Game Room feature).</p>
+</div>
+
+<!-- SLIDE 1: MAGAZINE COVER -->
+<div class="slide-label">1 / 3 -- GAME ROOM: THE MAGAZINE</div>
+<div class="screenshot-slide" style="background:linear-gradient(165deg,#A07D25 0%,#D4A843 40%,#B8922F 100%);">
+  <div class="deco-circle" style="width:400px;height:400px;top:-80px;right:-100px;"></div>
+  <div class="deco-circle" style="width:250px;height:250px;bottom:200px;left:-60px;"></div>
+  <div class="deco-circle-fill" style="width:800px;height:800px;top:50%;left:50%;transform:translate(-50%,-50%);"></div>
+  <div class="deco-football" style="width:120px;height:80px;top:120px;right:110px;transform:rotate(-30deg);"></div>
+  <div class="deco-football" style="width:80px;height:55px;bottom:220px;left:90px;transform:rotate(15deg);"></div>
+  <div class="deco-line" style="width:300px;top:210px;left:50px;transform:rotate(-15deg);"></div>
+  <div style="position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;width:100%;height:100%;">
+    <div style="padding-top:150px;text-align:center;flex-shrink:0;">
+      <div class="headline" style="font-size:88px;margin-bottom:24px;">YOUR SAVE<br>DESERVES A <span class="accent">COVER</span></div>
+      <div class="subheadline" style="font-size:27px;">Turn your College Football dynasty into a<br>flip-through magazine. Your moments. Your story.</div>
+    </div>
+    <div style="flex:1;display:flex;align-items:center;justify-content:center;padding:60px 0;">
+      <div class="phone-frame" style="transform:scale(2.15);">
+        <img src="./gameroom-cover.jpeg" alt="Game Room magazine cover">
+      </div>
+    </div>
+    <div style="padding-bottom:120px;flex-shrink:0;text-align:center;">
+      <div style="font-family:'Playfair Display',serif;font-size:40px;font-weight:900;color:#000;letter-spacing:4px;">THE GAME ROOM</div>
+      <div style="font-family:'Source Sans 3',sans-serif;font-weight:500;font-size:22px;color:rgba(255,255,255,0.45);letter-spacing:3px;margin-top:8px;">SHARE YOUR DYNASTY</div>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 2: MOMENT PAGE -->
+<div class="slide-label">2 / 3 -- GAME ROOM: MOMENTS</div>
+<div class="screenshot-slide" style="background:linear-gradient(170deg,#B8922F 0%,#DEB64E 50%,#A07D25 100%);">
+  <div class="deco-circle" style="width:500px;height:500px;top:-150px;left:-150px;"></div>
+  <div class="deco-circle" style="width:300px;height:300px;bottom:100px;right:-80px;"></div>
+  <div class="deco-football" style="width:100px;height:65px;top:150px;left:120px;transform:rotate(-20deg);"></div>
+  <div class="deco-football" style="width:150px;height:100px;bottom:180px;right:120px;transform:rotate(25deg);"></div>
+  <div class="deco-line" style="width:350px;top:300px;right:50px;transform:rotate(5deg);"></div>
+  <div style="position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;width:100%;height:100%;">
+    <div style="padding-top:150px;text-align:center;flex-shrink:0;">
+      <div class="headline" style="font-size:86px;margin-bottom:24px;">EVERY WEEK,<br>A NEW <span class="accent">ISSUE</span></div>
+      <div class="subheadline" style="font-size:27px;">Upload screenshots from your save.<br>Each becomes a page in your season&apos;s story.</div>
+    </div>
+    <div style="flex:1;display:flex;align-items:center;justify-content:center;padding:60px 0;">
+      <div class="phone-frame" style="transform:scale(2.15);">
+        <img src="./gameroom-page.jpeg" alt="Game Room magazine moment page">
+      </div>
+    </div>
+    <div style="padding-bottom:120px;flex-shrink:0;display:flex;gap:70px;">
+      <div style="text-align:center;"><div style="font-family:'Playfair Display',serif;font-weight:900;font-size:46px;color:#000;">MOMENTS</div><div style="font-family:'Source Sans 3',sans-serif;font-weight:600;font-size:18px;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:2px;">Upload</div></div>
+      <div style="text-align:center;"><div style="font-family:'Playfair Display',serif;font-weight:900;font-size:46px;color:#000;">MAGAZINE</div><div style="font-family:'Source Sans 3',sans-serif;font-weight:600;font-size:18px;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:2px;">Curate</div></div>
+      <div style="text-align:center;"><div style="font-family:'Playfair Display',serif;font-weight:900;font-size:46px;color:#000;">FEED</div><div style="font-family:'Source Sans 3',sans-serif;font-weight:600;font-size:18px;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:2px;">Share</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 3: FEATURE / CTA -->
+<div class="slide-label">3 / 3 -- GAME ROOM: WHAT YOU CAN DO</div>
+<div class="screenshot-slide" style="background:linear-gradient(160deg,#9A7520 0%,#D4A843 45%,#B8922F 100%);">
+  <div class="deco-circle" style="width:450px;height:450px;bottom:-100px;left:-100px;"></div>
+  <div class="deco-circle" style="width:350px;height:350px;top:100px;right:-80px;"></div>
+  <div class="deco-football" style="width:130px;height:85px;top:130px;left:80px;transform:rotate(-25deg);"></div>
+  <div class="deco-football" style="width:90px;height:58px;bottom:240px;right:90px;transform:rotate(18deg);"></div>
+  <div class="deco-line" style="width:280px;bottom:280px;left:100px;transform:rotate(-8deg);"></div>
+  <div style="position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;width:100%;height:100%;padding:0 90px;">
+    <div style="padding-top:150px;text-align:center;flex-shrink:0;margin-bottom:70px;">
+      <div class="headline" style="font-size:90px;line-height:1.05;">THE <span class="accent">GAME ROOM</span></div>
+      <div class="subheadline" style="font-size:27px;margin-top:24px;">The home for your College Football dynasty.</div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:28px;width:100%;max-width:1040px;">
+      <div class="feat-row">
+        <div class="feat-ic"><svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.6-3.6a2 2 0 0 0-2.8 0L6 20"/></svg></div>
+        <div><div class="feat-title">Moments</div><div class="feat-sub">Post screenshots from your save</div></div>
+      </div>
+      <div class="feat-row">
+        <div class="feat-ic"><svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></div>
+        <div><div class="feat-title">Magazine</div><div class="feat-sub">Curate a weekly flip-through issue</div></div>
+      </div>
+      <div class="feat-row">
+        <div class="feat-ic"><svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
+        <div><div class="feat-title">Leagues</div><div class="feat-sub">Find an online dynasty to join</div></div>
+      </div>
+    </div>
+    <div style="flex:1;"></div>
+    <div style="padding-bottom:120px;flex-shrink:0;text-align:center;">
+      <div style="font-family:'Special Elite',monospace;font-weight:400;font-size:22px;color:rgba(255,255,255,0.3);letter-spacing:4px;text-transform:uppercase;">Download Free on iOS &amp; Android</div>
+    </div>
+  </div>
+</div>
+
+<script>
+function setZoom(s){document.querySelectorAll('.screenshot-slide').forEach(el=>{el.style.transform=`scale(${s})`;el.style.transformOrigin='top center';el.style.marginBottom=((2868*s)-2868)+'px';});document.querySelectorAll('.zoom-btn').forEach(b=>b.classList.remove('active'));event.target.classList.add('active');}
+setZoom(0.5);
+</script>
+</body>
+</html>

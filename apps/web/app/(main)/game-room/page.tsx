@@ -4,20 +4,21 @@ import {
   VideoGameJsonLd, CollectionPageJsonLd, FAQPageJsonLd, BreadcrumbJsonLd,
 } from '@/components/seo/JsonLd';
 import { GameRoomCta } from '@/components/game-room/GameRoomCta';
+import { GAME } from '@/lib/constants/game';
 
 export const dynamic = 'force-dynamic';
 
-const TITLE = 'Game Room — College Football 26 Dynasty Moments & Online Leagues | CFB Social';
+const TITLE = `Game Room — ${GAME.name} Dynasty Moments & Online Leagues | CFB Social`;
 const DESC =
-  'Share EA Sports College Football 26 dynasty screenshots, build a flip-magazine of your season, and find online dynasty leagues to join (PS5, Xbox, PC). The free CFB 26 community for moments, magazines, and leagues.';
+  `Share ${GAME.full} dynasty screenshots, build a flip-magazine of your season, and find online dynasty leagues to join (PS5, Xbox, PC). The free ${GAME.abbr} community for moments, magazines, and leagues.`;
 
 export const metadata = {
   title: TITLE,
   description: DESC,
   keywords: [
-    'College Football 26', 'CFB 26', 'College Football 26 dynasty', 'CFB 26 screenshots',
-    'College Football 26 online dynasty', 'CFB 26 leagues', 'EA Sports College Football',
-    'college football video game community', 'dynasty moments', 'CFB 26 magazine',
+    GAME.name, GAME.abbr, `${GAME.name} dynasty`, `${GAME.abbr} screenshots`,
+    `${GAME.name} online dynasty`, `${GAME.abbr} leagues`, GAME.franchise,
+    'college football video game community', 'dynasty moments', `${GAME.abbr} magazine`,
   ],
   openGraph: {
     title: TITLE,
@@ -30,9 +31,9 @@ export const metadata = {
 };
 
 const HUB_FAQS = [
-  { question: 'What is the CFB Social Game Room?', answer: 'The Game Room is a free hub for EA Sports College Football 26 players to share dynasty screenshots ("moments"), curate them into a flip-magazine of their season, and find online dynasty leagues to join.' },
-  { question: 'Where can I share my College Football 26 dynasty screenshots?', answer: 'Open the Game Room Moments tab and upload your screenshots. Each moment posts to your CFB Social feed and can be added to your own magazine issue.' },
-  { question: 'How do I find a College Football 26 online dynasty league?', answer: 'Use the Game Room Leagues directory to browse open CFB 26 leagues by platform, sim schedule, and open schools, then request to join.' },
+  { question: 'What is the CFB Social Game Room?', answer: `The Game Room is a free hub for ${GAME.full} players to share dynasty screenshots ("moments"), curate them into a flip-magazine of their season, and find online dynasty leagues to join.` },
+  { question: `Where can I share my ${GAME.name} dynasty screenshots?`, answer: 'Open the Game Room Moments tab and upload your screenshots. Each moment posts to your CFB Social feed and can be added to your own magazine issue.' },
+  { question: `How do I find a ${GAME.name} online dynasty league?`, answer: `Use the Game Room Leagues directory to browse open ${GAME.abbr} leagues by platform, sim schedule, and open schools, then request to join.` },
 ];
 
 interface GameRoomPageProps {
@@ -85,10 +86,10 @@ export default async function GameRoomPage({ searchParams }: GameRoomPageProps) 
       {/* Crawlable SEO content — internal links + answer-engine text */}
       <section className="content-card" style={{ marginTop: 24 }}>
         <h2 style={{ fontFamily: 'var(--serif)', color: 'var(--dark-brown)', marginBottom: 8 }}>
-          The College Football 26 dynasty community
+          The {GAME.name} dynasty community
         </h2>
         <p style={{ fontFamily: 'var(--sans)', color: 'var(--ink)', lineHeight: 1.6 }}>
-          The Game Room is where <strong>EA Sports College Football 26</strong> players share their best dynasty moments,
+          The Game Room is where <strong>{GAME.full}</strong> players share their best dynasty moments,
           turn a season into a flip-magazine, and find <Link href="/game-room/leagues">online dynasty leagues to join</Link> on
           PS5, Xbox, and PC. Post a screenshot, file it into an issue, and share it to the feed. New to it? Read the{' '}
           <Link href="/game-room/guide">Game Room guide</Link>.

@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CFB Social - Google Play Screenshots (1080x1920)</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=Source+Sans+3:wght@400;600;700;800;900&family=Special+Elite&display=swap');
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #111; font-family: 'Source Sans 3', sans-serif; padding: 40px; }
+
+  .page-title { font-family: 'Playfair Display', serif; font-size: 48px; font-weight: 900; color: #D4A843; text-align: center; letter-spacing: 4px; margin-bottom: 8px; }
+  .page-subtitle { text-align: center; color: rgba(255,255,255,0.4); font-size: 14px; margin-bottom: 12px; letter-spacing: 2px; text-transform: uppercase; }
+  .page-spec { text-align: center; color: rgba(255,255,255,0.25); font-family: 'Special Elite', monospace; font-size: 13px; margin-bottom: 40px; }
+  .instructions { max-width: 900px; margin: 0 auto 40px; background: #1a1a1a; border: 1px solid #333; border-radius: 12px; padding: 24px; color: #ccc; font-size: 14px; line-height: 1.6; }
+  .instructions h2 { color: #D4A843; font-family: 'Playfair Display', serif; font-size: 24px; letter-spacing: 2px; margin-bottom: 12px; }
+  .instructions strong { color: #fff; }
+  .instructions code { background: #333; padding: 2px 6px; border-radius: 4px; font-size: 13px; }
+  .slide-label { text-align: center; font-family: 'Source Sans 3', sans-serif; font-weight: 700; font-size: 16px; letter-spacing: 3px; text-transform: uppercase; color: #D4A843; margin-bottom: 20px; }
+  .zoom-controls { position: fixed; top: 20px; right: 20px; display: flex; gap: 8px; z-index: 100; }
+  .zoom-btn { background: #D4A843; color: #111; border: none; border-radius: 8px; padding: 8px 16px; font-family: 'Source Sans 3', sans-serif; font-weight: 700; font-size: 14px; cursor: pointer; }
+  .zoom-btn:hover { transform: scale(1.05); }
+  .zoom-btn.active { background: #fff; color: #D4A843; }
+
+  .screenshot-slide { width: 1080px; height: 1920px; position: relative; overflow: hidden; margin: 0 auto 60px; display: flex; flex-direction: column; align-items: center; }
+  .feature-graphic { width: 1024px; height: 500px; position: relative; overflow: hidden; margin: 0 auto 60px; display: flex; align-items: center; justify-content: center; }
+
+  .phone-frame { width: 340px; height: 600px; background: #f4efe4; border-radius: 40px; overflow: hidden; position: relative; border: 4px solid #3a3a3a; box-shadow: 0 0 0 2px #222, 0 30px 60px rgba(0,0,0,0.15); display: flex; flex-direction: column; flex-shrink: 0; }
+  .phone-frame::before { content: ''; position: absolute; top: 0; left: 50%; transform: translateX(-50%); width: 140px; height: 30px; background: #111; border-radius: 0 0 18px 18px; z-index: 10; }
+
+  .headline { font-family: 'Playfair Display', serif; color: #fff; text-align: center; font-weight: 900; letter-spacing: 2px; line-height: 1.1; text-transform: uppercase; }
+  .headline .accent { color: #000; }
+  .subheadline { font-family: 'Source Sans 3', sans-serif; font-weight: 500; color: rgba(255,255,255,0.55); text-align: center; line-height: 1.4; }
+
+  .status-bar { height: 44px; padding: 12px 20px 0; display: flex; justify-content: space-between; align-items: center; font-family: 'Special Elite', monospace; font-size: 11px; color: #3b2f1e; flex-shrink: 0; background: #f4efe4; }
+  .screen-content { flex: 1; overflow: hidden; display: flex; flex-direction: column; background: #f4efe4; }
+
+  .app-header-bar { text-align: center; padding: 6px 14px 4px; }
+  .header-overline { font-family: 'Source Sans 3', sans-serif; font-size: 7px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; color: #8b5e3c; }
+  .header-title { font-family: 'Playfair Display', serif; font-size: 17px; font-weight: 900; color: #3b2f1e; }
+  .ornament-line { display: flex; align-items: center; justify-content: center; gap: 5px; margin-top: 3px; }
+  .ornament-diamond { width: 6px; height: 6px; background: #D4A843; transform: rotate(45deg); }
+  .ornament-diamond.small { width: 3px; height: 3px; background: #c4b596; }
+  .hamburger { position: absolute; top: 50px; right: 14px; width: 20px; height: 14px; display: flex; flex-direction: column; justify-content: space-between; z-index: 5; }
+  .hamburger span { display: block; height: 2px; background: #3b2f1e; border-radius: 1px; }
+  .scores-banner { background: #3b2f1e; padding: 4px 14px; display: flex; align-items: center; justify-content: center; gap: 10px; }
+  .score-item { font-family: 'Special Elite', monospace; font-size: 10px; color: #f4efe4; letter-spacing: 1px; }
+  .score-divider { width: 3px; height: 3px; background: #D4A843; border-radius: 50%; }
+  .feed-tabs { display: flex; border-bottom: 1px solid #d4c9b8; margin: 0 14px; }
+  .feed-tab { flex: 1; text-align: center; padding: 6px; font-family: 'Source Sans 3', sans-serif; font-size: 10px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: #7a6e5f; }
+  .feed-tab.active { color: #3b2f1e; border-bottom: 2px solid #3b2f1e; }
+  .post-card { background: #f9f6f0; border: 1px solid #d4c9b8; border-radius: 3px; margin: 4px 12px; overflow: hidden; }
+  .post-card.national { border-left: 4px solid #ccc; }
+  .post-header { display: flex; align-items: center; gap: 6px; padding: 7px 10px 4px; }
+  .post-avatar { width: 26px; height: 26px; border-radius: 50%; border: 2px solid #d4c9b8; display: flex; align-items: center; justify-content: center; font-family: 'Playfair Display', serif; font-weight: 700; font-size: 8px; color: #fff; flex-shrink: 0; }
+  .post-handle { font-family: 'Special Elite', monospace; font-size: 10px; color: #5a4a38; font-weight: 700; }
+  .pennant-flair { font-family: 'Source Sans 3', sans-serif; font-size: 6px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: #f4efe4; padding: 1px 6px 1px 4px; clip-path: polygon(0 0, 100% 0, 92% 50%, 100% 100%, 0 100%); }
+  .post-time { font-size: 9px; color: #9a8e7f; }
+  .post-text { font-family: 'Source Sans 3', sans-serif; font-size: 10px; line-height: 1.4; color: #5a4a38; padding: 2px 10px 6px; }
+  .engagement-row { display: flex; gap: 10px; padding: 2px 10px 4px; font-family: 'Special Elite', monospace; font-size: 9px; color: #7a6e5f; }
+  .eng-item { display: flex; align-items: center; gap: 2px; }
+  .eng-label { font-weight: 700; }
+  .eng-positive .eng-label { color: #2d6a2e; }
+  .eng-negative .eng-label { color: #8b4040; }
+  .post-actions-bar { display: flex; border-top: 1px dashed #d4c9b8; margin: 0 10px; }
+  .action-btn { flex: 1; text-align: center; padding: 5px 3px; font-family: 'Source Sans 3', sans-serif; font-size: 8px; font-weight: 700; color: #7a6e5f; letter-spacing: 0.5px; text-transform: uppercase; }
+  .action-divider { width: 1px; background: #d4c9b8; }
+
+  .post-clipping { background: #f0eacc; border: 1px solid #c9bf9e; transform: rotate(-0.6deg); margin: 5px 12px; border-radius: 3px; overflow: hidden; }
+  .clipping-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #3b2f1e; margin: 8px 10px 0; padding: 0 0 3px; }
+  .clipping-dateline { font-family: 'Special Elite', monospace; font-size: 8px; color: #7a6e5f; letter-spacing: 1px; text-transform: uppercase; }
+  .receipt-stamp { background: #3b2f1e; color: #f0eacc; font-family: 'Special Elite', monospace; font-size: 8px; padding: 2px 6px; letter-spacing: 1px; transform: rotate(-2deg); border-radius: 2px; }
+  .clipping-text { font-family: 'Playfair Display', serif; font-size: 11px; font-weight: 700; line-height: 1.3; color: #3b2f1e; padding: 6px 10px 3px; }
+  .clipping-sub { font-family: 'Source Sans 3', sans-serif; font-size: 9px; color: #5a4a38; padding: 0 10px 8px; }
+
+  .fight-card { margin: 0 12px; border: 3px solid #3b2f1e; border-radius: 3px; overflow: hidden; background: #f9f6f0; }
+  .fight-card-top { background: #3b2f1e; padding: 4px 12px; text-align: center; }
+  .fight-card-top span { font-family: 'Source Sans 3', sans-serif; font-size: 7px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; color: #D4A843; }
+  .fight-card-matchup { text-align: center; padding: 10px 12px 4px; }
+  .fight-card-matchup h3 { font-family: 'Playfair Display', serif; font-size: 13px; font-weight: 900; color: #3b2f1e; }
+  .fight-card-matchup .subtitle { font-family: 'Special Elite', monospace; font-size: 9px; color: #8b6914; }
+  .fight-card-votes { display: flex; justify-content: space-between; padding: 8px 16px; }
+  .vote-corner { text-align: center; }
+  .vote-team { font-family: 'Source Sans 3', sans-serif; font-size: 8px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: #5a4a38; }
+  .vote-pct { font-family: 'Playfair Display', serif; font-size: 20px; font-weight: 900; color: #3b2f1e; }
+  .vote-pct span { font-size: 10px; color: #7a6e5f; }
+  .vs-text { font-family: 'Playfair Display', serif; font-size: 12px; font-weight: 900; color: #D4A843; align-self: center; }
+  .fight-bar { height: 4px; display: flex; margin: 0 16px 10px; border-radius: 2px; overflow: hidden; }
+
+  .debate-take { background: #f0eacc; border: 1px solid #c9bf9e; padding: 6px 8px; border-radius: 3px; margin: 3px 12px; }
+  .take-author { font-family: 'Special Elite', monospace; font-size: 8px; color: #7a6e5f; margin-bottom: 2px; }
+  .take-text { font-family: 'Source Sans 3', sans-serif; font-size: 9px; color: #5a4a38; line-height: 1.3; }
+
+  .portal-ticker { background: #3b2f1e; padding: 4px 12px; }
+  .portal-ticker-text { font-family: 'Special Elite', monospace; font-size: 9px; color: #D4A843; letter-spacing: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .portal-card { background: #f9f6f0; border-radius: 3px; margin: 4px 12px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+  .portal-accent { height: 3px; }
+  .portal-card-body { padding: 8px 10px; }
+  .portal-flash { font-family: 'Special Elite', monospace; font-size: 8px; color: #D4A843; letter-spacing: 2px; text-transform: uppercase; }
+  .portal-player { font-family: 'Playfair Display', serif; font-size: 12px; font-weight: 900; color: #3b2f1e; }
+  .portal-school { font-family: 'Source Sans 3', sans-serif; font-size: 9px; color: #7a6e5f; margin-bottom: 3px; }
+  .portal-stars { display: inline-flex; padding: 1px 6px; background: rgba(212,168,67,0.15); border: 1px solid rgba(212,168,67,0.3); border-radius: 2px; font-family: 'Source Sans 3', sans-serif; font-size: 9px; font-weight: 700; color: #8b6914; margin-bottom: 4px; }
+  .portal-claim { width: 100%; padding: 6px; background: #3b2f1e; border-radius: 3px; color: #D4A843; font-family: 'Source Sans 3', sans-serif; font-size: 9px; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase; text-align: center; }
+
+  .screen-header { text-align: center; padding: 6px 14px 3px; }
+  .screen-header h2 { font-family: 'Playfair Display', serif; font-size: 15px; font-weight: 900; color: #3b2f1e; letter-spacing: 2px; text-transform: uppercase; }
+
+  .deco-circle { position: absolute; border-radius: 50%; border: 3px solid rgba(255,255,255,0.15); }
+  .deco-circle-fill { position: absolute; border-radius: 50%; background: rgba(255,255,255,0.06); }
+  .deco-line { position: absolute; height: 3px; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent); }
+  .deco-dot { position: absolute; width: 6px; height: 6px; border-radius: 50%; background: rgba(255,255,255,0.3); }
+  .deco-football { position: absolute; border-radius: 50%; border: 3px solid rgba(255,255,255,0.15); overflow: hidden; }
+  .deco-football::before { content: ''; position: absolute; top: 0; left: 35%; right: 35%; bottom: 0; border-right: 2px solid rgba(255,255,255,0.15); border-left: 2px solid rgba(255,255,255,0.15); }
+  .deco-football::after { content: ''; position: absolute; top: 35%; bottom: 35%; left: 0; right: 0; border-top: 2px solid rgba(255,255,255,0.15); border-bottom: 2px solid rgba(255,255,255,0.15); }
+</style>
+</head>
+<body>
+
+<div class="zoom-controls">
+  <button class="zoom-btn" onclick="setZoom(0.35)">35%</button>
+  <button class="zoom-btn active" onclick="setZoom(0.5)">50%</button>
+  <button class="zoom-btn" onclick="setZoom(0.75)">75%</button>
+  <button class="zoom-btn" onclick="setZoom(1)">100%</button>
+</div>
+
+<h1 class="page-title">CFB SOCIAL</h1>
+<p class="page-subtitle">Google Play Screenshots</p>
+<p class="page-spec">1080 x 1920 px // 9:16 Portrait + 1024x500 Feature Graphic</p>
+
+<div class="instructions">
+  <h2>Export Instructions</h2>
+  <p>1. Click <strong>100%</strong> zoom above.</p>
+  <p>2. Right-click a slide and select <strong>Inspect</strong>.</p>
+  <p>3. In DevTools, right-click the <code>.screenshot-slide</code> or <code>.feature-graphic</code> element and select <strong>Capture node screenshot</strong>.</p>
+  <p>4. Repeat for each. Upload to <strong>Google Play Console</strong>.</p>
+</div>
+
+<!-- FEATURE GRAPHIC -->
+<div class="slide-label">Feature Graphic (1024x500)</div>
+<div class="feature-graphic" style="background:linear-gradient(165deg,#A07D25 0%,#D4A843 40%,#B8922F 100%);">
+  <div class="deco-circle" style="width:200px;height:200px;top:-40px;right:-40px;"></div>
+  <div class="deco-circle" style="width:120px;height:120px;bottom:-20px;left:40px;"></div>
+  <div class="deco-football" style="width:70px;height:45px;top:40px;left:60px;transform:rotate(-25deg);"></div>
+  <div class="deco-football" style="width:60px;height:40px;bottom:60px;right:80px;transform:rotate(20deg);"></div>
+  <div style="text-align:center;position:relative;z-index:2;">
+    <img src="file:///C:/Users/beltr/Downloads/20260331_1016_Image%20Generation_simple_compose_01kn240jaaf77tb2r08cz3gfzg-Photoroom.png" style="width:80px;height:80px;border-radius:18px;object-fit:cover;box-shadow:0 4px 16px rgba(0,0,0,0.4);margin:0 auto 16px;display:block;" />
+    <div style="font-family:'Playfair Display',serif;font-size:48px;font-weight:900;color:#fff;letter-spacing:3px;line-height:1.1;">CFB SOCIAL</div>
+    <div style="display:flex;align-items:center;justify-content:center;gap:8px;margin:10px 0;">
+      <div style="width:40px;height:1px;background:rgba(212,168,67,0.4);"></div>
+      <div style="width:8px;height:8px;background:#D4A843;transform:rotate(45deg);"></div>
+      <div style="width:40px;height:1px;background:rgba(212,168,67,0.4);"></div>
+    </div>
+    <div style="font-family:'Source Sans 3',sans-serif;font-size:20px;color:rgba(255,255,255,0.6);letter-spacing:4px;text-transform:uppercase;">College Football's Social Home</div>
+  </div>
+</div>
+
+<!-- SLIDE 1: HERO -->
+<div class="slide-label">1 / 7 -- HERO</div>
+<div class="screenshot-slide" style="background:linear-gradient(165deg,#A07D25 0%,#D4A843 40%,#B8922F 100%);">
+  <div class="deco-circle" style="width:280px;height:280px;top:-60px;right:-70px;"></div>
+  <div class="deco-circle-fill" style="width:500px;height:500px;top:50%;left:50%;transform:translate(-50%,-50%);"></div>
+  <div class="deco-football" style="width:80px;height:55px;top:80px;right:80px;transform:rotate(-30deg);"></div>
+  <div class="deco-dot" style="top:180px;left:150px;"></div>
+  <div class="deco-line" style="width:200px;top:150px;left:30px;transform:rotate(-15deg);"></div>
+  <div style="position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;width:100%;height:100%;">
+    <div style="padding-top:80px;text-align:center;flex-shrink:0;">
+      <img src="file:///C:/Users/beltr/Downloads/20260329_2240_Image Generation_simple_compose_01kmy9t1r1fgns3rbv0mv2pyqr-Photoroom.png" style="width:100px;height:100px;border-radius:24px;object-fit:cover;box-shadow:0 12px 40px rgba(0,0,0,0.2);margin:0 auto 28px;display:block;" />
+      <div class="headline" style="font-size:56px;margin-bottom:14px;">COLLEGE FOOTBALL'S<br><span class="accent">SOCIAL HOME</span></div>
+      <div class="subheadline" style="font-size:20px;">Stakes. Receipts. Dynasty.<br>653 schools, one community.</div>
+    </div>
+    <div style="flex:1;display:flex;align-items:center;justify-content:center;padding:30px 0;">
+      <div class="phone-frame" style="transform:scale(1.65);">
+        <div class="status-bar"><span>9:41</span><span style="font-size:10px;color:#7a6e5f;">CFB Social</span></div>
+        <div class="screen-content">
+          <div class="app-header-bar"><div class="header-overline">YOUR SCHOOL PRESENTS</div><div class="header-title">The Gridiron</div><div class="ornament-line"><span class="ornament-diamond small"></span><span class="ornament-diamond"></span><span class="ornament-diamond small"></span></div></div>
+          <div class="hamburger"><span></span><span></span><span></span></div>
+          <div class="scores-banner"><span class="score-item">FSU 28 - UF 21</span><span class="score-divider"></span><span class="score-item">BAMA 42 - LSU 38</span></div>
+          <div class="feed-tabs"><div class="feed-tab active">National</div><div class="feed-tab">My School</div></div>
+          <div style="padding-top:3px;">
+            <div class="post-card national" style="border-left-color:#0021A5;"><div class="post-header"><div class="post-avatar" style="background:#0021A5;border-color:#FA4616;">GN</div><div><div style="display:flex;align-items:center;gap:3px;"><span class="post-handle">@GatorNation</span><span class="pennant-flair" style="background:#0021A5;">FLORIDA</span></div><div class="post-time">2h</div></div></div><div class="post-text">The Swamp is going to be ROCKING. 10 wins incoming.</div><div class="engagement-row"><div class="eng-item eng-positive"><span class="eng-label">TD:</span><span>287</span></div><div class="eng-item eng-negative"><span class="eng-label">FUM:</span><span>134</span></div></div><div class="post-actions-bar"><div class="action-btn">FACT CHECK</div><div class="action-divider"></div><div class="action-btn">CHALLENGE</div><div class="action-divider"></div><div class="action-btn">REVISIT</div></div></div>
+            <div class="post-card national" style="border-left-color:#500000;"><div class="post-header"><div class="post-avatar" style="background:#500000;border-color:#D4A843;">AG</div><div><div style="display:flex;align-items:center;gap:3px;"><span class="post-handle">@AggieGrit</span><span class="pennant-flair" style="background:#500000;">TEXAS A&M</span></div><div class="post-time">3h</div></div></div><div class="post-text">Kyle Field on a Saturday night is the loudest stadium in America.</div><div class="engagement-row"><div class="eng-item eng-positive"><span class="eng-label">TD:</span><span>342</span></div><div class="eng-item eng-negative"><span class="eng-label">FUM:</span><span>89</span></div></div></div>
+            <div class="post-clipping"><div class="clipping-header"><span class="clipping-dateline">The Saturday Edition</span><span class="receipt-stamp">RECEIPT</span></div><div class="clipping-text">Alabama finishes 11-1.</div><div class="clipping-sub">Only loss in Athens.</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div style="padding-bottom:60px;flex-shrink:0;text-align:center;">
+      <div style="font-family:'Playfair Display',serif;font-size:24px;font-weight:900;color:#fff;letter-spacing:3px;">CFB SOCIAL</div>
+      <div style="font-family:'Source Sans 3',sans-serif;font-weight:500;font-size:16px;color:rgba(255,255,255,0.35);letter-spacing:2px;margin-top:4px;">THE GRIDIRON AWAITS</div>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 2: THE FEED -->
+<div class="slide-label">2 / 7 -- THE FEED</div>
+<div class="screenshot-slide" style="background:linear-gradient(170deg,#B8922F 0%,#DEB64E 50%,#A07D25 100%);">
+  <div class="deco-circle" style="width:350px;height:350px;top:-100px;left:-100px;"></div>
+  <div class="deco-football" style="width:70px;height:45px;top:100px;left:80px;transform:rotate(-20deg);"></div>
+  <div class="deco-dot" style="top:250px;right:140px;width:8px;height:8px;"></div>
+  <div class="deco-line" style="width:250px;top:210px;right:40px;"></div>
+  <div style="position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;width:100%;height:100%;">
+    <div style="padding-top:80px;text-align:center;flex-shrink:0;">
+      <div class="headline" style="font-size:52px;margin-bottom:14px;">YOUR <span class="accent">TAKES.</span><br>YOUR <span class="accent">SCHOOL.</span></div>
+      <div class="subheadline" style="font-size:18px;">Post hot takes with school-colored flair.<br>Touchdown or Fumble -- the crowd decides.</div>
+    </div>
+    <div style="flex:1;display:flex;align-items:center;justify-content:center;padding:30px 0;">
+      <div class="phone-frame" style="transform:scale(1.65);">
+        <div class="status-bar"><span>9:41</span><span style="font-size:10px;color:#7a6e5f;">CFB Social</span></div>
+        <div class="screen-content">
+          <div class="app-header-bar"><div class="header-overline">YOUR SCHOOL PRESENTS</div><div class="header-title">The Gridiron</div><div class="ornament-line"><span class="ornament-diamond small"></span><span class="ornament-diamond"></span><span class="ornament-diamond small"></span></div></div>
+          <div class="hamburger"><span></span><span></span><span></span></div>
+          <div class="scores-banner"><span class="score-item">OHIO ST 31 - MICH 27</span><span class="score-divider"></span><span class="score-item">UGA 42 - AUB 17</span></div>
+          <div class="feed-tabs"><div class="feed-tab active">National</div><div class="feed-tab">My School</div></div>
+          <div style="padding-top:3px;">
+            <div class="post-card national" style="border-left-color:#BB0000;"><div class="post-header"><div class="post-avatar" style="background:#BB0000;border-color:#999;">BN</div><div><div style="display:flex;align-items:center;gap:3px;"><span class="post-handle">@BucksNation</span><span class="pennant-flair" style="background:#BB0000;">OHIO STATE</span></div><div class="post-time">1h</div></div></div><div class="post-text">THE greatest rivalry just proved it again. Buckeyes own November.</div><div class="engagement-row"><div class="eng-item eng-positive"><span class="eng-label">TD:</span><span>1.2K</span></div><div class="eng-item eng-negative"><span class="eng-label">FUM:</span><span>847</span></div></div><div class="post-actions-bar"><div class="action-btn">FACT CHECK</div><div class="action-divider"></div><div class="action-btn">CHALLENGE</div><div class="action-divider"></div><div class="action-btn">REVISIT</div></div></div>
+            <div class="post-card national" style="border-left-color:#E87722;"><div class="post-header"><div class="post-avatar" style="background:#E87722;border-color:#fff;">VF</div><div><div style="display:flex;align-items:center;gap:3px;"><span class="post-handle">@VolFaithful</span><span class="pennant-flair" style="background:#E87722;">TENNESSEE</span></div><div class="post-time">2h</div></div></div><div class="post-text">Rocky Top is the best fight song in college football.</div><div class="engagement-row"><div class="eng-item eng-positive"><span class="eng-label">TD:</span><span>567</span></div><div class="eng-item eng-negative"><span class="eng-label">FUM:</span><span>312</span></div></div></div>
+            <div class="post-card national" style="border-left-color:#005030;"><div class="post-header"><div class="post-avatar" style="background:#005030;border-color:#F47321;">CG</div><div><div style="display:flex;align-items:center;gap:3px;"><span class="post-handle">@CaneGang</span><span class="pennant-flair" style="background:#005030;">MIAMI</span></div><div class="post-time">4h</div></div></div><div class="post-text">The U is BACK. ACC title game bound.</div><div class="engagement-row"><div class="eng-item eng-positive"><span class="eng-label">TD:</span><span>256</span></div><div class="eng-item eng-negative"><span class="eng-label">FUM:</span><span>198</span></div></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div style="padding-bottom:60px;flex-shrink:0;display:flex;gap:50px;">
+      <div style="text-align:center;"><div style="font-family:'Playfair Display',serif;font-weight:900;font-size:34px;color:#000;">653</div><div style="font-family:'Source Sans 3',sans-serif;font-weight:600;font-size:14px;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:2px;">Schools</div></div>
+      <div style="text-align:center;"><div style="font-family:'Playfair Display',serif;font-weight:900;font-size:34px;color:#000;">D1-D3</div><div style="font-family:'Source Sans 3',sans-serif;font-weight:600;font-size:14px;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:2px;">All Divisions</div></div>
+      <div style="text-align:center;"><div style="font-family:'Playfair Display',serif;font-weight:900;font-size:34px;color:#000;">LIVE</div><div style="font-family:'Source Sans 3',sans-serif;font-weight:600;font-size:14px;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:2px;">Scores</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 3: RIVALRY RING -->
+<div class="slide-label">3 / 7 -- RIVALRY RING</div>
+<div class="screenshot-slide" style="background:linear-gradient(160deg,#9A7520 0%,#D4A843 45%,#B8922F 100%);">
+  <div class="deco-circle" style="width:300px;height:300px;bottom:-70px;left:-70px;"></div>
+  <div class="deco-football" style="width:90px;height:60px;top:90px;left:60px;transform:rotate(-25deg);"></div>
+  <div class="deco-dot" style="top:280px;left:220px;width:10px;height:10px;"></div>
+  <div class="deco-line" style="width:200px;bottom:180px;left:70px;"></div>
+  <div style="position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;width:100%;height:100%;">
+    <div style="padding-top:80px;text-align:center;flex-shrink:0;">
+      <div class="headline" style="font-size:52px;margin-bottom:14px;">SETTLE IT IN<br>THE <span class="accent">RING</span></div>
+      <div class="subheadline" style="font-size:18px;">Vote on rivalries. Debate the matchups.<br>Crown your school as champion.</div>
+    </div>
+    <div style="flex:1;display:flex;align-items:center;justify-content:center;padding:30px 0;">
+      <div class="phone-frame" style="transform:scale(1.65);">
+        <div class="status-bar"><span>9:41</span><span style="font-size:10px;color:#7a6e5f;">CFB Social</span></div>
+        <div class="screen-content">
+          <div class="screen-header" style="padding-top:10px;"><h2>The Rivalry Ring</h2><div class="ornament-line" style="margin-top:4px;"><span class="ornament-diamond small"></span><span class="ornament-diamond"></span><span class="ornament-diamond small"></span></div></div>
+          <div class="hamburger"><span></span><span></span><span></span></div>
+          <div class="fight-card" style="margin-top:8px;">
+            <div class="fight-card-top"><span>Featured Rivalry</span></div>
+            <div class="fight-card-matchup"><h3>Ohio State vs Michigan</h3><div class="subtitle">The Game</div></div>
+            <div class="fight-card-votes"><div class="vote-corner"><div class="vote-team">BUCKEYES</div><div class="vote-pct">52<span>%</span></div></div><div class="vs-text">VS</div><div class="vote-corner"><div class="vote-team">WOLVERINES</div><div class="vote-pct">48<span>%</span></div></div></div>
+            <div class="fight-bar"><div style="background:#BB0000;width:52%;"></div><div style="background:#00274C;width:48%;"></div></div>
+          </div>
+          <div class="debate-take"><div class="take-author">@GridironVeteran</div><div class="take-text">The greatest rivalry in all of sports.</div></div>
+          <div class="debate-take"><div class="take-author">@MidwestCFB</div><div class="take-text">Record doesn't matter. This game always delivers.</div></div>
+          <div class="debate-take"><div class="take-author">@CFBHistorian</div><div class="take-text">More title implications than any other rivalry.</div></div>
+          <div style="padding:8px 12px;"><div style="width:100%;padding:8px;background:#3b2f1e;border-radius:4px;color:#D4A843;font-family:'Source Sans 3',sans-serif;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;text-align:center;">Enter the Ring</div></div>
+        </div>
+      </div>
+    </div>
+    <div style="padding-bottom:60px;flex-shrink:0;display:flex;gap:16px;justify-content:center;">
+      <div style="background:rgba(212,168,67,0.12);border:1px solid rgba(212,168,67,0.3);border-radius:20px;padding:10px 24px;font-family:'Source Sans 3',sans-serif;font-weight:700;font-size:16px;color:#fff;">VOTE</div>
+      <div style="background:rgba(212,168,67,0.12);border:1px solid rgba(212,168,67,0.3);border-radius:20px;padding:10px 24px;font-family:'Source Sans 3',sans-serif;font-weight:700;font-size:16px;color:#fff;">DEBATE</div>
+      <div style="background:rgba(212,168,67,0.12);border:1px solid rgba(212,168,67,0.3);border-radius:20px;padding:10px 24px;font-family:'Source Sans 3',sans-serif;font-weight:700;font-size:16px;color:#fff;">CROWN</div>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 4: TRANSFER PORTAL -->
+<div class="slide-label">4 / 7 -- TRANSFER PORTAL</div>
+<div class="screenshot-slide" style="background:linear-gradient(175deg,#A07D25 0%,#D4A843 50%,#B8922F 100%);">
+  <div class="deco-circle" style="width:280px;height:280px;top:50px;left:-80px;"></div>
+  <div class="deco-football" style="width:75px;height:50px;top:120px;right:90px;transform:rotate(-35deg);"></div>
+  <div class="deco-dot" style="top:200px;left:200px;width:8px;height:8px;"></div>
+  <div class="deco-line" style="width:280px;top:180px;left:140px;"></div>
+  <div style="position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;width:100%;height:100%;">
+    <div style="padding-top:80px;text-align:center;flex-shrink:0;">
+      <div class="headline" style="font-size:52px;margin-bottom:14px;">TRACK THE<br><span class="accent">PORTAL</span></div>
+      <div class="subheadline" style="font-size:18px;">Breaking transfers. Star ratings.<br>Claim players for your roster.</div>
+    </div>
+    <div style="flex:1;display:flex;align-items:center;justify-content:center;padding:30px 0;">
+      <div class="phone-frame" style="transform:scale(1.65);">
+        <div class="status-bar"><span>9:41</span><span style="font-size:10px;color:#7a6e5f;">CFB Social</span></div>
+        <div class="screen-content">
+          <div class="screen-header" style="padding-top:10px;"><h2 style="font-family:'Special Elite',monospace;font-size:14px;">Transfer Portal Wire</h2><div class="ornament-line" style="margin-top:4px;"><span class="ornament-diamond small"></span><span class="ornament-diamond"></span><span class="ornament-diamond small"></span></div></div>
+          <div class="hamburger"><span></span><span></span><span></span></div>
+          <div class="portal-ticker"><div class="portal-ticker-text">BREAKING: QB Marcus Webb enters portal // WR Brooks 5-STAR</div></div>
+          <div style="padding-top:4px;">
+            <div class="portal-card"><div class="portal-accent" style="background:#BB0000;"></div><div class="portal-card-body"><div class="portal-flash">FLASH</div><div class="portal-player">Marcus Webb, QB</div><div class="portal-school">From USC -- 3,200 yds, 28 TD</div><div class="portal-stars">5-STAR</div><div class="portal-claim">Claim for Your Roster</div></div></div>
+            <div class="portal-card"><div class="portal-accent" style="background:#D4A843;"></div><div class="portal-card-body"><div class="portal-flash">FLASH</div><div class="portal-player">Jaylen Brooks, WR</div><div class="portal-school">From Alabama -- 1,100 yds, 12 TD</div><div class="portal-stars">4-STAR</div><div class="portal-claim">Claim for Your Roster</div></div></div>
+            <div class="portal-card"><div class="portal-accent" style="background:#3b2f1e;"></div><div class="portal-card-body"><div class="portal-flash">FLASH</div><div class="portal-player">DeShawn Carter, DL</div><div class="portal-school">From Tennessee -- 14.5 sacks</div><div class="portal-stars">4-STAR</div><div class="portal-claim">Claim for Your Roster</div></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div style="padding-bottom:60px;flex-shrink:0;text-align:center;">
+      <div style="font-family:'Playfair Display',serif;font-weight:900;font-size:42px;color:#000;">LIVE</div>
+      <div style="font-family:'Source Sans 3',sans-serif;font-weight:600;font-size:16px;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:2px;">Transfer Updates</div>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 5: DYNASTY MODE -->
+<div class="slide-label">5 / 7 -- DYNASTY MODE</div>
+<div class="screenshot-slide" style="background:linear-gradient(155deg,#B8922F 0%,#DEB64E 45%,#A07D25 100%);">
+  <div class="deco-circle" style="width:260px;height:260px;top:30px;right:-60px;"></div>
+  <div class="deco-football" style="width:65px;height:42px;bottom:140px;right:70px;transform:rotate(20deg);"></div>
+  <div class="deco-dot" style="top:160px;left:140px;width:8px;height:8px;"></div>
+  <div class="deco-line" style="width:220px;top:240px;right:60px;"></div>
+  <div style="position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;width:100%;height:100%;">
+    <div style="padding-top:80px;text-align:center;flex-shrink:0;">
+      <div class="headline" style="font-size:52px;margin-bottom:14px;">BUILD YOUR<br><span class="accent">DYNASTY</span></div>
+      <div class="subheadline" style="font-size:18px;">Earn XP. Level up. Unlock badges.<br>Your legacy is on the line.</div>
+    </div>
+    <div style="flex:1;display:flex;align-items:center;justify-content:center;padding:30px 0;">
+      <div class="phone-frame" style="transform:scale(1.65);">
+        <div class="status-bar"><span>9:41</span><span style="font-size:10px;color:#7a6e5f;">CFB Social</span></div>
+        <div class="screen-content">
+          <div class="screen-header" style="padding-top:10px;"><h2>Hall of Fame</h2><div class="ornament-line" style="margin-top:4px;"><span class="ornament-diamond small"></span><span class="ornament-diamond"></span><span class="ornament-diamond small"></span></div></div>
+          <div class="hamburger"><span></span><span></span><span></span></div>
+          <div style="width:56px;height:56px;border-radius:50%;background:#e8e0d4;border:3px solid #3b2f1e;outline:2px solid #d4c9b8;outline-offset:2px;display:flex;align-items:center;justify-content:center;margin:8px auto 0;"><svg viewBox="0 0 40 40" width="28" height="28" fill="none" stroke="#3b2f1e" stroke-width="1.5"><circle cx="20" cy="14" r="7"/><path d="M6 36v-4a10 10 0 0 1 10-10h8a10 10 0 0 1 10 10v4"/></svg></div>
+          <div style="font-family:'Playfair Display',serif;font-size:13px;font-weight:900;color:#3b2f1e;text-align:center;margin-top:6px;">Jake "The Snake" Morrison</div>
+          <div style="font-family:'Special Elite',monospace;font-size:10px;color:#7a6e5f;text-align:center;">@GridironJake</div>
+          <div style="text-align:center;margin:3px 0;"><span style="display:inline-flex;background:#3b2f1e;color:#D4A843;font-family:'Source Sans 3',sans-serif;font-size:7px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;padding:2px 8px;border-radius:2px;">YOUR SCHOOL</span></div>
+          <div style="margin:6px 12px 0;background:linear-gradient(180deg,#f9f6f0,#f0ebe0);border:2px solid #3b2f1e;border-radius:3px;overflow:hidden;box-shadow:inset 0 0 0 2px #f4efe4,inset 0 0 0 3px #d4c9b8;">
+            <div style="background:#3b2f1e;padding:4px 10px;text-align:center;"><span style="font-family:'Playfair Display',serif;font-size:9px;letter-spacing:3px;text-transform:uppercase;color:#D4A843;">Dynasty Status</span></div>
+            <div style="padding:8px 12px;text-align:center;">
+              <div style="display:flex;justify-content:space-around;margin-bottom:6px;"><div style="text-align:center;"><div style="font-family:'Playfair Display',serif;font-size:16px;font-weight:900;color:#3b2f1e;">12</div><div style="font-family:'Source Sans 3',sans-serif;font-size:8px;color:#7a6e5f;letter-spacing:1px;text-transform:uppercase;">Level</div></div><div style="text-align:center;"><div style="font-family:'Playfair Display',serif;font-size:16px;font-weight:900;color:#3b2f1e;">847</div><div style="font-family:'Source Sans 3',sans-serif;font-size:8px;color:#7a6e5f;letter-spacing:1px;text-transform:uppercase;">Wins</div></div><div style="text-align:center;"><div style="font-family:'Playfair Display',serif;font-size:16px;font-weight:900;color:#3b2f1e;">91%</div><div style="font-family:'Source Sans 3',sans-serif;font-size:8px;color:#7a6e5f;letter-spacing:1px;text-transform:uppercase;">Accuracy</div></div></div>
+              <div style="width:100%;height:6px;background:#e8e0d4;border-radius:3px;overflow:hidden;border:1px solid #d4c9b8;"><div style="width:72%;height:100%;background:linear-gradient(90deg,#3b2f1e,#D4A843);border-radius:3px;"></div></div>
+              <div style="font-family:'Special Elite',monospace;font-size:9px;color:#7a6e5f;margin-top:3px;">2,880 / 4,000 XP</div>
+            </div>
+          </div>
+          <div style="display:flex;justify-content:center;gap:12px;padding:8px 12px 0;">
+            <div style="text-align:center;"><div style="width:38px;height:38px;border-radius:50%;border:2px solid #3b2f1e;background:linear-gradient(135deg,#f9f6f0,#e8e0d4);display:flex;align-items:center;justify-content:center;margin:0 auto 3px;"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#3b2f1e" stroke-width="1.5"><circle cx="12" cy="9" r="6"/><path d="M8.5 15L7 22l5-3 5 3-1.5-7"/></svg></div><div style="font-family:'Source Sans 3',sans-serif;font-size:7px;font-weight:700;color:#3b2f1e;text-transform:uppercase;">Iron Analyst</div></div>
+            <div style="text-align:center;"><div style="width:38px;height:38px;border-radius:50%;border:2px solid #3b2f1e;background:linear-gradient(135deg,#f9f6f0,#e8e0d4);display:flex;align-items:center;justify-content:center;margin:0 auto 3px;"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#3b2f1e" stroke-width="1.5"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5C7 4 7 7 7 7"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5C17 4 17 7 17 7"/><path d="M4 22h16"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg></div><div style="font-family:'Source Sans 3',sans-serif;font-size:7px;font-weight:700;color:#3b2f1e;text-transform:uppercase;">Bowl Champ</div></div>
+            <div style="text-align:center;"><div style="width:38px;height:38px;border-radius:50%;border:2px solid #3b2f1e;background:linear-gradient(135deg,#f9f6f0,#e8e0d4);display:flex;align-items:center;justify-content:center;margin:0 auto 3px;"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#D4A843" stroke-width="1.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26"/></svg></div><div style="font-family:'Source Sans 3',sans-serif;font-size:7px;font-weight:700;color:#3b2f1e;text-transform:uppercase;">5-Star Scout</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div style="padding-bottom:60px;flex-shrink:0;display:flex;gap:50px;">
+      <div style="text-align:center;"><div style="font-family:'Playfair Display',serif;font-weight:900;font-size:34px;color:#000;">XP</div><div style="font-family:'Source Sans 3',sans-serif;font-weight:600;font-size:14px;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:2px;">Every Take</div></div>
+      <div style="text-align:center;"><div style="font-family:'Playfair Display',serif;font-weight:900;font-size:34px;color:#000;">BADGES</div><div style="font-family:'Source Sans 3',sans-serif;font-weight:600;font-size:14px;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:2px;">Unlock</div></div>
+      <div style="text-align:center;"><div style="font-family:'Playfair Display',serif;font-weight:900;font-size:34px;color:#000;">LEGACY</div><div style="font-family:'Source Sans 3',sans-serif;font-weight:600;font-size:14px;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:2px;">Build It</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 6: FEATURES -->
+<div class="slide-label">6 / 7 -- FEATURES</div>
+<div class="screenshot-slide" style="background:linear-gradient(170deg,#A07D25 0%,#D4A843 50%,#B8922F 100%);">
+  <div class="deco-circle" style="width:240px;height:240px;top:-50px;right:-60px;"></div>
+  <div class="deco-circle" style="width:200px;height:200px;bottom:-40px;left:-50px;"></div>
+  <div class="deco-football" style="width:65px;height:42px;top:80px;left:55px;transform:rotate(-25deg);"></div>
+  <div class="deco-football" style="width:55px;height:36px;bottom:140px;right:60px;transform:rotate(18deg);"></div>
+  <div class="deco-dot" style="top:210px;left:140px;width:6px;height:6px;"></div>
+  <div class="deco-dot" style="bottom:240px;right:130px;"></div>
+  <div class="deco-line" style="width:220px;top:170px;right:40px;transform:rotate(-2deg);"></div>
+  <div class="deco-line" style="width:180px;bottom:210px;left:30px;transform:rotate(3deg);"></div>
+  <div style="position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;width:100%;height:100%;padding:0 60px;">
+    <!-- Icon -->
+    <div style="padding-top:80px;margin-bottom:20px;">
+      <img src="file:///C:/Users/beltr/Downloads/20260329_2240_Image Generation_simple_compose_01kmy9t1r1fgns3rbv0mv2pyqr-Photoroom.png" style="width:120px;height:120px;border-radius:28px;object-fit:cover;" />
+    </div>
+    <div style="text-align:center;flex-shrink:0;margin-bottom:50px;">
+      <div class="headline" style="font-size:60px;line-height:1.05;">PACKED WITH<br><span style="color:#000;">FEATURES</span></div>
+    </div>
+    <!-- Feature List -->
+    <div style="display:flex;flex-direction:column;gap:20px;width:100%;max-width:920px;">
+      <!-- Hot Takes -->
+      <div style="display:flex;align-items:center;gap:24px;background:rgba(0,0,0,0.15);border:1px solid rgba(255,255,255,0.1);border-radius:20px;padding:28px 32px;">
+        <div style="width:56px;height:56px;border-radius:50%;background:rgba(255,255,255,0.15);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+          <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2c1 3 5 5 5 9a5 5 0 0 1-10 0c0-4 4-6 5-9z"/><path d="M12 18v3"/></svg>
+        </div>
+        <div><div style="font-family:'Playfair Display',serif;font-size:24px;font-weight:900;color:#fff;margin-bottom:4px;">Hot Takes</div><div style="font-family:'Source Sans 3',sans-serif;font-size:17px;color:rgba(0,0,0,0.5);line-height:1.4;">Post with school-colored flair</div></div>
+      </div>
+      <!-- Receipts -->
+      <div style="display:flex;align-items:center;gap:24px;background:rgba(0,0,0,0.15);border:1px solid rgba(255,255,255,0.1);border-radius:20px;padding:28px 32px;">
+        <div style="width:56px;height:56px;border-radius:50%;background:rgba(255,255,255,0.15);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+          <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 2v20l3-2 3 2 3-2 3 2 3-2 3 2V2l-3 2-3-2-3 2-3-2-3 2-3-2z"/><line x1="8" y1="8" x2="16" y2="8"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="8" y1="16" x2="12" y2="16"/></svg>
+        </div>
+        <div><div style="font-family:'Playfair Display',serif;font-size:24px;font-weight:900;color:#fff;margin-bottom:4px;">Receipts</div><div style="font-family:'Source Sans 3',sans-serif;font-size:17px;color:rgba(0,0,0,0.5);line-height:1.4;">File and verify your predictions</div></div>
+      </div>
+      <!-- Live Scores -->
+      <div style="display:flex;align-items:center;gap:24px;background:rgba(0,0,0,0.15);border:1px solid rgba(255,255,255,0.1);border-radius:20px;padding:28px 32px;">
+        <div style="width:56px;height:56px;border-radius:50%;background:rgba(255,255,255,0.15);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+          <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="18" rx="3"/><line x1="12" y1="3" x2="12" y2="21"/><polyline points="7 8 7 13"/><polyline points="17 8 17 15"/><line x1="2" y1="12" x2="22" y2="12"/></svg>
+        </div>
+        <div><div style="font-family:'Playfair Display',serif;font-size:24px;font-weight:900;color:#fff;margin-bottom:4px;">Live Scores</div><div style="font-family:'Source Sans 3',sans-serif;font-size:17px;color:rgba(0,0,0,0.5);line-height:1.4;">Real-time game tracking</div></div>
+      </div>
+      <!-- Rivalry Debates -->
+      <div style="display:flex;align-items:center;gap:24px;background:rgba(0,0,0,0.15);border:1px solid rgba(255,255,255,0.1);border-radius:20px;padding:28px 32px;">
+        <div style="width:56px;height:56px;border-radius:50%;background:rgba(255,255,255,0.15);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+          <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h6v6H4z"/><path d="M14 4h6v6h-6z"/><path d="M7 10v4"/><path d="M17 10v4"/><path d="M4 14h6v6H4z"/><path d="M14 14h6v6h-6z"/><line x1="10" y1="7" x2="14" y2="7"/><line x1="10" y1="17" x2="14" y2="17"/></svg>
+        </div>
+        <div><div style="font-family:'Playfair Display',serif;font-size:24px;font-weight:900;color:#fff;margin-bottom:4px;">Rivalry Debates</div><div style="font-family:'Source Sans 3',sans-serif;font-size:17px;color:rgba(0,0,0,0.5);line-height:1.4;">Fight card matchups</div></div>
+      </div>
+      <!-- Portal Tracker -->
+      <div style="display:flex;align-items:center;gap:24px;background:rgba(0,0,0,0.15);border:1px solid rgba(255,255,255,0.1);border-radius:20px;padding:28px 32px;">
+        <div style="width:56px;height:56px;border-radius:50%;background:rgba(255,255,255,0.15);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+          <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 3v4"/><path d="M12 17v4"/><path d="M3 12h4"/><path d="M17 12h4"/><circle cx="12" cy="12" r="3"/></svg>
+        </div>
+        <div><div style="font-family:'Playfair Display',serif;font-size:24px;font-weight:900;color:#fff;margin-bottom:4px;">Portal Tracker</div><div style="font-family:'Source Sans 3',sans-serif;font-size:17px;color:rgba(0,0,0,0.5);line-height:1.4;">Transfer portal updates</div></div>
+      </div>
+      <!-- AI Moderation -->
+      <div style="display:flex;align-items:center;gap:24px;background:rgba(0,0,0,0.15);border:1px solid rgba(255,255,255,0.1);border-radius:20px;padding:28px 32px;">
+        <div style="width:56px;height:56px;border-radius:50%;background:rgba(255,255,255,0.15);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+          <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>
+        </div>
+        <div><div style="font-family:'Playfair Display',serif;font-size:24px;font-weight:900;color:#fff;margin-bottom:4px;">AI Moderation</div><div style="font-family:'Source Sans 3',sans-serif;font-size:17px;color:rgba(0,0,0,0.5);line-height:1.4;">Smart penalty flag system</div></div>
+      </div>
+      <!-- Dynasty System -->
+      <div style="display:flex;align-items:center;gap:24px;background:rgba(0,0,0,0.15);border:1px solid rgba(255,255,255,0.1);border-radius:20px;padding:28px 32px;">
+        <div style="width:56px;height:56px;border-radius:50%;background:rgba(255,255,255,0.15);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+          <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+        </div>
+        <div><div style="font-family:'Playfair Display',serif;font-size:24px;font-weight:900;color:#fff;margin-bottom:4px;">Dynasty System</div><div style="font-family:'Source Sans 3',sans-serif;font-size:17px;color:rgba(0,0,0,0.5);line-height:1.4;">Level up and earn XP</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 7: DOWNLOAD -->
+<div class="slide-label">7 / 7 -- DOWNLOAD</div>
+<div class="screenshot-slide" style="background:linear-gradient(170deg,#9A7520 0%,#D4A843 50%,#9A7520 100%);">
+  <div class="deco-circle" style="width:300px;height:300px;top:-60px;right:-80px;"></div>
+  <div class="deco-circle" style="width:250px;height:250px;bottom:-40px;left:-60px;"></div>
+  <div class="deco-circle-fill" style="width:400px;height:400px;top:50%;left:50%;transform:translate(-50%,-50%);"></div>
+  <div class="deco-football" style="width:80px;height:55px;top:160px;right:80px;transform:rotate(-20deg);"></div>
+  <div class="deco-football" style="width:70px;height:45px;bottom:280px;left:70px;transform:rotate(15deg);"></div>
+  <div class="deco-line" style="width:300px;top:280px;left:0;"></div>
+  <div class="deco-dot" style="top:240px;left:160px;"></div>
+  <div class="deco-dot" style="bottom:400px;right:140px;"></div>
+  <div style="position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;justify-content:center;width:100%;height:100%;padding:0 60px;">
+    <img src="file:///C:/Users/beltr/Downloads/20260329_2240_Image Generation_simple_compose_01kmy9t1r1fgns3rbv0mv2pyqr-Photoroom.png" style="width:140px;height:140px;border-radius:32px;object-fit:cover;box-shadow:0 16px 48px rgba(0,0,0,0.25);margin-bottom:36px;" />
+    <div class="headline" style="font-size:52px;margin-bottom:12px;">JOIN<br><span class="accent">THE GRIDIRON</span></div>
+    <div style="display:flex;align-items:center;justify-content:center;gap:8px;margin:12px 0;">
+      <div style="width:30px;height:1px;background:rgba(212,168,67,0.4);"></div>
+      <div style="width:8px;height:8px;background:#D4A843;transform:rotate(45deg);"></div>
+      <div style="width:30px;height:1px;background:rgba(212,168,67,0.4);"></div>
+    </div>
+    <div class="subheadline" style="font-size:20px;margin-bottom:28px;">653 schools. One community.<br>Download now and rep your school.</div>
+    <div style="padding:12px 28px;background:#D4A843;border-radius:8px;font-family:'Source Sans 3',sans-serif;font-size:18px;font-weight:700;color:#0D0D0D;letter-spacing:2px;text-transform:uppercase;">Free Download</div>
+    <div style="font-family:'Special Elite',monospace;font-size:14px;color:rgba(255,255,255,0.3);margin-top:16px;letter-spacing:2px;">Available on iOS & Android</div>
+  </div>
+</div>
+
+<script>
+function setZoom(s){document.querySelectorAll('.screenshot-slide,.feature-graphic').forEach(el=>{el.style.transform=`scale(${s})`;el.style.transformOrigin='top center';const h=el.classList.contains('feature-graphic')?500:1920;el.style.marginBottom=((h*s)-h)+'px';});document.querySelectorAll('.zoom-btn').forEach(b=>b.classList.remove('active'));event.target.classList.add('active');}
+setZoom(0.5);
+</script>
+</body>
+</html>

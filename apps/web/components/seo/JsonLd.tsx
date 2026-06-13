@@ -1,3 +1,5 @@
+import { GAME } from '@/lib/constants/game';
+
 interface JsonLdProps {
   data: Record<string, unknown>;
 }
@@ -247,7 +249,7 @@ export function SoftwareApplicationJsonLd() {
 
 /** The EA Sports College Football video game, as a referenced entity. */
 export function VideoGameJsonLd({
-  name = 'EA Sports College Football 26',
+  name = GAME.full,
   url,
 }: {
   name?: string;
@@ -259,7 +261,7 @@ export function VideoGameJsonLd({
         '@context': 'https://schema.org',
         '@type': 'VideoGame',
         name,
-        alternateName: ['College Football 26', 'CFB 26', 'EA College Football'],
+        alternateName: [GAME.name, GAME.abbr, GAME.franchise, 'EA College Football'],
         gamePlatform: ['PlayStation 5', 'Xbox Series X|S', 'PC'],
         genre: 'Sports',
         applicationCategory: 'Game',
@@ -324,8 +326,8 @@ export function ImageObjectJsonLd({
         isPartOf: { '@type': 'WebSite', name: 'CFB Social', url: 'https://www.cfbsocial.com' },
         about: {
           '@type': 'VideoGame',
-          name: 'EA Sports College Football 26',
-          alternateName: ['College Football 26', 'CFB 26'],
+          name: GAME.full,
+          alternateName: [GAME.name, GAME.abbr],
         },
       }}
     />

@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation';
 import { SchoolHub } from './SchoolHub';
 import { SportsTeamJsonLd, BreadcrumbJsonLd } from '@/components/seo/JsonLd';
 import { searchHighlights } from '@/lib/providers/youtube';
+import { GAME } from '@/lib/constants/game';
 
 export const revalidate = 60;
 
@@ -164,17 +165,17 @@ export default async function SchoolPage({ params }: SchoolPageProps) {
       {moments.length > 0 && (
         <section style={{ marginTop: 28 }}>
           <h2 style={{ fontFamily: 'var(--serif)', color: 'var(--dark-brown)', fontSize: '1.25rem', marginBottom: 4 }}>
-            {school.name} College Football 26 Dynasty Moments
+            {school.name} {GAME.name} Dynasty Moments
           </h2>
           <p style={{ color: 'var(--faded-ink)', fontSize: '0.9rem', lineHeight: 1.55, marginBottom: 14, maxWidth: '52rem' }}>
-            Screenshots and dynasty moments {school.name} fans shared from EA Sports College Football 26. Post your own in the{' '}
+            Screenshots and dynasty moments {school.name} fans shared from {GAME.full}. Post your own in the{' '}
             <Link href="/game-room">Game Room</Link>.
           </p>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 12 }}>
             {moments.map((m) => {
               const score = m.our_score != null && m.opp_score != null ? ` ${m.our_score}-${m.opp_score}` : '';
               const vs = m.opponent ? ` vs ${m.opponent}` : '';
-              const alt = `${school.name} College Football 26 dynasty moment${vs}${score}${m.week ? ` (${m.week})` : ''}`;
+              const alt = `${school.name} ${GAME.name} dynasty moment${vs}${score}${m.week ? ` (${m.week})` : ''}`;
               return (
                 <Link key={m.id} href={`/post/${m.post!.id}`} style={{ textDecoration: 'none', color: 'inherit', border: '1px solid var(--tan)', borderRadius: 6, overflow: 'hidden', background: 'var(--warm-white, var(--cream))' }}>
                   <div style={{ position: 'relative', width: '100%', aspectRatio: '16 / 9', background: '#120a1f' }}>

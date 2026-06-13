@@ -4,20 +4,21 @@ import {
   CollectionPageJsonLd, ItemListJsonLd, BreadcrumbJsonLd, VideoGameJsonLd, FAQPageJsonLd,
 } from '@/components/seo/JsonLd';
 import { GameRoomCta } from '@/components/game-room/GameRoomCta';
+import { GAME } from '@/lib/constants/game';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 600;
 
-const TITLE = 'College Football 26 Online Dynasty Leagues — Find & Join | CFB Social';
+const TITLE = `${GAME.name} Online Dynasty Leagues — Find & Join | CFB Social`;
 const DESC =
-  'Browse open EA Sports College Football 26 online dynasty leagues to join — PS5, Xbox, and PC. Filter by platform, cross-play, sim schedule, and open schools. Free league finder for CFB 26 commissioners and coaches.';
+  `Browse open ${GAME.full} online dynasty leagues to join — PS5, Xbox, and PC. Filter by platform, cross-play, sim schedule, and open schools. Free league finder for ${GAME.abbr} commissioners and coaches.`;
 
 export const metadata: Metadata = {
   title: TITLE,
   description: DESC,
   keywords: [
-    'College Football 26 online dynasty', 'CFB 26 leagues', 'CFB 26 online dynasty to join',
-    'college football 26 league finder', 'CFB 26 PS5 league', 'CFB 26 Xbox league', 'EA college football online dynasty',
+    `${GAME.name} online dynasty`, `${GAME.abbr} leagues`, `${GAME.abbr} online dynasty to join`,
+    `${GAME.name} league finder`, `${GAME.abbr} PS5 league`, `${GAME.abbr} Xbox league`, 'EA college football online dynasty',
   ],
   openGraph: { title: TITLE, description: DESC, type: 'website', images: [{ url: 'https://www.cfbsocial.com/logo.png' }] },
   twitter: { card: 'summary_large_image', title: TITLE, description: DESC },
@@ -31,9 +32,9 @@ interface League {
 }
 
 const FAQS = [
-  { question: 'How do I find a College Football 26 online dynasty league to join?', answer: 'Browse the open leagues on this page, pick one that matches your platform (PS5, Xbox, or PC) and schedule, then open it in the CFB Social Game Room to get the join code and request a spot.' },
-  { question: 'Are these CFB 26 leagues free to join?', answer: 'Yes. CFB Social is a free college football community. Listing a league and requesting to join cost nothing.' },
-  { question: 'Can I list my own College Football 26 online dynasty?', answer: 'Yes. Open the Game Room, go to the Leagues tab, and tap "List your league" to post your league name, platform, max users, sim schedule, and open schools for coaches to find.' },
+  { question: `How do I find a ${GAME.name} online dynasty league to join?`, answer: 'Browse the open leagues on this page, pick one that matches your platform (PS5, Xbox, or PC) and schedule, then open it in the CFB Social Game Room to get the join code and request a spot.' },
+  { question: `Are these ${GAME.abbr} leagues free to join?`, answer: 'Yes. CFB Social is a free college football community. Listing a league and requesting to join cost nothing.' },
+  { question: `Can I list my own ${GAME.name} online dynasty?`, answer: 'Yes. Open the Game Room, go to the Leagues tab, and tap "List your league" to post your league name, platform, max users, sim schedule, and open schools for coaches to find.' },
 ];
 
 export default async function LeaguesDirectoryPage() {
@@ -53,23 +54,23 @@ export default async function LeaguesDirectoryPage() {
           { name: 'Leagues', url: 'https://www.cfbsocial.com/game-room/leagues' },
         ]}
       />
-      <CollectionPageJsonLd name="College Football 26 Online Dynasty Leagues" description={DESC} url="https://www.cfbsocial.com/game-room/leagues" />
+      <CollectionPageJsonLd name={`${GAME.name} Online Dynasty Leagues`} description={DESC} url="https://www.cfbsocial.com/game-room/leagues" />
       <VideoGameJsonLd url="https://www.cfbsocial.com/game-room/leagues" />
-      <ItemListJsonLd name="Open CFB 26 Online Dynasty Leagues" items={leagues.map((l) => ({ name: l.name, url: `https://www.cfbsocial.com/game-room/leagues/${l.id}` }))} />
+      <ItemListJsonLd name={`Open ${GAME.abbr} Online Dynasty Leagues`} items={leagues.map((l) => ({ name: l.name, url: `https://www.cfbsocial.com/game-room/leagues/${l.id}` }))} />
       <FAQPageJsonLd questions={FAQS} />
 
       <div className="feed-header">
-        <h1 className="feed-title">College Football 26 Online Dynasty Leagues</h1>
+        <h1 className="feed-title">{GAME.name} Online Dynasty Leagues</h1>
       </div>
 
       <section className="content-card" style={{ marginBottom: 16 }}>
         <p style={{ fontFamily: 'var(--sans)', color: 'var(--ink)', lineHeight: 1.6 }}>
-          Find an open <strong>EA Sports College Football 26</strong> online dynasty to join, or list your own. Every league below
+          Find an open <strong>{GAME.full}</strong> online dynasty to join, or list your own. Every league below
           shows its platform, user count, cross-play, sim schedule, and which schools are still open. Open it in the{' '}
           <Link href="/game-room?tab=leagues">Game Room</Link> to get the join code and request a spot. Free for commissioners and coaches.
         </p>
         <p style={{ fontFamily: 'var(--sans)', color: 'var(--faded-ink)', lineHeight: 1.6, marginTop: 8 }}>
-          CFB Social currently lists <strong>{leagues.length}</strong> College Football 26 online {leagues.length === 1 ? 'dynasty' : 'dynasties'},
+          CFB Social currently lists <strong>{leagues.length}</strong> {GAME.name} online {leagues.length === 1 ? 'dynasty' : 'dynasties'},
           with <strong>{open.length}</strong> still recruiting coaches across PlayStation 5, Xbox Series X|S, and PC.
         </p>
       </section>

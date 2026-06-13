@@ -98,6 +98,20 @@ export function MenuOverlay({ visible, onClose }: MenuOverlayProps) {
       color: '#f4efe4',
       letterSpacing: 0.5,
     },
+    menuItemGame: {
+      backgroundColor: '#8b1a1a',
+      borderRadius: 8,
+      borderBottomWidth: 0,
+      paddingHorizontal: 12,
+      marginVertical: 3,
+      borderLeftWidth: 3,
+      borderLeftColor: '#c9a84c',
+    },
+    menuTextGame: {
+      color: '#ffffff',
+      fontFamily: typography.sansBold,
+      letterSpacing: 1,
+    },
     featuresButton: {
       backgroundColor: '#c9a84c',
       borderRadius: 8,
@@ -189,15 +203,18 @@ export function MenuOverlay({ visible, onClose }: MenuOverlayProps) {
               <Text style={[styles.menuText, { fontFamily: typography.sansSemiBold }]}>{item.label}</Text>
             </Pressable>
           ))}
-          {filteredItems.map((item) => (
-            <Pressable
-              key={item.route}
-              onPress={() => handleNavigate(item.route)}
-              style={styles.menuItem}
-            >
-              <Text style={styles.menuText}>{item.label}</Text>
-            </Pressable>
-          ))}
+          {filteredItems.map((item) => {
+            const isGame = item.route === '/game-room';
+            return (
+              <Pressable
+                key={item.route}
+                onPress={() => handleNavigate(item.route)}
+                style={[styles.menuItem, isGame && styles.menuItemGame]}
+              >
+                <Text style={[styles.menuText, isGame && styles.menuTextGame]}>{item.label}</Text>
+              </Pressable>
+            );
+          })}
         </ScrollView>
       </Animated.View>
     </View>

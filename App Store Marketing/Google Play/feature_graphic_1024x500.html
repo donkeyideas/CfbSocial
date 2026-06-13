@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>CFB Social - Feature Graphic 1024x500</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=Source+Sans+Pro:wght@300;400;600;700&family=Special+Elite&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    width: 1024px;
+    height: 500px;
+    overflow: hidden;
+    background: #1a1a1a;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .canvas {
+    width: 1024px;
+    height: 500px;
+    position: relative;
+    overflow: hidden;
+    background: linear-gradient(145deg, #d4a520 0%, #c49318 30%, #b8860b 60%, #a67708 100%);
+  }
+
+  /* Subtle field texture */
+  .canvas::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background:
+      radial-gradient(ellipse at 30% 50%, rgba(255,255,255,0.08) 0%, transparent 60%),
+      radial-gradient(ellipse at 80% 30%, rgba(0,0,0,0.1) 0%, transparent 50%);
+    z-index: 1;
+  }
+
+  /* Dark panel behind text for contrast */
+  .dark-panel {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 600px;
+    height: 100%;
+    background: linear-gradient(135deg, #3b2f1e 0%, #2a2115 60%, rgba(42,33,21,0.85) 100%);
+    clip-path: polygon(0 0, 540px 0, 600px 100%, 0 100%);
+    z-index: 2;
+  }
+
+  /* Crimson accent stripe */
+  .accent-stripe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 8px;
+    height: 100%;
+    background: #cc2a22;
+    z-index: 5;
+  }
+
+  /* ===== Left content ===== */
+  .left-content {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 540px;
+    height: 100%;
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 30px 40px 30px 70px;
+  }
+
+  .header-overline {
+    font-family: 'Source Sans Pro', sans-serif;
+    font-size: 13px;
+    letter-spacing: 5px;
+    text-transform: uppercase;
+    color: #e8bf30;
+    font-weight: 700;
+    margin-bottom: 6px;
+  }
+
+  .headline {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-weight: 900;
+    font-size: 72px;
+    line-height: 0.95;
+    color: #ffffff;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    margin-bottom: 16px;
+    text-shadow: 0 3px 12px rgba(0,0,0,0.3);
+  }
+
+  .headline .accent {
+    color: #e8bf30;
+  }
+
+  /* Ornament divider */
+  .ornament-line {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 18px;
+    width: 200px;
+  }
+  .ornament-line::before,
+  .ornament-line::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, #d4ad2e 20%, #d4ad2e 80%, transparent);
+  }
+  .ornament-diamond {
+    width: 8px;
+    height: 8px;
+    background: #cc2a22;
+    transform: rotate(45deg);
+    flex-shrink: 0;
+  }
+
+  .tagline {
+    font-family: 'Source Sans Pro', sans-serif;
+    font-weight: 400;
+    font-size: 18px;
+    color: rgba(255,255,255,0.8);
+    margin-bottom: 24px;
+    line-height: 1.4;
+  }
+
+  .cta-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 16px 36px;
+    background: linear-gradient(135deg, #d42f27, #b5221e);
+    border: none;
+    border-radius: 6px;
+    font-family: 'Source Sans Pro', sans-serif;
+    font-weight: 700;
+    font-size: 16px;
+    color: #fff;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    width: fit-content;
+    box-shadow: 0 6px 24px rgba(181,34,30,0.5);
+  }
+
+  .cta-arrow {
+    font-size: 18px;
+  }
+
+  /* ===== Phone mockup ===== */
+  .phone-frame {
+    position: absolute;
+    right: 70px;
+    top: 50%;
+    transform: translateY(-50%) rotate(3deg);
+    width: 220px;
+    height: 460px;
+    border-radius: 32px;
+    background: #111;
+    padding: 10px;
+    box-shadow: 0 24px 80px rgba(0,0,0,0.4), 0 0 0 1.5px rgba(255,255,255,0.1);
+    z-index: 10;
+    overflow: hidden;
+  }
+
+  .phone-notch {
+    position: absolute;
+    top: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 80px;
+    height: 22px;
+    background: #111;
+    border-radius: 0 0 14px 14px;
+    z-index: 5;
+  }
+
+  .phone-screen {
+    width: 100%;
+    height: 100%;
+    border-radius: 22px;
+    overflow: hidden;
+    background-color: #f4efe4;
+    background-image:
+      url("data:image/svg+xml,%3Csvg width='100' height='100' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+  }
+
+  /* ===== Feed Mock ===== */
+  .mock-app-header {
+    text-align: center;
+    padding: 32px 12px 6px;
+  }
+  .mock-overline {
+    font-family: 'Source Sans Pro', sans-serif;
+    font-size: 7px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: #cc2a22;
+    font-weight: 700;
+  }
+  .mock-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 16px;
+    font-weight: 900;
+    color: #3b2f1e;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    line-height: 1.1;
+  }
+  .mock-ornament {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    margin-top: 5px;
+  }
+  .mock-ornament::before,
+  .mock-ornament::after {
+    content: '';
+    width: 35px;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, #3b2f1e 20%, #3b2f1e 80%, transparent);
+  }
+  .mock-ornament-diamond {
+    width: 5px;
+    height: 5px;
+    background: #cc2a22;
+    transform: rotate(45deg);
+  }
+
+  /* Scores banner */
+  .mock-scores {
+    background: #3b2f1e;
+    background-image:
+      linear-gradient(135deg, rgba(255,255,255,0.03) 25%, transparent 25%),
+      linear-gradient(225deg, rgba(255,255,255,0.03) 25%, transparent 25%),
+      linear-gradient(315deg, rgba(255,255,255,0.03) 25%, transparent 25%),
+      linear-gradient(45deg, rgba(255,255,255,0.03) 25%, transparent 25%);
+    background-size: 8px 8px;
+    margin: 8px 0 0;
+    padding: 6px 10px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+  }
+  .mock-score-text {
+    font-family: 'Special Elite', 'Courier New', monospace;
+    font-size: 8px;
+    color: #f4efe4;
+    letter-spacing: 0.8px;
+    white-space: nowrap;
+  }
+  .mock-score-dot {
+    width: 3px;
+    height: 3px;
+    background: #cc2a22;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .mock-section-label {
+    font-family: 'Playfair Display', serif;
+    font-size: 8px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: #7a6e5f;
+    text-align: center;
+    padding: 10px 0 5px;
+  }
+  .mock-section-label::before,
+  .mock-section-label::after {
+    content: '~';
+    margin: 0 5px;
+    color: #b5a99a;
+  }
+
+  /* Post cards */
+  .mock-post {
+    background: #f9f6f0;
+    border: 1px solid #d4c9b8;
+    border-radius: 3px;
+    margin: 0 8px 6px;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(59,47,30,0.06);
+    position: relative;
+  }
+  .mock-post.ticket { border-left: none; }
+  .mock-post.ticket .ticket-edge {
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 5px;
+    background: #cc2a22;
+  }
+  .mock-post.ticket .ticket-edge::after {
+    content: '';
+    position: absolute;
+    top: 0; right: -3px; bottom: 0;
+    width: 6px;
+    background-image: radial-gradient(circle 2px at 3px 0, #f9f6f0 2px, transparent 2px);
+    background-size: 6px 8px;
+    background-position: 0 4px;
+  }
+
+  .mock-post-header {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 7px 8px 4px;
+  }
+  .mock-post.ticket .mock-post-header { margin-left: 6px; }
+  .mock-avatar {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    border: 1.5px solid #d4c9b8;
+    background: #e8e0d4;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Playfair Display', serif;
+    font-weight: 700;
+    font-size: 7px;
+    color: #3b2f1e;
+    flex-shrink: 0;
+  }
+  .mock-handle {
+    font-family: 'Special Elite', monospace;
+    font-size: 8px;
+    color: #3b2f1e;
+    font-weight: 700;
+  }
+  .mock-pennant {
+    display: inline-flex;
+    align-items: center;
+    background: #cc2a22;
+    color: #f4efe4;
+    font-family: 'Source Sans Pro', sans-serif;
+    font-size: 6px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    padding: 1px 6px 1px 5px;
+    clip-path: polygon(0 0, 100% 0, 92% 50%, 100% 100%, 0 100%);
+    line-height: 1.4;
+  }
+  .mock-pennant.alt { background: #3b2f1e; }
+
+  .mock-post-text {
+    font-family: 'Source Sans Pro', sans-serif;
+    font-size: 8.5px;
+    color: #3b2f1e;
+    line-height: 1.45;
+    padding: 2px 8px 5px;
+  }
+  .mock-post.ticket .mock-post-text { margin-left: 6px; }
+  .mock-post-text strong { font-weight: 700; color: #2a2318; }
+
+  .mock-engagement {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 2px 8px 5px;
+    font-family: 'Special Elite', monospace;
+    font-size: 8px;
+    color: #7a6e5f;
+  }
+  .mock-post.ticket .mock-engagement { margin-left: 6px; }
+  .mock-td { color: #2d6a2e; font-weight: 700; }
+  .mock-fum { color: #cc2a22; font-weight: 700; }
+
+  .mock-actions {
+    display: flex;
+    align-items: center;
+    border-top: 1px dashed #d4c9b8;
+    margin: 0 8px;
+  }
+  .mock-post.ticket .mock-actions { margin-left: 14px; }
+  .mock-action-btn {
+    flex: 1;
+    text-align: center;
+    padding: 5px 2px;
+    font-family: 'Source Sans Pro', sans-serif;
+    font-size: 7px;
+    font-weight: 700;
+    color: #7a6e5f;
+    letter-spacing: 0.3px;
+    text-transform: uppercase;
+  }
+  .mock-action-divider {
+    width: 1px;
+    height: 12px;
+    background: #d4c9b8;
+  }
+
+  /* Newspaper clipping */
+  .mock-post.clipping {
+    background: #f0eacc;
+    border: 1px solid #c9bf9e;
+    transform: rotate(-0.5deg);
+  }
+  .mock-clipping-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1.5px solid #3b2f1e;
+    margin: 0 8px;
+    padding: 0 0 2px;
+  }
+  .mock-dateline {
+    font-family: 'Special Elite', monospace;
+    font-size: 7px;
+    color: #7a6e5f;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+  }
+  .mock-receipt-stamp {
+    font-family: 'Special Elite', monospace;
+    font-size: 7px;
+    background: #3b2f1e;
+    color: #f0eacc;
+    padding: 1px 6px;
+    letter-spacing: 0.5px;
+    transform: rotate(-1.5deg);
+    border-radius: 1px;
+  }
+  .mock-clipping-text {
+    font-family: 'Playfair Display', serif;
+    font-size: 9px;
+    font-weight: 700;
+    color: #3b2f1e;
+    line-height: 1.4;
+    padding: 5px 8px 2px;
+  }
+  .mock-clipping-sub {
+    font-family: 'Source Sans Pro', sans-serif;
+    font-size: 7.5px;
+    color: #5a4a38;
+    line-height: 1.4;
+    padding: 0 8px 7px;
+  }
+
+  /* ===== Scores strip bottom ===== */
+  .scores-strip {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 10;
+    background: rgba(42,33,21,0.9);
+    padding: 8px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+  }
+  .score-item {
+    font-family: 'Special Elite', 'Courier New', monospace;
+    font-size: 11px;
+    color: #f4efe4;
+    letter-spacing: 1px;
+    white-space: nowrap;
+  }
+  .score-divider {
+    width: 4px;
+    height: 4px;
+    background: #cc2a22;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+</style>
+</head>
+<body>
+<div class="canvas">
+
+  <!-- Dark panel behind text -->
+  <div class="dark-panel"></div>
+
+  <!-- Crimson accent stripe -->
+  <div class="accent-stripe"></div>
+
+  <!-- Left text content -->
+  <div class="left-content">
+    <div class="header-overline">College Football's Social Home</div>
+    <h1 class="headline">
+      CFB<br><span class="accent">Social</span>
+    </h1>
+
+    <div class="ornament-line">
+      <span class="ornament-diamond"></span>
+    </div>
+
+    <p class="tagline">
+      Debate. Predict. Dominate.
+    </p>
+
+    <div class="cta-button">
+      Debate Now &mdash; Free <span class="cta-arrow">&rarr;</span>
+    </div>
+  </div>
+
+  <!-- Single phone mockup -->
+  <div class="phone-frame">
+    <div class="phone-notch"></div>
+    <div class="phone-screen">
+
+      <div class="mock-app-header">
+        <div class="mock-overline">College Football's Social Home</div>
+        <div class="mock-title">CFB Social</div>
+        <div class="mock-ornament">
+          <span class="mock-ornament-diamond"></span>
+        </div>
+      </div>
+
+      <div class="mock-scores">
+        <span class="mock-score-text">OSU 24 - MICH 21</span>
+        <span class="mock-score-dot"></span>
+        <span class="mock-score-text">BAMA 14 - AUB 10</span>
+      </div>
+
+      <div class="mock-section-label">Today's Dispatches</div>
+
+      <!-- Post 1: Ticket Stub -->
+      <div class="mock-post ticket">
+        <div class="ticket-edge"></div>
+        <div class="mock-post-header">
+          <div class="mock-avatar">BN</div>
+          <span class="mock-handle">@BuckeyeNation</span>
+          <span class="mock-pennant">Ohio State</span>
+        </div>
+        <div class="mock-post-text"><strong>Travis Hunter = greatest two-way player since Deion.</strong> The man plays 120 snaps a game and still looks like the best player on the field.</div>
+        <div class="mock-engagement">
+          <span class="mock-td">TD: 342</span>
+          <span class="mock-fum">FUM: 89</span>
+        </div>
+        <div class="mock-actions">
+          <span class="mock-action-btn">Fact Check</span>
+          <span class="mock-action-divider"></span>
+          <span class="mock-action-btn">Challenge</span>
+          <span class="mock-action-divider"></span>
+          <span class="mock-action-btn">Revisit</span>
+        </div>
+      </div>
+
+      <!-- Post 2: Newspaper Clipping -->
+      <div class="mock-post clipping">
+        <div class="mock-post-header">
+          <div class="mock-avatar">TR</div>
+          <span class="mock-handle">@TideRollin</span>
+          <span class="mock-pennant alt">Alabama</span>
+        </div>
+        <div class="mock-clipping-header">
+          <span class="mock-dateline">The Saturday Edition</span>
+          <span class="mock-receipt-stamp">RECEIPT FILED</span>
+        </div>
+        <div class="mock-clipping-text">Alabama finishes 11-1. Only loss in Athens.</div>
+        <div class="mock-clipping-sub">A season to remember for the Crimson Tide.</div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Scores strip -->
+  <div class="scores-strip">
+    <span class="score-item">OSU 24 - MICH 21</span>
+    <span class="score-divider"></span>
+    <span class="score-item">BAMA 14 - AUB 10</span>
+    <span class="score-divider"></span>
+    <span class="score-item">TEX 31 - OU 28</span>
+    <span class="score-divider"></span>
+    <span class="score-item">UGA 35 - FLA 21</span>
+  </div>
+
+</div>
+</body>
+</html>

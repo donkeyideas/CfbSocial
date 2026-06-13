@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/components/auth/AuthProvider';
 import { createClient } from '@/lib/supabase/client';
 import { shareIssueToFeed } from '@cfb-social/api';
+import { GAME } from '@/lib/constants/game';
 import { MomentComposer } from './MomentComposer';
 import { LeagueComposer } from './LeagueComposer';
 import { RequestSlotModal } from './RequestSlotModal';
@@ -286,7 +287,7 @@ export function GameRoomClient({ initialTab, moments, leagues, issues, requests 
           </div>
 
           {leagueList.length === 0 ? (
-            <div className="content-card gr-placeholder"><p>No leagues listed yet. {isLoggedIn ? 'List a CFB 27 league for coaches to join.' : 'Check back soon.'}</p></div>
+            <div className="content-card gr-placeholder"><p>No leagues listed yet. {isLoggedIn ? `List a ${GAME.abbr} league for coaches to join.` : 'Check back soon.'}</p></div>
           ) : (
             <div className="gr-leagues">
               {leagueList.map((lg) => {
@@ -320,7 +321,7 @@ export function GameRoomClient({ initialTab, moments, leagues, issues, requests 
                       ) : (
                         <>
                           <div className="gr-join-row"><span className="gr-join-k">Password</span><code className="gr-join-v">{lg.join_password || '—'}</code>{lg.join_password && <button className="gr-copy" onClick={() => copy(lg.join_password!)}>Copy</button>}</div>
-                          <div className="gr-join-note">In CFB 27 → Online Dynasty → Join with this League Name + Password.</div>
+                          <div className="gr-join-note">In {GAME.abbr} → Online Dynasty → Join with this League Name + Password.</div>
                         </>
                       )}
                     </div>

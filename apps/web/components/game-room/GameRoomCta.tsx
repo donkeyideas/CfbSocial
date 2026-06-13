@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/components/auth/AuthProvider';
+import { GAME } from '@/lib/constants/game';
 
 type Intent = 'leagues' | 'join' | 'moments' | 'general';
 
@@ -18,7 +19,7 @@ interface Props {
 
 const COPY: Record<Intent, { out: { title: string; sub: string; primary: string }; in: { title: string; primary: string } }> = {
   leagues: {
-    out: { title: 'Find your College Football 26 online dynasty', sub: 'Create a free account to request a spot, or list your own league in seconds.', primary: 'Join free' },
+    out: { title: `Find your ${GAME.name} online dynasty`, sub: 'Create a free account to request a spot, or list your own league in seconds.', primary: 'Join free' },
     in: { title: 'Ready to join a league?', primary: 'Open the Leagues finder' },
   },
   join: {
@@ -26,11 +27,11 @@ const COPY: Record<Intent, { out: { title: string; sub: string; primary: string 
     in: { title: 'Request your spot', primary: 'Open in the Game Room' },
   },
   moments: {
-    out: { title: 'Share your College Football 26 dynasty', sub: 'Create a free account to post your screenshots and build your magazine.', primary: 'Post your first moment free' },
+    out: { title: `Share your ${GAME.name} dynasty`, sub: 'Create a free account to post your screenshots and build your magazine.', primary: 'Post your first moment free' },
     in: { title: 'Post a moment', primary: 'Open the Game Room' },
   },
   general: {
-    out: { title: 'Join the College Football 26 community', sub: 'Free account — share moments, build a magazine, find a league.', primary: 'Create a free account' },
+    out: { title: `Join the ${GAME.name} community`, sub: 'Free account — share moments, build a magazine, find a league.', primary: 'Create a free account' },
     in: { title: 'Jump in', primary: 'Open the Game Room' },
   },
 };

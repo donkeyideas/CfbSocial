@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { PostCard } from '@/components/feed/PostCard';
 import { ReplyComposer } from '@/components/feed/ReplyComposer';
 import { DiscussionPostJsonLd, ImageObjectJsonLd } from '@/components/seo/JsonLd';
+import { GAME } from '@/lib/constants/game';
 import { PostDwellTracker } from './PostDwellTracker';
 
 export const revalidate = 30;
@@ -44,16 +45,16 @@ export async function generateMetadata({ params }: PostPageProps) {
     const scoreText = gm?.our_score != null && gm?.opp_score != null ? ` ${gm.our_score}-${gm.opp_score}` : '';
     const vsText = gm?.opponent ? ` vs ${gm.opponent}` : '';
     const teamText = school?.name ? `${school.name} ` : '';
-    const headline = gm?.title || post.content || 'College Football 26 dynasty moment';
-    const title = `${headline} \u2014 ${teamText}College Football 26${vsText ? ` (${vsText.trim()}${scoreText})` : ''} | CFB Social`;
-    const description = `${teamText}College Football 26 dynasty moment${vsText}${scoreText}${gm?.week ? ` \u00b7 ${gm.week}` : ''}. Shared by @${author?.username ?? 'a coach'} in the CFB Social Game Room.`;
+    const headline = gm?.title || post.content || `${GAME.name} dynasty moment`;
+    const title = `${headline} \u2014 ${teamText}${GAME.name}${vsText ? ` (${vsText.trim()}${scoreText})` : ''} | CFB Social`;
+    const description = `${teamText}${GAME.name} dynasty moment${vsText}${scoreText}${gm?.week ? ` \u00b7 ${gm.week}` : ''}. Shared by @${author?.username ?? 'a coach'} in the CFB Social Game Room.`;
     return {
       title,
       description,
-      keywords: ['College Football 26', 'CFB 26', school?.name, `${school?.name} College Football 26`, 'CFB 26 screenshots', 'dynasty moment'].filter(Boolean) as string[],
+      keywords: [GAME.name, GAME.abbr, school?.name, `${school?.name} ${GAME.name}`, `${GAME.abbr} screenshots`, 'dynasty moment'].filter(Boolean) as string[],
       openGraph: {
         title, description, type: 'article',
-        images: img ? [{ url: img, alt: `${teamText}College Football 26 dynasty moment${vsText}${scoreText}` }] : undefined,
+        images: img ? [{ url: img, alt: `${teamText}${GAME.name} dynasty moment${vsText}${scoreText}` }] : undefined,
       },
       twitter: { card: 'summary_large_image' as const, title, description, images: img ? [img] : undefined },
       alternates: { canonical: `https://www.cfbsocial.com/post/${id}` },
@@ -159,7 +160,7 @@ async function PostDetail({ postId }: { postId: string }) {
     | null;
   const momentImg = (post.media_urls as string[] | null)?.[0];
   const momentCaption = post.post_type === 'MOMENT'
-    ? `${postSchool?.name ? `${postSchool.name} ` : ''}College Football 26 dynasty moment${moment?.opponent ? ` vs ${moment.opponent}` : ''}${moment?.our_score != null && moment?.opp_score != null ? ` ${moment.our_score}-${moment.opp_score}` : ''}${moment?.week ? ` · ${moment.week}` : ''}`
+    ? `${postSchool?.name ? `${postSchool.name} ` : ''}${GAME.name} dynasty moment${moment?.opponent ? ` vs ${moment.opponent}` : ''}${moment?.our_score != null && moment?.opp_score != null ? ` ${moment.our_score}-${moment.opp_score}` : ''}${moment?.week ? ` · ${moment.week}` : ''}`
     : '';
 
   // Fetch replies
