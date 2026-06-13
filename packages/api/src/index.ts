@@ -21,6 +21,7 @@ export { getGameThreads, getGameThread, getGameThreadMessages } from './queries/
 export { getActiveBracket, getBracketById, getBracketMatchups, getUserMascotVotes } from './queries/mascot-wars';
 export { getRecruitingStats } from './queries/recruiting';
 export type { RecruitingSchoolStats } from './queries/recruiting';
+export { getMoments, getMomentByPostId, getSaves, getLeagues, getLeagueRequests, getLatestIssue, getUserIssues, getOwnerIssues, getIssueByFeedPost, getCommissionerRequests, getMyLeagueIds } from './queries/game-room';
 
 // Mutations
 export { signUp, signIn, signInWithOAuth, signOut, resetPassword } from './mutations/auth';
@@ -37,6 +38,7 @@ export { awardXP, unlockAchievement } from './mutations/dynasty';
 export { markNotificationRead, markAllNotificationsRead, createNotification, updateNotificationPreferences } from './mutations/notifications';
 export { findOrCreateGameThread, sendGameMessage, updateGameScore } from './mutations/games';
 export { voteOnMascotMatchup, advanceBracketRound } from './mutations/mascot-wars';
+export { createMoment, updateMoment, createSave, createLeague, requestSlot, approveRequest, declineRequest, shareIssueToFeed, assignMomentToIssue, saveIssueSettings, deleteIssue, resolveLeagueRequest } from './mutations/game-room';
 
 // Constants
 export { XP_VALUES } from './constants/xp';

@@ -18,6 +18,7 @@ const MENU_ITEMS: { label: string; route: string; authRequired?: boolean }[] = [
   { label: 'War Room', route: '/war-room' },
   { label: 'Rivalry Ring', route: '/(tabs)/rivalry' },
   { label: 'Mascot Wars', route: '/mascot-wars' },
+  { label: 'Game Room', route: '/game-room' },
   { label: 'Dynasty Mode', route: '/dynasty' },
   { label: "Coach's Call", route: '/coaches-call' },
   { label: 'Hall of Fame', route: '/hall-of-fame' },

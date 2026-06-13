@@ -63,3 +63,10 @@ export type { AnalyticsEvent, AnalyticsEventRow, DailyStats, DailyStatsRow, APIP
 // Referrals
 export type { ReferralTier, ReferralRow } from './referral';
 export { REFERRAL_CHAR_TIERS, getCharLimitForReferrals, getReferralTier, getNextReferralTier } from './referral';
+
+// Game Room — Moments, Dynasty Saves, Online Leagues
+export type {
+  GameMomentRow, DynastySaveRow, OnlineLeagueRow, LeagueMemberRow, LeagueRequestRow,
+  CreateMomentInput, CreateLeagueInput, RequestSlotInput,
+} from './game-room';
+export { CreateMomentInputSchema, CreateLeagueInputSchema, RequestSlotInputSchema } from './game-room';

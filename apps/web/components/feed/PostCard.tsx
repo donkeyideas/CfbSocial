@@ -117,6 +117,8 @@ export const PostCard = memo(function PostCard({ post }: { post: Post }) {
         return <PressBoxPost post={post} schoolStyle={schoolStyle} isDark={isDark} />;
       case 'CHALLENGE_RESULT':
         return <RivalryPost post={post} schoolStyle={schoolStyle} isDark={isDark} />;
+      case 'ISSUE':
+        return <IssuePost post={post} isDark={isDark} />;
       default:
         return <ClassicPost post={post} schoolStyle={schoolStyle} isDark={isDark} />;
     }
@@ -128,8 +130,8 @@ export const PostCard = memo(function PostCard({ post }: { post: Post }) {
     if (target.closest('a, button, input, textarea, select, label, [role="button"]')) return;
     const selection = window.getSelection();
     if (selection && selection.toString().length > 0) return;
-    router.push(`/post/${post.id}`);
-  }, [post.id, isFlagged, router]);
+    router.push(post.post_type === 'ISSUE' ? `/game-room/issue/${post.id}` : `/post/${post.id}`);
+  }, [post.id, post.post_type, isFlagged, router]);
 
   return (
     <div ref={cardRef} onClick={handleCardClick} className="post-card-clickable">
@@ -395,6 +397,33 @@ const RivalryPost = memo(function RivalryPost({ post, schoolStyle, isDark }: { p
         <LinkPreview content={post.content} />
         {post.media_urls && post.media_urls.length > 0 && <PostImages urls={post.media_urls} />}
         <PostBottom post={post} />
+      </div>
+    </article>
+  );
+});
+
+/* =============================================
+   POST — Game Room Issue (links to the Magazine)
+   ============================================= */
+
+const IssuePost = memo(function IssuePost({ post, isDark }: { post: Post; isDark: boolean }) {
+  const cover = post.media_urls?.[0];
+  return (
+    <article className="post-card post-issue">
+      <div className="issue-card-tape" aria-hidden />
+      {cover && (
+        <div className="issue-card-cover">
+          <Image src={cover} alt={post.content} fill className="issue-card-img" sizes="(max-width: 700px) 100vw, 620px" quality={90} />
+          <span className="issue-card-wm">CFB <span>SOCIAL</span></span>
+        </div>
+      )}
+      <div className="issue-card-body">
+        <span className="issue-card-eyebrow">New in the Game Room</span>
+        <div className="issue-card-title"><PostContent content={post.content} /></div>
+        <div className="issue-card-row">
+          <PostUserRow post={post} isDark={isDark} />
+          <Link href={`/game-room/issue/${post.id}`} className="issue-card-cta">Read the issue &rarr;</Link>
+        </div>
       </div>
     </article>
   );

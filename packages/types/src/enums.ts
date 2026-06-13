@@ -23,6 +23,8 @@ export enum PostType {
   PREDICTION = 'PREDICTION',
   AGING_TAKE = 'AGING_TAKE',
   CHALLENGE_RESULT = 'CHALLENGE_RESULT',
+  MOMENT = 'MOMENT',
+  ISSUE = 'ISSUE',
 }
 
 export enum PostStatus {

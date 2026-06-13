@@ -11,6 +11,7 @@ const navItems: { href: string; label: string; badgeKey?: 'notifications' | 'riv
   { href: '/war-room', label: 'War Room' },
   { href: '/rivalry', label: 'Rivalry Ring', badgeKey: 'rivalry' },
   { href: '/mascot-wars', label: 'Mascot Wars' },
+  { href: '/game-room', label: 'Game Room' },
   { href: '/dynasty', label: 'Dynasty Mode' },
   { href: '/coaches-call', label: "Coach's Call" },
   { href: '/hall-of-fame', label: 'Hall of Fame' },
@@ -66,12 +67,13 @@ export function CorkboardNav({ onNavigate }: CorkboardNavProps) {
         {navItems.map((item) => {
           const isActive = pathname?.startsWith(item.href) ?? false;
           const badgeCount = item.badgeKey ? badges[item.badgeKey] : 0;
+          const isGameRoom = item.href === '/game-room';
           return (
             <Link
               key={item.href}
               href={item.href}
               onClick={onNavigate}
-              className={`nav-pin ${isActive ? 'active' : ''}`}
+              className={`nav-pin ${isActive ? 'active' : ''} ${isGameRoom ? 'nav-pin-game' : ''}`}
             >
               <span className="nav-label">{item.label}</span>
               {badgeCount > 0 && (

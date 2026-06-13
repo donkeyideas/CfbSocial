@@ -150,6 +150,7 @@ export const CreatePostInputSchema = z.object({
     'PREDICTION',
     'AGING_TAKE',
     'CHALLENGE_RESULT',
+    'MOMENT',
   ]).default('STANDARD'),
   mediaUrls: z.array(z.string().url()).max(4).optional().default([]),
   schoolId: z.string().uuid().optional().nullable(),

@@ -65,6 +65,8 @@ function AppShell() {
               <Stack.Screen name="rivalry/challenge/[id]" options={{ headerShown: false }} />
               <Stack.Screen name="portal/[id]" options={{ headerShown: false }} />
               <Stack.Screen name="school/[slug]" options={{ headerShown: false }} />
+              <Stack.Screen name="game-room/index" options={{ headerShown: false }} />
+              <Stack.Screen name="game-room/issue/[postId]" options={{ headerShown: false }} />
               <Stack.Screen name="war-room/index" options={{ headerShown: false }} />
               <Stack.Screen name="war-room/[gameId]" options={{ headerShown: false }} />
               <Stack.Screen name="predictions" options={{ headerShown: false }} />

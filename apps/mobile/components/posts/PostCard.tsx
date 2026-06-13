@@ -3,6 +3,7 @@ import { TicketStubCard } from './TicketStubCard';
 import { NewspaperClippingCard } from './NewspaperClippingCard';
 import { PenaltyFlagCard } from './PenaltyFlagCard';
 import { SidelineReportCard } from './SidelineReportCard';
+import { IssueCard } from './IssueCard';
 
 export interface PostData {
   id: string;
@@ -73,6 +74,11 @@ export const PostCard = memo(function PostCard({ post, isDetailView }: PostCardP
   // Sideline reports for live game posts
   if (post.post_type === 'SIDELINE') {
     return <SidelineReportCard post={post} isDetailView={isDetailView} />;
+  }
+
+  // Game Room issue announcement → magazine card
+  if (post.post_type === 'ISSUE') {
+    return <IssueCard post={post} />;
   }
 
   // Default: standard ticket stub card
