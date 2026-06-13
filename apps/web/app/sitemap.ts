@@ -24,6 +24,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${BASE_URL}/contact`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.3 },
     { url: `${BASE_URL}/delete-account`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.2 },
     { url: `${BASE_URL}/schools`, lastModified: new Date(), changeFrequency: 'weekly', priority: 0.8 },
+    { url: `${BASE_URL}/game-room`, lastModified: new Date(), changeFrequency: 'daily', priority: 0.8 },
+    { url: `${BASE_URL}/game-room/leagues`, lastModified: new Date(), changeFrequency: 'daily', priority: 0.8 },
+    { url: `${BASE_URL}/game-room/guide`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.5 },
   ];
 
   // Conference hub pages
@@ -41,6 +44,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // doesn't fail when Supabase is slow or unreachable.
   let schoolPages: MetadataRoute.Sitemap = [];
   let postPages: MetadataRoute.Sitemap = [];
+  let leaguePages: MetadataRoute.Sitemap = [];
+  let issuePages: MetadataRoute.Sitemap = [];
 
   try {
     const supabase = createClient(
@@ -48,18 +53,28 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     );
 
-    const [schoolsResult, postsResult] = await Promise.all([
+    const [schoolsResult, postsResult, leaguesResult, issuesResult] = await Promise.all([
       supabase
         .from('schools')
         .select('slug, updated_at')
         .not('slug', 'is', null),
       supabase
         .from('posts')
-        .select('id, created_at')
+        .select('id, created_at, post_type, media_urls')
         .eq('status', 'PUBLISHED')
         .is('parent_id', null)
         .order('created_at', { ascending: false })
         .limit(1000),
+      supabase
+        .from('online_leagues')
+        .select('id, created_at')
+        .order('created_at', { ascending: false })
+        .limit(500),
+      supabase
+        .from('game_room_issues')
+        .select('feed_post_id, updated_at')
+        .not('feed_post_id', 'is', null)
+        .limit(500),
     ]);
 
     schoolPages = (schoolsResult.data ?? []).map((school) => ({
@@ -69,9 +84,27 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.8,
     }));
 
-    postPages = (postsResult.data ?? []).map((post) => ({
-      url: `${BASE_URL}/post/${post.id}`,
-      lastModified: new Date(post.created_at),
+    postPages = (postsResult.data ?? []).map((post) => {
+      const img = post.post_type === 'MOMENT' ? (post.media_urls as string[] | null)?.[0] : undefined;
+      return {
+        url: `${BASE_URL}/post/${post.id}`,
+        lastModified: new Date(post.created_at),
+        changeFrequency: 'weekly' as const,
+        priority: post.post_type === 'MOMENT' ? 0.7 : 0.6,
+        ...(img ? { images: [img] } : {}),
+      };
+    });
+
+    leaguePages = (leaguesResult.data ?? []).map((lg) => ({
+      url: `${BASE_URL}/game-room/leagues/${lg.id}`,
+      lastModified: lg.created_at ? new Date(lg.created_at) : new Date(),
+      changeFrequency: 'daily' as const,
+      priority: 0.7,
+    }));
+
+    issuePages = (issuesResult.data ?? []).map((iss) => ({
+      url: `${BASE_URL}/game-room/issue/${iss.feed_post_id}`,
+      lastModified: iss.updated_at ? new Date(iss.updated_at) : new Date(),
       changeFrequency: 'weekly' as const,
       priority: 0.6,
     }));
@@ -79,5 +112,5 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     console.warn('Sitemap: Supabase query failed, returning static pages only:', err);
   }
 
-  return [...staticPages, ...conferencePages, ...schoolPages, ...postPages];
+  return [...staticPages, ...conferencePages, ...schoolPages, ...postPages, ...leaguePages, ...issuePages];
 }

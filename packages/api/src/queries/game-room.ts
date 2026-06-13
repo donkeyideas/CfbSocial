@@ -83,6 +83,17 @@ export async function getLeagues(
   return data ?? [];
 }
 
+/** Get a single league by id (with commissioner) for the public league page. */
+export async function getLeagueById(client: SupabaseClient, id: string) {
+  const { data, error } = await client
+    .from('online_leagues')
+    .select('*, commissioner:commissioner_id ( username, display_name )')
+    .eq('id', id)
+    .maybeSingle();
+  if (error) throw error;
+  return data;
+}
+
 /** Get the latest published issue (optionally for a specific owner) with its pages. */
 export async function getLatestIssue(client: SupabaseClient, ownerId?: string) {
   let q = client

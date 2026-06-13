@@ -216,7 +216,7 @@ export function SoftwareApplicationJsonLd() {
         '@context': 'https://schema.org',
         '@type': 'SoftwareApplication',
         name: 'CFB Social',
-        alternateName: 'The Gridiron',
+        alternateName: 'CFB Social - College Football Community',
         applicationCategory: 'SocialNetworkingApplication',
         operatingSystem: 'Web, iOS, Android',
         url: 'https://www.cfbsocial.com',
@@ -240,6 +240,93 @@ export function SoftwareApplicationJsonLd() {
           'Hall of Fame leaderboards',
         ],
         screenshot: 'https://www.cfbsocial.com/logo.png',
+      }}
+    />
+  );
+}
+
+/** The EA Sports College Football video game, as a referenced entity. */
+export function VideoGameJsonLd({
+  name = 'EA Sports College Football 26',
+  url,
+}: {
+  name?: string;
+  url: string;
+}) {
+  return (
+    <JsonLd
+      data={{
+        '@context': 'https://schema.org',
+        '@type': 'VideoGame',
+        name,
+        alternateName: ['College Football 26', 'CFB 26', 'EA College Football'],
+        gamePlatform: ['PlayStation 5', 'Xbox Series X|S', 'PC'],
+        genre: 'Sports',
+        applicationCategory: 'Game',
+        url,
+      }}
+    />
+  );
+}
+
+/** A list of items (leagues, moments) for collection/directory pages. */
+export function ItemListJsonLd({
+  name,
+  items,
+}: {
+  name: string;
+  items: Array<{ name: string; url: string }>;
+}) {
+  return (
+    <JsonLd
+      data={{
+        '@context': 'https://schema.org',
+        '@type': 'ItemList',
+        name,
+        numberOfItems: items.length,
+        itemListElement: items.map((it, i) => ({
+          '@type': 'ListItem',
+          position: i + 1,
+          name: it.name,
+          url: it.url,
+        })),
+      }}
+    />
+  );
+}
+
+/** A user-shared screenshot/image (Game Room moment) for image search + AI. */
+export function ImageObjectJsonLd({
+  contentUrl,
+  caption,
+  creator,
+  uploadDate,
+  url,
+}: {
+  contentUrl: string;
+  caption: string;
+  creator: string;
+  uploadDate: string;
+  url: string;
+}) {
+  return (
+    <JsonLd
+      data={{
+        '@context': 'https://schema.org',
+        '@type': 'ImageObject',
+        contentUrl,
+        caption,
+        name: caption,
+        creditText: `@${creator} on CFB Social`,
+        creator: { '@type': 'Person', name: creator },
+        uploadDate,
+        url,
+        isPartOf: { '@type': 'WebSite', name: 'CFB Social', url: 'https://www.cfbsocial.com' },
+        about: {
+          '@type': 'VideoGame',
+          name: 'EA Sports College Football 26',
+          alternateName: ['College Football 26', 'CFB 26'],
+        },
       }}
     />
   );

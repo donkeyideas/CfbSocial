@@ -1,3 +1,5 @@
+import Link from 'next/link';
+import Image from 'next/image';
 import { notFound } from 'next/navigation';
 import { SchoolHub } from './SchoolHub';
 import { SportsTeamJsonLd, BreadcrumbJsonLd } from '@/components/seo/JsonLd';
@@ -54,7 +56,8 @@ export default async function SchoolPage({ params }: SchoolPageProps) {
   if (error || !school) notFound();
 
   // Fetch all remaining data in PARALLEL (was 5 sequential queries)
-  const [fanCountRes, postCountRes, postsRes, topFansRes, portalCountRes] = await Promise.all([
+  const { getMoments } = await import('@cfb-social/api');
+  const [fanCountRes, postCountRes, postsRes, topFansRes, portalCountRes, momentsData] = await Promise.all([
     supabase
       .from('profiles')
       .select('id', { count: 'exact', head: true })
@@ -89,6 +92,7 @@ export default async function SchoolPage({ params }: SchoolPageProps) {
       .from('portal_players')
       .select('id', { count: 'exact', head: true })
       .or(`previous_school_id.eq.${school.id},committed_school_id.eq.${school.id}`),
+    getMoments(supabase, { schoolId: school.id, limit: 12 }).catch(() => []),
   ]);
 
   const fanCount = fanCountRes.count;
@@ -99,6 +103,13 @@ export default async function SchoolPage({ params }: SchoolPageProps) {
 
   // Fetch YouTube highlights — returns [] when YOUTUBE_API_KEY is missing
   const highlights = await searchHighlights(`${school.name} football`, 5).catch(() => []);
+
+  // Game Room moments for this school (long-tail "<school> College Football 26 dynasty")
+  type GMItem = {
+    id: string; title: string | null; opponent: string | null; our_score: number | null; opp_score: number | null; week: string | null;
+    post: { id: string; media_urls: string[]; content: string } | null;
+  };
+  const moments = ((momentsData as GMItem[]) ?? []).filter((m) => m.post && m.post.media_urls?.length > 0).slice(0, 8);
 
   return (
     <>
@@ -149,6 +160,35 @@ export default async function SchoolPage({ params }: SchoolPageProps) {
         topFans={topFans ?? []}
         highlights={highlights}
       />
+
+      {moments.length > 0 && (
+        <section style={{ marginTop: 28 }}>
+          <h2 style={{ fontFamily: 'var(--serif)', color: 'var(--dark-brown)', fontSize: '1.25rem', marginBottom: 4 }}>
+            {school.name} College Football 26 Dynasty Moments
+          </h2>
+          <p style={{ color: 'var(--faded-ink)', fontSize: '0.9rem', lineHeight: 1.55, marginBottom: 14, maxWidth: '52rem' }}>
+            Screenshots and dynasty moments {school.name} fans shared from EA Sports College Football 26. Post your own in the{' '}
+            <Link href="/game-room">Game Room</Link>.
+          </p>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 12 }}>
+            {moments.map((m) => {
+              const score = m.our_score != null && m.opp_score != null ? ` ${m.our_score}-${m.opp_score}` : '';
+              const vs = m.opponent ? ` vs ${m.opponent}` : '';
+              const alt = `${school.name} College Football 26 dynasty moment${vs}${score}${m.week ? ` (${m.week})` : ''}`;
+              return (
+                <Link key={m.id} href={`/post/${m.post!.id}`} style={{ textDecoration: 'none', color: 'inherit', border: '1px solid var(--tan)', borderRadius: 6, overflow: 'hidden', background: 'var(--warm-white, var(--cream))' }}>
+                  <div style={{ position: 'relative', width: '100%', aspectRatio: '16 / 9', background: '#120a1f' }}>
+                    <Image src={m.post!.media_urls[0]!} alt={alt} fill style={{ objectFit: 'cover' }} sizes="(max-width: 700px) 50vw, 240px" quality={85} />
+                  </div>
+                  <div style={{ padding: '8px 10px', fontFamily: 'var(--serif)', fontSize: '0.85rem', color: 'var(--ink)', lineHeight: 1.3 }}>
+                    {m.title || `${school.name}${vs}${score}` || 'Dynasty moment'}
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
+        </section>
+      )}
     </>
   );
 }
