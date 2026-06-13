@@ -88,7 +88,7 @@ export interface LeagueRequestRow {
 // ---- Zod input schemas ----
 export const CreateMomentInputSchema = z.object({
   content: z.string().max(2000).optional().default(''),
-  imageUrls: z.array(z.string().url()).min(1, 'Add at least one screenshot').max(4),
+  imageUrls: z.array(z.string().url()).min(1, 'Add a screenshot').max(1),
   authorId: z.string().uuid().optional(),   // active profile id (web multi-profile); falls back to auth uid
   schoolId: z.string().uuid().optional().nullable(),
   saveId: z.string().uuid().optional().nullable(),

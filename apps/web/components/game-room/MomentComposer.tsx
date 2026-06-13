@@ -21,7 +21,7 @@ interface PendingImage {
   error?: boolean;
 }
 
-const MAX_IMAGES = 4;
+const MAX_IMAGES = 1;
 
 export function MomentComposer({ onClose, onPosted }: Props) {
   const { profile } = useAuth();
@@ -120,8 +120,8 @@ export function MomentComposer({ onClose, onPosted }: Props) {
           {images.length === 0 ? (
             <button className="gr-drop" onClick={() => fileRef.current?.click()}>
               <div className="gr-drop-ic" aria-hidden>▦</div>
-              <strong>Choose screenshots</strong>
-              <span>Add up to {MAX_IMAGES} (they form a grid in the magazine) · JPG or PNG</span>
+              <strong>Choose a screenshot</strong>
+              <span>One image per moment · JPG or PNG</span>
             </button>
           ) : (
             <div className="gr-thumbs">
@@ -138,7 +138,7 @@ export function MomentComposer({ onClose, onPosted }: Props) {
               )}
             </div>
           )}
-          <input ref={fileRef} type="file" accept="image/jpeg,image/png,image/webp" multiple onChange={handleFiles} style={{ display: 'none' }} />
+          <input ref={fileRef} type="file" accept="image/jpeg,image/png,image/webp" onChange={handleFiles} style={{ display: 'none' }} />
 
           <label className="gr-field gr-field-full"><span>Title (magazine headline)</span>
             <input value={title} onChange={(e) => setTitle(e.target.value)} maxLength={120} placeholder="e.g. The Catch in Death Valley" />

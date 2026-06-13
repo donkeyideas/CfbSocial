@@ -407,7 +407,6 @@ function MomentCard({ m, currentUsername, onEdit, assignment }: { m: MomentItem;
         {img && <Image src={img} alt={post.content || 'Moment'} fill className="gr-card-img" sizes="(max-width: 700px) 100vw, 560px" quality={90} />}
         <span className="gr-card-tag">{tag}</span>
         <span className="gr-card-wm">CFB <span>SOCIAL</span></span>
-        {post.media_urls?.length > 1 && <span className="gr-card-count">1/{post.media_urls.length}</span>}
         {score && <span className="gr-card-score">{score}{m.week ? ` · ${m.week}` : ''}</span>}
       </div>
       <div className="gr-card-body">

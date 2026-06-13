@@ -36,9 +36,9 @@ export function MomentComposer({ visible, onClose, onPosted }: Props) {
   const close = () => { reset(); onClose(); };
 
   const pick = useCallback(async () => {
-    const remaining = 4 - images.length;
+    const remaining = 1 - images.length;
     if (remaining <= 0) return;
-    const res = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ['images'], allowsMultipleSelection: true, selectionLimit: remaining, quality: 0.95 });
+    const res = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ['images'], allowsMultipleSelection: false, selectionLimit: 1, quality: 0.95 });
     if (res.canceled || !res.assets?.length) return;
     if (!session?.access_token) { showAlert('Not signed in', 'Log in to upload moments.'); return; }
     const next = res.assets.map((a) => ({ id: `${Date.now()}-${Math.random().toString(36).slice(2, 6)}`, uri: a.uri, mimeType: a.mimeType ?? undefined, fileName: a.fileName ?? undefined, uploading: true as const }));
@@ -128,9 +128,9 @@ export function MomentComposer({ visible, onClose, onPosted }: Props) {
                 ))}
               </View>
             )}
-            {images.length < 4 && (
+            {images.length < 1 && (
               <Pressable style={styles.addBtn} onPress={pick}>
-                <Text style={styles.addText}>{images.length === 0 ? 'Add screenshot (up to 4)' : `Add more (${4 - images.length} left)`}</Text>
+                <Text style={styles.addText}>Add a screenshot</Text>
               </Pressable>
             )}
 

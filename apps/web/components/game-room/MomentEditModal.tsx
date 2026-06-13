@@ -29,7 +29,7 @@ interface Props {
   onSaved: () => void;
 }
 
-const MAX_IMAGES = 4;
+const MAX_IMAGES = 1;
 
 export function MomentEditModal({ moment, issues, assignment, onClose, onSaved }: Props) {
   const fileRef = useRef<HTMLInputElement>(null);
@@ -49,7 +49,6 @@ export function MomentEditModal({ moment, issues, assignment, onClose, onSaved }
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
 
-  const makeCover = (i: number) => setUrls((prev) => { const c = [...prev]; const [x] = c.splice(i, 1); return [x!, ...c]; });
   const remove = (i: number) => setUrls((prev) => prev.filter((_, idx) => idx !== i));
 
   const addFiles = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -112,20 +111,19 @@ export function MomentEditModal({ moment, issues, assignment, onClose, onSaved }
           <button className="gr-modal-x" onClick={onClose} aria-label="Close">×</button>
         </div>
         <div className="gr-modal-body">
-          <div className="gr-edit-hint">The <strong>cover</strong> image is what shows in the magazine and grid. Use “Make cover” to choose it.</div>
+          <div className="gr-edit-hint">One image per moment. Remove it to swap in a different screenshot.</div>
           <div className="gr-thumbs">
             {urls.map((url, i) => (
-              <div key={url + i} className={`gr-thumb ${i === 0 ? 'is-cover' : ''}`}>
+              <div key={url + i} className="gr-thumb is-cover">
                 <Image src={url} alt="" width={120} height={84} className="gr-thumb-img" unoptimized />
-                {i === 0 ? <span className="gr-cover-badge">Cover</span> : <button className="gr-makecover" onClick={() => makeCover(i)}>Make cover</button>}
-                {urls.length > 1 && <button className="gr-thumb-x" onClick={() => remove(i)} aria-label="Remove">×</button>}
+                <button className="gr-thumb-x" onClick={() => remove(i)} aria-label="Remove">×</button>
               </div>
             ))}
             {urls.length < MAX_IMAGES && (
               <button className="gr-thumb gr-thumb-add" onClick={() => fileRef.current?.click()} aria-label="Add image">{uploading ? '…' : '+'}</button>
             )}
           </div>
-          <input ref={fileRef} type="file" accept="image/jpeg,image/png,image/webp" multiple onChange={addFiles} style={{ display: 'none' }} />
+          <input ref={fileRef} type="file" accept="image/jpeg,image/png,image/webp" onChange={addFiles} style={{ display: 'none' }} />
 
           <label className="gr-field gr-field-full"><span>Title (magazine headline)</span>
             <input value={title} onChange={(e) => setTitle(e.target.value)} maxLength={120} placeholder="e.g. The Catch in Death Valley" />

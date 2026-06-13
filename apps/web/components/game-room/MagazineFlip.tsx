@@ -42,13 +42,13 @@ export function MagazineFlip({ issueNumber, items, title, coverHeadline, coverSu
   const masthead = (title ?? '').trim() || 'Game Room Weekly';
   const isDefaultMasthead = masthead.toLowerCase() === 'game room weekly';
   const valid = items.filter((it) => it.post && it.post.media_urls?.length);
-  // pages: cover, EVERY moment as a page (incl. the cover story), back cover
-  const pageCount = valid.length + 2;
+  // pages: cover, then EVERY moment as a page (incl. the cover story)
+  const pageCount = valid.length + 1;
   const [turned, setTurned] = useState(0);
 
   if (valid.length === 0) return null;
 
-  const labels = ['Cover', ...valid.map((_, i) => `Page ${i + 2}`), 'Back cover'];
+  const labels = ['Cover', ...valid.map((_, i) => `Page ${i + 2}`)];
   const next = () => setTurned((t) => Math.min(pageCount - 1, t + 1));
   const prev = () => setTurned((t) => Math.max(0, t - 1));
 
@@ -84,7 +84,7 @@ export function MagazineFlip({ issueNumber, items, title, coverHeadline, coverSu
     const m = moment(it.post);
     const accent = it.post?.school?.primary_color ?? 'var(--crimson)';
     const tag = it.post?.school?.abbreviation ?? (m?.is_team_builder ? 'Team Builder' : 'Moment');
-    const imgs = (it.post!.media_urls ?? []).slice(0, 4);
+    const imgs = (it.post!.media_urls ?? []).slice(0, 1);
     pages.push(
       <div className="gr-mag-page gr-mag-moment" key={it.id} style={{ ['--cm' as string]: accent }}>
         <div className="gr-mag-photo" data-count={imgs.length}>
@@ -111,14 +111,6 @@ export function MagazineFlip({ issueNumber, items, title, coverHeadline, coverSu
       </div>
     );
   });
-
-  // Back cover
-  pages.push(
-    <div className="gr-mag-page gr-mag-back" key="back">
-      <div className="gr-mag-back-logo">GAME <b>ROOM</b></div>
-      <p>Your save deserves a cover. Upload your moments and make next week&apos;s issue.</p>
-    </div>
-  );
 
   return (
     <div className="gr-mag-wrap">

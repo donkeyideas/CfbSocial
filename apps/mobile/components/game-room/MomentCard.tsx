@@ -52,7 +52,6 @@ export function MomentCard({ m, width, currentUsername, assignment, onEdit }: Pr
       <View style={styles.frame}>
         {img ? <RNImage source={{ uri: img }} style={styles.img} resizeMode="cover" /> : null}
         <Text style={styles.tag}>{tag}</Text>
-        {post.media_urls && post.media_urls.length > 1 ? <Text style={styles.count}>1/{post.media_urls.length}</Text> : null}
         {score ? <Text style={styles.score}>{score}{m.week ? ` · ${m.week}` : ''}</Text> : null}
       </View>
       <View style={styles.body}>

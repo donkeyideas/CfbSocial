@@ -28,7 +28,6 @@ export function MagazinePager({ entry }: { entry: IssueEntry }) {
     const cover = valid.find((it) => it.post?.id === entry.issue.cover_post_id) ?? valid[0]!;
     const list: Page[] = [{ kind: 'cover', item: cover }];
     valid.forEach((it, index) => list.push({ kind: 'moment', item: it, index }));
-    list.push({ kind: 'back' });
     return list;
   }, [valid, entry.issue.cover_post_id]);
 
@@ -49,7 +48,7 @@ export function MagazinePager({ entry }: { entry: IssueEntry }) {
     dek: { fontFamily: typography.serif, fontSize: 14, color: 'rgba(255,255,255,0.9)', fontStyle: 'italic', marginTop: 8, lineHeight: 20 },
     byline: { fontFamily: typography.mono, fontSize: 11, color: 'rgba(255,255,255,0.8)', marginTop: 10 },
     // moment page
-    photoWrap: { width: '100%', aspectRatio: 1.2, backgroundColor: colors.dark, position: 'relative' },
+    photoWrap: { width: '100%', aspectRatio: 16 / 9, backgroundColor: colors.dark, position: 'relative' },
     grid: { flexDirection: 'row', flexWrap: 'wrap', width: '100%', height: '100%' },
     bug: { position: 'absolute', bottom: 8, left: 8, flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: 'rgba(0,0,0,0.7)', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 4 },
     bugText: { fontFamily: typography.mono, fontSize: 11, color: '#fff', fontWeight: '700' },
@@ -96,7 +95,7 @@ export function MagazinePager({ entry }: { entry: IssueEntry }) {
     if (item.kind === 'moment') {
       const post = item.item.post!;
       const m = momentOf(post);
-      const imgs = (post.media_urls ?? []).slice(0, 4);
+      const imgs = (post.media_urls ?? []).slice(0, 1);
       const tag = post.school?.abbreviation ?? ((m?.is_team_builder as boolean) ? 'Team Builder' : 'Moment');
       const cellW = imgs.length === 1 ? '100%' : '50%';
       const cellH = imgs.length <= 2 ? '100%' : '50%';
@@ -107,7 +106,7 @@ export function MagazinePager({ entry }: { entry: IssueEntry }) {
               <View style={styles.photoWrap}>
                 <View style={styles.grid}>
                   {imgs.map((u, k) => (
-                    <RNImage key={k} source={{ uri: u }} style={{ width: cellW as never, height: cellH as never }} resizeMode="cover" />
+                    <RNImage key={k} source={{ uri: u }} style={{ width: cellW as never, height: cellH as never }} resizeMode="contain" />
                   ))}
                 </View>
                 {(m?.opponent || m?.our_score != null || m?.result) ? (

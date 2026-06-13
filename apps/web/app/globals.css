@@ -7667,14 +7667,14 @@ html.dark .search-school-mascot {
 .gr-mag-dek { font-family: var(--serif); font-style: italic; font-size: 0.92rem; color: #e9ddf5; margin-top: 8px; text-shadow: 0 1px 6px rgba(0,0,0,0.6); }
 .gr-mag-byline { font-family: var(--mono); font-size: 0.7rem; color: #e9ddf5; margin-top: 8px; }
 .gr-mag-openhint { position: absolute; right: 14px; bottom: 12px; font-family: var(--mono); font-size: 0.58rem; color: #e9ddf5; opacity: 0.85; z-index: 2; }
-.gr-mag-photo { position: relative; width: 100%; height: 300px; flex-shrink: 0; background: #120a1f; display: grid; gap: 2px; }
+.gr-mag-photo { position: relative; width: 100%; aspect-ratio: 16 / 9; flex-shrink: 0; background: #120a1f; display: grid; gap: 2px; }
 .gr-mag-photo[data-count="1"] { grid-template-columns: 1fr; }
 .gr-mag-photo[data-count="2"] { grid-template-columns: 1fr; grid-template-rows: 1fr 1fr; }
 .gr-mag-photo[data-count="3"] { grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; }
 .gr-mag-photo[data-count="3"] .gr-mag-cell:first-child { grid-column: 1 / 3; }
 .gr-mag-photo[data-count="4"] { grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; }
 .gr-mag-cell { position: relative; overflow: hidden; }
-.gr-mag-cell-img { object-fit: cover; }
+.gr-mag-cell-img { object-fit: contain; }
 .gr-mag-tag { position: absolute; top: 10px; left: 10px; font-family: var(--sans); font-size: 0.55rem; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; color: #fff; background: var(--cm, var(--crimson)); padding: 4px 11px 4px 7px; clip-path: polygon(0 0,100% 0,90% 50%,100% 100%,0 100%); z-index: 2; }
 .gr-mag-wm { position: absolute; top: 11px; right: 11px; font-family: var(--serif); font-weight: 800; font-size: 0.6rem; color: #fff; text-shadow: 0 1px 4px rgba(0,0,0,0.8); z-index: 2; }
 .gr-mag-wm span { color: var(--gold); }
@@ -7695,7 +7695,6 @@ html.dark .search-school-mascot {
 .gr-mag-back p { font-family: var(--serif); font-style: italic; color: #e9ddf5; margin-top: 10px; font-size: 0.95rem; max-width: 84%; }
 @media (max-width: 560px) {
   .gr-mag-book { width: 320px; height: 460px; }
-  .gr-mag-photo { height: 220px; }
   .gr-mag-headline { font-size: 1.3rem; }
   .gr-mag-head { font-size: 1.1rem; }
 }

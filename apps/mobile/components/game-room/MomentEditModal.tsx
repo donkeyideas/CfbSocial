@@ -48,14 +48,14 @@ export function MomentEditModal({ moment, issues, assignment, onClose, onSaved }
   const [saving, setSaving] = useState(false);
 
   const addImage = useCallback(async () => {
-    if (urls.length >= 4 || !session?.access_token) return;
-    const res = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ['images'], allowsMultipleSelection: true, selectionLimit: 4 - urls.length, quality: 0.95 });
+    if (urls.length >= 1 || !session?.access_token) return;
+    const res = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ['images'], allowsMultipleSelection: false, selectionLimit: 1, quality: 0.95 });
     if (res.canceled || !res.assets?.length) return;
     setAdding(true);
     try {
       for (const a of res.assets) {
         const publicUrl = await uploadImage(a.uri, session.access_token, a.mimeType ?? undefined, a.fileName ?? undefined);
-        setUrls((prev) => (prev.length < 4 ? [...prev, publicUrl] : prev));
+        setUrls((prev) => (prev.length < 1 ? [...prev, publicUrl] : prev));
       }
     } catch (e) {
       showAlert('Upload failed', e instanceof Error ? e.message : 'Try again.');
@@ -145,15 +145,15 @@ export function MomentEditModal({ moment, issues, assignment, onClose, onSaved }
             <Text style={styles.label}>Caption</Text>
             <TextInput style={[styles.input, { minHeight: 60, textAlignVertical: 'top' }]} value={caption} onChangeText={setCaption} multiline maxLength={2000} placeholderTextColor={colors.textMuted} />
 
-            <Text style={styles.label}>Images ({urls.length}/4)</Text>
+            <Text style={styles.label}>Image</Text>
             <View style={styles.thumbRow}>
               {urls.map((u, i) => (
                 <View key={`${u}-${i}`} style={styles.thumb}>
                   <RNImage source={{ uri: u }} style={styles.thumbImg} />
-                  {urls.length > 1 && <Pressable style={styles.thumbX} onPress={() => setUrls((prev) => prev.filter((_, idx) => idx !== i))}><Text style={styles.thumbXText}>X</Text></Pressable>}
+                  <Pressable style={styles.thumbX} onPress={() => setUrls((prev) => prev.filter((_, idx) => idx !== i))}><Text style={styles.thumbXText}>X</Text></Pressable>
                 </View>
               ))}
-              {urls.length < 4 && <Pressable style={styles.addThumb} onPress={addImage} disabled={adding}>{adding ? <ActivityIndicator size="small" color={colors.crimson} /> : <Text style={styles.addThumbText}>+</Text>}</Pressable>}
+              {urls.length < 1 && <Pressable style={styles.addThumb} onPress={addImage} disabled={adding}>{adding ? <ActivityIndicator size="small" color={colors.crimson} /> : <Text style={styles.addThumbText}>+</Text>}</Pressable>}
             </View>
 
             <View style={styles.section}>
