@@ -3,6 +3,7 @@ import { GameRoomClient } from '@/components/game-room/GameRoomClient';
 import {
   VideoGameJsonLd, CollectionPageJsonLd, FAQPageJsonLd, BreadcrumbJsonLd,
 } from '@/components/seo/JsonLd';
+import { GameRoomCta } from '@/components/game-room/GameRoomCta';
 
 export const dynamic = 'force-dynamic';
 
@@ -99,6 +100,7 @@ export default async function GameRoomPage({ searchParams }: GameRoomPageProps) 
             <p style={{ fontFamily: 'var(--sans)', color: 'var(--faded-ink)', lineHeight: 1.55 }}>{f.answer}</p>
           </div>
         ))}
+        <GameRoomCta intent="moments" redirect="/game-room" stats={['Free', 'Share moments', 'Find a league']} />
         <p style={{ fontFamily: 'var(--sans)', fontSize: '0.74rem', color: 'var(--faded-ink)', marginTop: 8 }}>
           CFB Social is a fan community and is not affiliated with or endorsed by EA Sports or Electronic Arts.
         </p>

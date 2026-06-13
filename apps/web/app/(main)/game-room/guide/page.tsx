@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import type { Metadata } from 'next';
 import { FAQPageJsonLd, BreadcrumbJsonLd, VideoGameJsonLd, JsonLd } from '@/components/seo/JsonLd';
+import { GameRoomCta } from '@/components/game-room/GameRoomCta';
 
 export const revalidate = 86400;
 
@@ -79,6 +80,8 @@ export default function GameRoomGuidePage() {
           Not affiliated with or endorsed by EA Sports or Electronic Arts.
         </p>
       </section>
+
+      <GameRoomCta intent="general" redirect="/game-room" stats={['Free', 'PS5 · Xbox · PC']} />
     </div>
   );
 }

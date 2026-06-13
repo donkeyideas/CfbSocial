@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 import { BreadcrumbJsonLd, VideoGameJsonLd, JsonLd } from '@/components/seo/JsonLd';
+import { GameRoomCta } from '@/components/game-room/GameRoomCta';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 600;
@@ -115,13 +116,17 @@ export default async function LeaguePage({ params }: PageProps) {
           </tbody>
         </table>
 
-        <Link className="gr-btn-primary" href="/game-room?tab=leagues" style={{ display: 'inline-block', marginTop: 16, textDecoration: 'none' }}>
-          {full ? 'View in the Game Room' : 'Get join info in the Game Room'}
-        </Link>
-        <p style={{ fontFamily: 'var(--sans)', fontSize: '0.74rem', color: 'var(--faded-ink)', marginTop: 8 }}>
+        <p style={{ fontFamily: 'var(--sans)', fontSize: '0.74rem', color: 'var(--faded-ink)', marginTop: 12 }}>
           Open the Game Room to copy the in-game League Name + password{lg.is_private ? ' (request to join private leagues)' : ''}.
         </p>
       </section>
+
+      <GameRoomCta
+        intent="join"
+        leagueName={lg.name}
+        redirect="/game-room?tab=leagues"
+        stats={[full ? 'Full' : `${open} ${open === 1 ? 'spot' : 'spots'} open`, lg.platform, styleLabel]}
+      />
 
       <p style={{ fontFamily: 'var(--sans)', fontSize: '0.74rem', color: 'var(--faded-ink)', textAlign: 'center' }}>
         Not affiliated with or endorsed by EA Sports. <Link href="/game-room/leagues">Browse more CFB 26 leagues →</Link>

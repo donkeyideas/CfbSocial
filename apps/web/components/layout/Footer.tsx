@@ -10,6 +10,9 @@ export function Footer() {
       <div className="footer-links">
         {[
           { href: '/schools', label: 'All Schools' },
+          { href: '/game-room', label: 'Game Room' },
+          { href: '/game-room/leagues', label: 'CFB 26 Leagues' },
+          { href: '/game-room/guide', label: 'CFB 26 Guide' },
           { href: '/privacy', label: 'Privacy' },
           { href: '/terms', label: 'Terms' },
           { href: '/contact', label: 'Contact' },
@@ -50,6 +53,14 @@ export function Footer() {
               <li>Start posting takes and voting on debates</li>
               <li>Earn XP, unlock achievements, and rise through dynasty tiers</li>
             </ul>
+          </div>
+          <div className="footer-faq-col">
+            <h3 className="footer-faq-heading">Where can you share College Football 26 dynasty moments?</h3>
+            <p className="footer-faq-text">
+              The <Link href="/game-room" className="footer-link">Game Room</Link> is the home for EA Sports College Football 26 players &mdash; share dynasty screenshots, build a magazine of your season, and find{' '}
+              <Link href="/game-room/leagues" className="footer-link">online dynasty leagues to join</Link> on PS5, Xbox, and PC. New here? Read the{' '}
+              <Link href="/game-room/guide" className="footer-link">CFB 26 Game Room guide</Link>.
+            </p>
           </div>
         </div>
       </div>

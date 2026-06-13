@@ -3,6 +3,7 @@ import type { Metadata } from 'next';
 import {
   CollectionPageJsonLd, ItemListJsonLd, BreadcrumbJsonLd, VideoGameJsonLd, FAQPageJsonLd,
 } from '@/components/seo/JsonLd';
+import { GameRoomCta } from '@/components/game-room/GameRoomCta';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 600;
@@ -67,7 +68,17 @@ export default async function LeaguesDirectoryPage() {
           shows its platform, user count, cross-play, sim schedule, and which schools are still open. Open it in the{' '}
           <Link href="/game-room?tab=leagues">Game Room</Link> to get the join code and request a spot. Free for commissioners and coaches.
         </p>
+        <p style={{ fontFamily: 'var(--sans)', color: 'var(--faded-ink)', lineHeight: 1.6, marginTop: 8 }}>
+          CFB Social currently lists <strong>{leagues.length}</strong> College Football 26 online {leagues.length === 1 ? 'dynasty' : 'dynasties'},
+          with <strong>{open.length}</strong> still recruiting coaches across PlayStation 5, Xbox Series X|S, and PC.
+        </p>
       </section>
+
+      <GameRoomCta
+        intent="leagues"
+        redirect="/game-room?tab=leagues"
+        stats={[`${open.length} open ${open.length === 1 ? 'league' : 'leagues'}`, `${leagues.length} listed`, 'PS5 · Xbox · PC']}
+      />
 
       <div className="gr-lf-head" style={{ marginBottom: 10 }}>
         <div className="gr-lf-eyebrow">League Finder</div>

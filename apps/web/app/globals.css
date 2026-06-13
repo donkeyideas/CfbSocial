@@ -3737,7 +3737,7 @@ html.dark .aging-footer {
 }
 .footer-faq-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: 24px;
 }
 .footer-faq-col {
@@ -7510,6 +7510,22 @@ html.dark .search-school-mascot {
 .gr-mag-league-meta { font-family: var(--mono); font-size: 0.66rem; color: var(--faded-ink); margin-top: 4px; }
 .gr-mag-league .gr-league-badge { position: absolute; left: 14px; bottom: 10px; }
 @media (max-width: 700px) { .gr-mag-leagues-row { grid-template-columns: 1fr; } }
+
+/* Game Room conversion CTA (SEO landing pages) */
+.gr-cta { background: var(--warm-white, var(--cream)); border: 2px solid var(--crimson); border-radius: 8px; padding: 20px; text-align: center; margin: 18px 0; }
+.gr-cta-title { font-family: var(--serif); font-size: 1.3rem; font-weight: 800; color: var(--dark-brown); line-height: 1.25; }
+.gr-cta-sub { font-family: var(--sans); font-size: 0.92rem; color: var(--faded-ink); margin-top: 6px; line-height: 1.5; }
+.gr-cta-actions { display: flex; gap: 12px; justify-content: center; align-items: center; flex-wrap: wrap; margin-top: 14px; }
+.gr-cta-primary { font-family: var(--sans); font-weight: 800; font-size: 0.95rem; color: #fff; background: var(--crimson); padding: 11px 24px; border-radius: 6px; text-decoration: none; }
+.gr-cta-primary:hover { filter: brightness(1.08); }
+.gr-cta-secondary { font-family: var(--sans); font-weight: 700; font-size: 0.9rem; color: var(--crimson); text-decoration: none; }
+.gr-cta-secondary:hover { text-decoration: underline; }
+.gr-cta-apps { display: flex; gap: 12px; justify-content: center; align-items: center; flex-wrap: wrap; margin-top: 12px; }
+.gr-cta-apps-label { font-family: var(--mono); font-size: 0.68rem; text-transform: uppercase; letter-spacing: 1px; color: var(--faded-ink); }
+.gr-cta-app { font-family: var(--sans); font-weight: 700; font-size: 0.78rem; color: var(--dark-brown); border: 1.5px solid var(--dark-brown); padding: 5px 12px; border-radius: 5px; text-decoration: none; }
+.gr-cta-app:hover { background: var(--dark-brown); color: var(--cream); }
+.gr-cta-stats { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin-top: 14px; }
+.gr-cta-stat { font-family: var(--mono); font-size: 0.66rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--green-field, #2d5a27); background: rgba(45,90,39,0.1); border: 1px solid rgba(45,90,39,0.25); padding: 3px 10px; border-radius: 12px; }
 
 /* Public issue page */
 .gr-public-byline { font-family: var(--mono); font-size: 0.72rem; color: var(--faded-ink); margin-top: 4px; }
