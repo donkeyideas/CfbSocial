@@ -7649,11 +7649,28 @@ html.dark .search-school-mascot {
 .gr-issue-del:hover { background: var(--crimson); color: #fff; }
 .gr-issue-del:disabled { opacity: 0.4; cursor: default; }
 @media (max-width: 700px) { .gr-im-cols { grid-template-columns: 1fr; } .gr-im-cover-fields { grid-template-columns: 1fr; } }
-.gr-mag-stage { perspective: 2000px; display: flex; justify-content: center; padding: 6px 0; }
-.gr-mag-book { position: relative; width: 440px; height: 580px; }
-.gr-mag-leaf { position: absolute; inset: 0; transform-origin: left center; transform-style: preserve-3d; backface-visibility: hidden; -webkit-backface-visibility: hidden; transition: transform 0.85s cubic-bezier(.3,0,.2,1); cursor: pointer; border-radius: 3px; overflow: hidden; box-shadow: 0 10px 30px rgba(59,47,30,0.22); }
-.gr-mag-leaf.flipped { transform: rotateY(-178deg); }
-.gr-mag-page { position: absolute; inset: 0; background: var(--cream); border: 1px solid var(--tan); display: flex; flex-direction: column; overflow: hidden; }
+.gr-mag-stage { display: flex; justify-content: center; padding: 8px 0 4px; }
+/* Cover — a single portrait page */
+.gr-mag-single { position: relative; width: 420px; max-width: 100%; aspect-ratio: 3 / 4; border-radius: 3px; overflow: hidden; cursor: pointer; background: var(--cream); box-shadow: 0 14px 38px rgba(59,47,30,0.26); animation: gr-mag-in 0.35s ease; }
+/* Open-book spread — two facing pages (1-2, 3-4, ...) */
+.gr-mag-spread { position: relative; display: flex; width: 920px; max-width: 100%; aspect-ratio: 3 / 2; background: var(--cream); border: 1px solid var(--tan); border-radius: 3px; overflow: hidden; box-shadow: 0 16px 42px rgba(59,47,30,0.26); perspective: 2400px; }
+.gr-mag-spread::after { content: ''; position: absolute; top: 0; bottom: 0; left: 50%; width: 44px; transform: translateX(-50%); background: linear-gradient(90deg, rgba(59,47,30,0) 0%, rgba(59,47,30,0.16) 50%, rgba(59,47,30,0) 100%); pointer-events: none; z-index: 3; }
+@keyframes gr-mag-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+.gr-mag-half { flex: 1 1 50%; width: 50%; display: flex; min-width: 0; cursor: pointer; }
+.gr-mag-half-l { border-right: 1px solid var(--tan); }
+.gr-mag-pageinner { flex: 1; display: flex; flex-direction: column; min-width: 0; background: var(--cream); overflow: hidden; }
+.gr-mag-blank { background: var(--cream); }
+/* Page-turn: a two-faced leaf that rotates around the gutter */
+.gr-mag-flip { position: absolute; top: 0; bottom: 0; width: 50%; transform-style: preserve-3d; z-index: 10; will-change: transform; }
+.gr-mag-flip-next { left: 50%; transform-origin: left center; animation: gr-flip-next 0.62s cubic-bezier(.43,.02,.27,1) forwards; }
+.gr-mag-flip-prev { left: 0; transform-origin: right center; animation: gr-flip-prev 0.62s cubic-bezier(.43,.02,.27,1) forwards; }
+@keyframes gr-flip-next { from { transform: rotateY(0deg); } to { transform: rotateY(-180deg); } }
+@keyframes gr-flip-prev { from { transform: rotateY(0deg); } to { transform: rotateY(180deg); } }
+.gr-mag-flip-face { position: absolute; inset: 0; display: flex; overflow: hidden; background: var(--cream); -webkit-backface-visibility: hidden; backface-visibility: hidden; box-shadow: 0 0 26px rgba(59,47,30,0.22); }
+.gr-mag-flip-front { z-index: 2; }
+.gr-mag-flip-back { transform: rotateY(180deg); }
+.gr-mag-flip-next .gr-mag-flip-front { border-left: 1px solid var(--tan); }
+.gr-mag-flip-prev .gr-mag-flip-front { border-right: 1px solid var(--tan); }
 .gr-mag-controls { display: flex; align-items: center; justify-content: center; gap: 16px; padding: 14px 0 4px; }
 .gr-mag-controls button { font-family: var(--serif); font-weight: 700; font-size: 0.8rem; background: var(--cream); color: var(--dark-brown); border: 1.5px solid var(--dark-brown); border-radius: 4px; padding: 8px 18px; cursor: pointer; }
 .gr-mag-controls button:disabled { opacity: 0.4; cursor: default; }
@@ -7696,8 +7713,12 @@ html.dark .search-school-mascot {
 .gr-mag-back-logo { font-family: var(--serif); font-weight: 900; font-size: 1.5rem; letter-spacing: 4px; }
 .gr-mag-back-logo b { color: var(--gold); }
 .gr-mag-back p { font-family: var(--serif); font-style: italic; color: #e9ddf5; margin-top: 10px; font-size: 0.95rem; max-width: 84%; }
-@media (max-width: 560px) {
-  .gr-mag-book { width: 320px; height: 460px; }
+@media (max-width: 760px) {
+  .gr-mag-spread { flex-direction: column; aspect-ratio: auto; width: 100%; }
+  .gr-mag-spread::after { display: none; }
+  .gr-mag-half { width: 100%; flex: none; }
+  .gr-mag-half-l { border-right: none; border-bottom: 1px solid var(--tan); }
+  .gr-mag-single { width: 340px; }
   .gr-mag-headline { font-size: 1.3rem; }
   .gr-mag-head { font-size: 1.1rem; }
 }

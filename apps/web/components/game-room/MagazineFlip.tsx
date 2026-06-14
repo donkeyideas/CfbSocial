@@ -38,100 +38,147 @@ function moment(post: ItemPost | null): Moment | null {
   return Array.isArray(post.game_moment) ? (post.game_moment[0] ?? null) : post.game_moment;
 }
 
+function Page({ it, pageNum }: { it: Item | undefined; pageNum: number }) {
+  if (!it?.post) return <div className="gr-mag-pageinner gr-mag-blank" />;
+  const post = it.post;
+  const m = moment(post);
+  const accent = post.school?.primary_color ?? 'var(--crimson)';
+  const tag = post.school?.abbreviation ?? (m?.is_team_builder ? 'Team Builder' : 'Moment');
+  const img = post.media_urls?.[0];
+  return (
+    <div className="gr-mag-pageinner" style={{ ['--cm' as string]: accent }}>
+      <div className="gr-mag-photo" data-count={1}>
+        {img && <div className="gr-mag-cell"><Image src={img} alt="" fill className="gr-mag-cell-img" sizes="460px" quality={95} /></div>}
+        <span className="gr-mag-tag">{tag}</span>
+        <span className="gr-mag-wm">CFB <span>SOCIAL</span></span>
+        {(m?.opponent || m?.our_score != null || m?.result) && (
+          <div className="gr-mag-bug">
+            <span className="gr-mag-bug-t">{tag} {m?.our_score ?? ''}</span>
+            <span className="gr-mag-bug-sc">{m?.game_state ?? (m?.our_score != null ? 'FINAL' : 'vs')}</span>
+            <span className="gr-mag-bug-t2">{m?.opponent ?? ''} {m?.opp_score ?? ''}</span>
+            {m?.week && <span className="gr-mag-bug-st">{m.week}</span>}
+          </div>
+        )}
+      </div>
+      <div className="gr-mag-text">
+        <div className="gr-mag-pagekicker">{[it.page_label ?? `Page ${pageNum}`, m?.opponent ? `vs ${m.opponent}` : '', m?.week].filter(Boolean).join(' · ')}</div>
+        <div className="gr-mag-head">{m?.title || 'Untitled moment'}</div>
+        {post.content && <div className="gr-mag-body">{post.content}</div>}
+        <div className="gr-mag-by">Uploaded by <b>@{post.author?.username ?? 'coach'}</b> · {post.touchdown_count ?? 0} TD</div>
+      </div>
+    </div>
+  );
+}
+
 export function MagazineFlip({ issueNumber, items, title, coverHeadline, coverSubtitle, coverPostId }: Props) {
   const masthead = (title ?? '').trim() || 'Game Room Weekly';
   const isDefaultMasthead = masthead.toLowerCase() === 'game room weekly';
   const valid = items.filter((it) => it.post && it.post.media_urls?.length);
-  // pages: cover, then EVERY moment as a page (incl. the cover story)
-  const pageCount = valid.length + 1;
-  const [turned, setTurned] = useState(0);
+
+  // Views: 0 = cover (single page), then one spread per pair of pages (1-2, 3-4, ...).
+  const spreadCount = Math.ceil(valid.length / 2);
+  const viewCount = 1 + spreadCount;
+  const [view, setView] = useState(0);
+  // Page-turn animation between spreads. `lo` = the lower of the two spread indices.
+  const [flip, setFlip] = useState<{ dir: 'next' | 'prev'; lo: number } | null>(null);
 
   if (valid.length === 0) return null;
 
-  const labels = ['Cover', ...valid.map((_, i) => `Page ${i + 2}`)];
-  const next = () => setTurned((t) => Math.min(pageCount - 1, t + 1));
-  const prev = () => setTurned((t) => Math.max(0, t - 1));
+  const isMobile = () => typeof window !== 'undefined' && window.matchMedia('(max-width: 760px)').matches;
 
-  // Build page nodes
-  const pages: React.ReactNode[] = [];
+  const next = () => {
+    if (flip) return;
+    if (view === 0) { setView(1); return; }
+    if (view >= viewCount - 1) return;
+    if (isMobile()) { setView(view + 1); return; }
+    setFlip({ dir: 'next', lo: view });
+  };
+  const prev = () => {
+    if (flip) return;
+    if (view === 0) return;
+    if (view === 1) { setView(0); return; }
+    if (isMobile()) { setView(view - 1); return; }
+    setFlip({ dir: 'prev', lo: view - 1 });
+  };
+  const commitFlip = () => {
+    if (!flip) return;
+    setView(flip.dir === 'next' ? flip.lo + 1 : flip.lo);
+    setFlip(null);
+  };
 
-  // Cover = the designated cover moment (cover_post_id), else the first page
-  const cover = valid.find((it) => it.post?.id === coverPostId) ?? valid[0]!;
-  const cm = moment(cover.post);
-  const coverAccent = cover.post?.school?.primary_color ?? 'var(--crimson)';
-  pages.push(
-    <div className="gr-mag-page gr-mag-cover" key="cover" style={{ ['--cm' as string]: coverAccent }}>
-      <Image src={cover.post!.media_urls[0]!} alt="cover" fill className="gr-mag-cover-img" sizes="(max-width: 560px) 640px, 960px" quality={95} priority />
-      <div className="gr-mag-veil" />
-      <div className="gr-mag-cover-top">
-        <div className="gr-mag-logo">
-          {isDefaultMasthead ? <>GAME <b>ROOM</b> WEEKLY</> : masthead}
-        </div>
-        <div className="gr-mag-issue">Issue No. {issueNumber}</div>
-      </div>
-      <div className="gr-mag-cover-bottom">
-        <div className="gr-mag-kicker">Cover Story · Moment of the Week</div>
-        <div className="gr-mag-headline">{(coverHeadline ?? '').trim() || cm?.title || cover.post!.content || 'A moment worth framing'}</div>
-        {(coverSubtitle ?? '').trim() && <div className="gr-mag-dek">{coverSubtitle}</div>}
-        <div className="gr-mag-byline">@{cover.post!.author?.username ?? 'coach'}{cm?.our_score != null ? ` · ${cm.our_score}—${cm.opp_score}` : ''}</div>
-      </div>
-      <div className="gr-mag-openhint">click to open →</div>
-    </div>
-  );
+  // Cover = the designated cover moment (cover_post_id), else the first page.
+  const cover = (valid.find((it) => it.post?.id === coverPostId) ?? valid[0]!).post!;
+  const cm = moment(cover);
+  const coverAccent = cover.school?.primary_color ?? 'var(--crimson)';
 
-  // Moment pages — every moment gets a full page (cover story included)
-  valid.forEach((it, i) => {
-    const m = moment(it.post);
-    const accent = it.post?.school?.primary_color ?? 'var(--crimson)';
-    const tag = it.post?.school?.abbreviation ?? (m?.is_team_builder ? 'Team Builder' : 'Moment');
-    const imgs = (it.post!.media_urls ?? []).slice(0, 1);
-    pages.push(
-      <div className="gr-mag-page gr-mag-moment" key={it.id} style={{ ['--cm' as string]: accent }}>
-        <div className="gr-mag-photo" data-count={imgs.length}>
-          {imgs.map((u, k) => (
-            <div className="gr-mag-cell" key={k}><Image src={u} alt="" fill className="gr-mag-cell-img" sizes="640px" quality={95} /></div>
-          ))}
-          <span className="gr-mag-tag">{tag}</span>
-          <span className="gr-mag-wm">CFB <span>SOCIAL</span></span>
-          {(m?.opponent || m?.our_score != null || m?.result) && (
-            <div className="gr-mag-bug">
-              <span className="gr-mag-bug-t">{tag} {m?.our_score ?? ''}</span>
-              <span className="gr-mag-bug-sc">{m?.game_state ?? (m?.our_score != null ? 'FINAL' : 'vs')}</span>
-              <span className="gr-mag-bug-t2">{m?.opponent ?? ''} {m?.opp_score ?? ''}</span>
-              {m?.week && <span className="gr-mag-bug-st">{m.week}</span>}
-            </div>
-          )}
-        </div>
-        <div className="gr-mag-text">
-          <div className="gr-mag-pagekicker">{[it.page_label ?? `Page ${i + 2}`, m?.opponent ? `vs ${m.opponent}` : '', m?.week].filter(Boolean).join(' · ')}</div>
-          <div className="gr-mag-head">{m?.title || 'Untitled moment'}</div>
-          {it.post!.content && <div className="gr-mag-body">{it.post!.content}</div>}
-          <div className="gr-mag-by">Uploaded by <b>@{it.post!.author?.username ?? 'coach'}</b> · {it.post!.touchdown_count ?? 0} TD</div>
-        </div>
-      </div>
-    );
-  });
+  const leftIdx = (view - 1) * 2;
+  const leftItem = valid[leftIdx];
+  const rightItem = valid[leftIdx + 1];
+  const posLabel =
+    view === 0
+      ? 'Cover'
+      : rightItem
+        ? `Pages ${leftIdx + 1}–${leftIdx + 2}`
+        : `Page ${leftIdx + 1}`;
 
   return (
     <div className="gr-mag-wrap">
       <div className="gr-mag-stage">
-        <div className="gr-mag-book">
-          {pages.map((node, i) => (
-            <div
-              key={i}
-              className={`gr-mag-leaf ${i < turned ? 'flipped' : ''}`}
-              style={{ zIndex: i < turned ? i : pageCount - i }}
-              onClick={() => (i < turned ? prev() : next())}
-            >
-              {node}
+        {view === 0 ? (
+          <div className="gr-mag-single" onClick={next} style={{ ['--cm' as string]: coverAccent }}>
+            <Image src={cover.media_urls[0]!} alt="cover" fill className="gr-mag-cover-img" sizes="(max-width: 560px) 420px, 480px" quality={95} priority />
+            <div className="gr-mag-veil" />
+            <div className="gr-mag-cover-top">
+              <div className="gr-mag-logo">
+                {isDefaultMasthead ? <>GAME <b>ROOM</b> WEEKLY</> : masthead}
+              </div>
+              <div className="gr-mag-issue">Issue No. {issueNumber}</div>
             </div>
-          ))}
-        </div>
+            <div className="gr-mag-cover-bottom">
+              <div className="gr-mag-kicker">Cover Story · Moment of the Week</div>
+              <div className="gr-mag-headline">{(coverHeadline ?? '').trim() || cm?.title || cover.content || 'A moment worth framing'}</div>
+              {(coverSubtitle ?? '').trim() && <div className="gr-mag-dek">{coverSubtitle}</div>}
+              <div className="gr-mag-byline">@{cover.author?.username ?? 'coach'}{cm?.our_score != null ? ` · ${cm.our_score}—${cm.opp_score}` : ''}</div>
+            </div>
+            <div className="gr-mag-openhint">click to open →</div>
+          </div>
+        ) : flip ? (
+          (() => {
+            // Pages involved in the turn (lo = lower spread index):
+            //   page A = lo's left, page B = lo's right, page C = (lo+1)'s left, page D = (lo+1)'s right
+            const a = (flip.lo - 1) * 2;          // base left  (stays)
+            const b = a + 1;                       // lo's right
+            const c = a + 2;                       // (lo+1)'s left
+            const d = a + 3;                       // base right (stays)
+            const frontIsB = flip.dir === 'next';  // the page visible at the start of the turn
+            const frontIdx = frontIsB ? b : c;
+            const backIdx = frontIsB ? c : b;
+            return (
+              <div className="gr-mag-spread gr-mag-flipping">
+                <div className="gr-mag-half gr-mag-half-l"><Page it={valid[a]} pageNum={a + 1} /></div>
+                <div className="gr-mag-half gr-mag-half-r"><Page it={valid[d]} pageNum={d + 1} /></div>
+                <div className={`gr-mag-flip gr-mag-flip-${flip.dir}`} onAnimationEnd={commitFlip}>
+                  <div className="gr-mag-flip-face gr-mag-flip-front"><Page it={valid[frontIdx]} pageNum={frontIdx + 1} /></div>
+                  <div className="gr-mag-flip-face gr-mag-flip-back"><Page it={valid[backIdx]} pageNum={backIdx + 1} /></div>
+                </div>
+              </div>
+            );
+          })()
+        ) : (
+          <div className="gr-mag-spread">
+            <div className="gr-mag-half gr-mag-half-l" onClick={prev}>
+              <Page it={leftItem} pageNum={leftIdx + 1} />
+            </div>
+            <div className="gr-mag-half gr-mag-half-r" onClick={next}>
+              {rightItem ? <Page it={rightItem} pageNum={leftIdx + 2} /> : <div className="gr-mag-pageinner gr-mag-blank" />}
+            </div>
+          </div>
+        )}
       </div>
       <div className="gr-mag-controls">
-        <button onClick={prev} disabled={turned === 0}>← Prev</button>
-        <span className="gr-mag-pos">{labels[turned] ?? `Page ${turned + 1}`}</span>
-        <button onClick={next} disabled={turned >= pageCount - 1}>Next →</button>
+        <button onClick={prev} disabled={view === 0 || !!flip}>← Prev</button>
+        <span className="gr-mag-pos">{posLabel}</span>
+        <button onClick={next} disabled={view >= viewCount - 1 || !!flip}>Next →</button>
       </div>
     </div>
   );
