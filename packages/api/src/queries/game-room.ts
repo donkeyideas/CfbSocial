@@ -163,6 +163,89 @@ export async function getOwnerIssues(client: SupabaseClient, ownerId: string) {
   return issues.map((issue) => ({ issue, items: byIssue[issue.id] ?? [] }));
 }
 
+/** Public "Newsstand": every published issue that has at least one live page, newest first.
+ *  Returns lightweight cover cards (no full page bodies) for a browse grid. */
+export async function getPublicIssues(client: SupabaseClient, opts: { limit?: number } = {}) {
+  const limit = opts.limit ?? 60;
+  const { data: issues, error } = await client
+    .from('game_room_issues')
+    .select('id, issue_number, title, cover_post_id, owner_id, owner:owner_id ( username, display_name )')
+    .eq('is_published', true)
+    .order('published_at', { ascending: false })
+    .limit(limit);
+  if (error) throw error;
+  if (!issues || issues.length === 0) return [];
+
+  const ids = issues.map((i) => i.id);
+  const { data: items, error: itemsErr } = await client
+    .from('game_room_issue_items')
+    .select('issue_id, post_id, position, post:post_id ( media_urls, status, school:school_id ( abbreviation, primary_color ) )')
+    .in('issue_id', ids)
+    .order('position', { ascending: true });
+  if (itemsErr) throw itemsErr;
+
+  const byIssue: Record<string, Array<Record<string, unknown>>> = {};
+  (items ?? []).forEach((it: Record<string, unknown>) => {
+    const post = it.post as Record<string, unknown> | null;
+    if (!post || post.status !== 'PUBLISHED' || !((post.media_urls as string[] | null)?.length)) return;
+    (byIssue[it.issue_id as string] ??= []).push(it);
+  });
+
+  return issues
+    .map((issue) => {
+      const pages = byIssue[issue.id] ?? [];
+      const coverItem = pages.find((p) => p.post_id === issue.cover_post_id) ?? pages[0];
+      const coverPost = coverItem?.post as Record<string, unknown> | undefined;
+      const school = coverPost?.school as Record<string, unknown> | null | undefined;
+      const owner = issue.owner as { username?: string; display_name?: string | null } | null;
+      return {
+        id: issue.id as string,
+        issueNumber: issue.issue_number as number,
+        title: (issue.title as string | null) || 'Game Room Weekly',
+        ownerUsername: owner?.username ?? null,
+        ownerName: owner?.display_name ?? null,
+        coverUrl: ((coverPost?.media_urls as string[] | undefined)?.[0]) ?? null,
+        coverAccent: (school?.primary_color as string | null) ?? null,
+        school: (school?.abbreviation as string | null) ?? null,
+        pageCount: pages.length,
+      };
+    })
+    .filter((m) => m.pageCount > 0 && m.coverUrl);
+}
+
+/** Public, read-only fetch of a single issue by its id (for the Newsstand reader route). */
+export async function getPublicIssueById(client: SupabaseClient, id: string) {
+  const { data: issue, error } = await client
+    .from('game_room_issues')
+    .select('*, owner:owner_id ( username, display_name )')
+    .eq('id', id)
+    .eq('is_published', true)
+    .maybeSingle();
+  if (error) throw error;
+  if (!issue) return null;
+
+  const { data: items, error: itemsErr } = await client
+    .from('game_room_issue_items')
+    .select(`
+      *,
+      post:post_id (
+        id, content, media_urls, touchdown_count, status,
+        author:author_id ( username, display_name ),
+        school:school_id ( name, abbreviation, primary_color ),
+        game_moment:game_moments ( title, opponent, our_score, opp_score, week, result, game_state, is_team_builder )
+      )
+    `)
+    .eq('issue_id', issue.id)
+    .order('position', { ascending: true });
+  if (itemsErr) throw itemsErr;
+
+  const published = (items ?? []).filter((it: Record<string, unknown>) => {
+    const post = it.post as Record<string, unknown> | null;
+    return post && post.status === 'PUBLISHED';
+  });
+  return { issue, items: published };
+}
+
 /** Public, read-only fetch of the issue announced by a given Feed post (no owner gate). */
 export async function getIssueByFeedPost(client: SupabaseClient, feedPostId: string) {
   const { data: issue, error: issueErr } = await client

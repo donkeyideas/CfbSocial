@@ -42,17 +42,18 @@ interface GameRoomPageProps {
 
 export default async function GameRoomPage({ searchParams }: GameRoomPageProps) {
   const params = await searchParams;
-  const tab = params.tab ?? 'thisweek';
+  const tab = params.tab ?? 'newsstand';
 
   const { createClient } = await import('@/lib/supabase/server');
-  const { getMoments, getLeagues, getOwnerIssues, getCommissionerRequests, getMyLeagueIds } = await import('@cfb-social/api');
+  const { getMoments, getLeagues, getOwnerIssues, getPublicIssues, getCommissionerRequests, getMyLeagueIds } = await import('@cfb-social/api');
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
-  const [moments, leagues, issues, requests, myLeagueIds] = await Promise.all([
+  const [moments, leagues, issues, publicIssues, requests, myLeagueIds] = await Promise.all([
     getMoments(supabase, { limit: 24 }).catch(() => []),
     getLeagues(supabase, { limit: 50 }).catch(() => []),
     user ? getOwnerIssues(supabase, user.id).catch(() => []) : Promise.resolve([]),
+    getPublicIssues(supabase, { limit: 60 }).catch(() => []),
     user ? getCommissionerRequests(supabase, user.id).catch(() => []) : Promise.resolve([]),
     user ? getMyLeagueIds(supabase, user.id).catch(() => []) : Promise.resolve([]),
   ]);
@@ -81,6 +82,7 @@ export default async function GameRoomPage({ searchParams }: GameRoomPageProps) 
         leagues={safeLeagues as unknown[]}
         issues={issues as unknown[]}
         requests={requests as unknown[]}
+        publicIssues={publicIssues as unknown[]}
       />
 
       {/* Crawlable SEO content — internal links + answer-engine text */}

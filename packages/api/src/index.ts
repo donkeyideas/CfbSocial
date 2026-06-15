@@ -21,7 +21,7 @@ export { getGameThreads, getGameThread, getGameThreadMessages } from './queries/
 export { getActiveBracket, getBracketById, getBracketMatchups, getUserMascotVotes } from './queries/mascot-wars';
 export { getRecruitingStats } from './queries/recruiting';
 export type { RecruitingSchoolStats } from './queries/recruiting';
-export { getMoments, getMomentByPostId, getSaves, getLeagues, getLeagueById, getLeagueRequests, getLatestIssue, getUserIssues, getOwnerIssues, getIssueByFeedPost, getCommissionerRequests, getMyLeagueIds } from './queries/game-room';
+export { getMoments, getMomentByPostId, getSaves, getLeagues, getLeagueById, getLeagueRequests, getLatestIssue, getUserIssues, getOwnerIssues, getIssueByFeedPost, getPublicIssues, getPublicIssueById, getCommissionerRequests, getMyLeagueIds } from './queries/game-room';
 
 // Mutations
 export { signUp, signIn, signInWithOAuth, signOut, resetPassword } from './mutations/auth';

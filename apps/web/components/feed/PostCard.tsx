@@ -410,7 +410,6 @@ const IssuePost = memo(function IssuePost({ post, isDark }: { post: Post; isDark
   const cover = post.media_urls?.[0];
   return (
     <article className="post-card post-issue">
-      <div className="issue-card-tape" aria-hidden />
       {cover && (
         <div className="issue-card-cover">
           <Image src={cover} alt={post.content} fill className="issue-card-img" sizes="(max-width: 700px) 100vw, 620px" quality={90} />

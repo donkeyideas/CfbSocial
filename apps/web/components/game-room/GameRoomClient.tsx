@@ -48,23 +48,30 @@ interface RequestItem {
   id: string; league_id: string; league_name: string; preferred_school: string | null; platform: string | null; message: string | null;
   applicant: { username: string; display_name: string | null; dynasty_tier: string | null } | null;
 }
+interface PublicIssue {
+  id: string; issueNumber: number; title: string;
+  ownerUsername: string | null; ownerName: string | null;
+  coverUrl: string | null; coverAccent: string | null; school: string | null; pageCount: number;
+}
 interface Props {
   initialTab: string;
   moments: unknown[];
   leagues: unknown[];
   issues: unknown[];
   requests: unknown[];
+  publicIssues: unknown[];
 }
 
 const TABS = [
-  { key: 'thisweek', label: 'Magazine' },
+  { key: 'newsstand', label: 'Newsstand' },
+  { key: 'thisweek', label: 'My Magazine' },
   { key: 'moments', label: 'Moments' },
   { key: 'leagues', label: 'Leagues' },
 ];
 
 const issueHasPages = (e: IssueEntry) => e.items.some((it) => it.post && it.post.media_urls?.length > 0);
 
-export function GameRoomClient({ initialTab, moments, leagues, issues, requests }: Props) {
+export function GameRoomClient({ initialTab, moments, leagues, issues, requests, publicIssues }: Props) {
   const router = useRouter();
   const { isLoggedIn, profile } = useAuth();
   const [tab, setTab] = useState(initialTab);
@@ -77,6 +84,7 @@ export function GameRoomClient({ initialTab, moments, leagues, issues, requests 
   const [sharing, setSharing] = useState(false);
 
   const momentList = moments as MomentItem[];
+  const newsstand = publicIssues as PublicIssue[];
   const leagueList = leagues as LeagueItem[];
   const issueList = issues as IssueEntry[];
   const requestList = requests as RequestItem[];
@@ -177,6 +185,38 @@ export function GameRoomClient({ initialTab, moments, leagues, issues, requests 
             <Link className="gr-upload-btn" href="/login?redirect=/game-room">Log in to post</Link>
           )}
         </div>
+      )}
+
+      {/* NEWSSTAND — public magazines from everyone */}
+      {tab === 'newsstand' && (
+        newsstand.length === 0 ? (
+          <div className="content-card gr-placeholder">
+            <p>No magazines on the Newsstand yet. Be the first — head to <button className="gr-link-inline" onClick={() => setTab('thisweek')}>My Magazine</button> and publish an issue.</p>
+          </div>
+        ) : (
+          <>
+            <p className="gr-news-intro">Flip through dynasty magazines from coaches across CFB Social. Newest issues first.</p>
+            <div className="gr-news-grid">
+              {newsstand.map((m) => (
+                <Link key={m.id} href={`/game-room/m/${m.id}`} className="gr-news-card" style={{ ['--cm' as string]: m.coverAccent ?? 'var(--crimson)' }}>
+                  <div className="gr-news-cover">
+                    {m.coverUrl && <Image src={m.coverUrl} alt={m.title} fill className="gr-news-img" sizes="(max-width: 700px) 50vw, 240px" quality={90} />}
+                    <div className="gr-news-veil" />
+                    {m.school && <span className="gr-news-tag">{m.school}</span>}
+                    <div className="gr-news-plate">
+                      <div className="gr-news-masthead">{m.title}</div>
+                      <div className="gr-news-issue">Issue No. {m.issueNumber}</div>
+                    </div>
+                  </div>
+                  <div className="gr-news-meta">
+                    <span className="gr-news-by">@{m.ownerUsername ?? 'coach'}</span>
+                    <span className="gr-news-pages">{m.pageCount} {m.pageCount === 1 ? 'page' : 'pages'}</span>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </>
+        )
       )}
 
       {/* MAGAZINE */}

@@ -13,9 +13,10 @@ import { AppHeader } from '@/components/navigation/AppHeader';
 import { SectionLabel } from '@/components/ui/SectionLabel';
 import { EmptyState } from '@/components/ui/EmptyState';
 import {
-  getMoments, getOwnerIssues, getLeagues, getCommissionerRequests, getMyLeagueIds, shareIssueToFeed,
+  getMoments, getOwnerIssues, getPublicIssues, getLeagues, getCommissionerRequests, getMyLeagueIds, shareIssueToFeed,
 } from '@cfb-social/api';
 import { MomentCard } from '@/components/game-room/MomentCard';
+import { NewsstandCard } from '@/components/game-room/NewsstandCard';
 import { MomentComposer } from '@/components/game-room/MomentComposer';
 import { MomentEditModal } from '@/components/game-room/MomentEditModal';
 import { MagazinePager } from '@/components/game-room/MagazinePager';
@@ -25,11 +26,12 @@ import { LeagueComposer } from '@/components/game-room/LeagueComposer';
 import { RequestSlotModal } from '@/components/game-room/RequestSlotModal';
 import { InboxModal } from '@/components/game-room/InboxModal';
 import { InboxBadge } from '@/components/game-room/InboxBadge';
-import { issueHasPages, type IssueEntry, type LeagueItem, type MomentItem, type RequestItem } from '@/components/game-room/types';
+import { issueHasPages, type IssueEntry, type LeagueItem, type MomentItem, type NewsstandIssue, type RequestItem } from '@/components/game-room/types';
 
-type Tab = 'thisweek' | 'moments' | 'leagues';
+type Tab = 'newsstand' | 'thisweek' | 'moments' | 'leagues';
 const TABS: { key: Tab; label: string }[] = [
-  { key: 'thisweek', label: 'Magazine' },
+  { key: 'newsstand', label: 'Newsstand' },
+  { key: 'thisweek', label: 'My Magazine' },
   { key: 'moments', label: 'Moments' },
   { key: 'leagues', label: 'Leagues' },
 ];
@@ -43,11 +45,12 @@ export default function GameRoomScreen() {
   const { width } = useWindowDimensions();
   const isLoggedIn = !!userId;
 
-  const [tab, setTab] = useState<Tab>((params.tab as Tab) || 'thisweek');
+  const [tab, setTab] = useState<Tab>((params.tab as Tab) || 'newsstand');
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
   const [moments, setMoments] = useState<MomentItem[]>([]);
+  const [publicIssues, setPublicIssues] = useState<NewsstandIssue[]>([]);
   const [issues, setIssues] = useState<IssueEntry[]>([]);
   const [leagues, setLeagues] = useState<LeagueItem[]>([]);
   const [requests, setRequests] = useState<RequestItem[]>([]);
@@ -63,10 +66,11 @@ export default function GameRoomScreen() {
 
   const load = useCallback(async () => {
     try {
-      const [m, lg, iss, req, mine] = await Promise.all([
+      const [m, lg, iss, pub, req, mine] = await Promise.all([
         getMoments(supabase, { limit: 24 }).catch(() => []),
         getLeagues(supabase, { limit: 50 }).catch(() => []),
         userId ? getOwnerIssues(supabase, userId).catch(() => []) : Promise.resolve([]),
+        getPublicIssues(supabase, { limit: 60 }).catch(() => []),
         userId ? getCommissionerRequests(supabase, userId).catch(() => []) : Promise.resolve([]),
         userId ? getMyLeagueIds(supabase, userId).catch(() => []) : Promise.resolve([]),
       ]);
@@ -77,6 +81,7 @@ export default function GameRoomScreen() {
       setMoments(m as MomentItem[]);
       setLeagues(safeLeagues as unknown as LeagueItem[]);
       setIssues(iss as IssueEntry[]);
+      setPublicIssues(pub as NewsstandIssue[]);
       setRequests(req as RequestItem[]);
     } finally {
       setLoading(false);
@@ -105,9 +110,13 @@ export default function GameRoomScreen() {
   };
 
   const cardW = width - 24;
+  const newsCardW = (width - 24 - 12) / 2;
 
   const styles = useMemo(() => StyleSheet.create({
     container: { flex: 1, backgroundColor: colors.paper },
+    newsIntro: { fontFamily: typography.serif, fontStyle: 'italic', fontSize: 14, color: colors.textMuted, paddingHorizontal: 12, paddingTop: 6, paddingBottom: 2 },
+    newsGrid: { paddingTop: 10, paddingBottom: 90, gap: 14 },
+    newsRow: { gap: 12, paddingHorizontal: 12 },
     tabRow: { flexDirection: 'row', borderBottomWidth: 1, borderBottomColor: colors.border },
     tab: { flex: 1, paddingVertical: 12, alignItems: 'center', borderBottomWidth: 2, borderBottomColor: 'transparent' },
     tabText: { fontFamily: typography.sansSemiBold, fontSize: 14, color: colors.textMuted },
@@ -148,6 +157,21 @@ export default function GameRoomScreen() {
   }), [colors]);
 
   // ---- Tab content ----
+  const renderNewsstand = () => (
+    <FlatList
+      key="newsstand-grid"
+      data={publicIssues}
+      keyExtractor={(m) => m.id}
+      numColumns={2}
+      columnWrapperStyle={styles.newsRow}
+      contentContainerStyle={styles.newsGrid}
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={dark} />}
+      ListHeaderComponent={publicIssues.length > 0 ? <Text style={styles.newsIntro}>Flip through dynasty magazines from coaches across CFB Social.</Text> : null}
+      renderItem={({ item }) => <NewsstandCard m={item} width={newsCardW} />}
+      ListEmptyComponent={<EmptyState title="No magazines yet" subtitle="Be the first — publish an issue from My Magazine." />}
+    />
+  );
+
   const renderMagazine = () => {
     if (!selected) {
       return (
@@ -280,7 +304,7 @@ export default function GameRoomScreen() {
 
       {loading ? (
         <View style={styles.loader}><ActivityIndicator size="large" color={dark} /></View>
-      ) : tab === 'thisweek' ? renderMagazine() : tab === 'moments' ? renderMoments() : renderLeagues()}
+      ) : tab === 'newsstand' ? renderNewsstand() : tab === 'thisweek' ? renderMagazine() : tab === 'moments' ? renderMoments() : renderLeagues()}
 
       {composerOpen && <MomentComposer visible={composerOpen} onClose={() => setComposerOpen(false)} onPosted={() => { setComposerOpen(false); load(); }} />}
       {editMoment && (

@@ -842,6 +842,11 @@ h1, h2, h3, h4, h5, h6,
   opacity: 0.9;
 }
 
+/* In dark mode --text-inverse flips dark; keep crimson/school buttons legible */
+html.dark .btn-crimson {
+  color: #fff;
+}
+
 /* Input styling */
 .gridiron-input {
   background-color: var(--surface-raised);
@@ -7540,7 +7545,6 @@ html.dark .search-school-mascot {
 
 /* Feed card for a shared Game Room issue */
 .post-card.post-issue { position: relative; padding: 0; overflow: hidden; cursor: pointer; }
-.issue-card-tape { position: absolute; top: -8px; left: 50%; transform: translateX(-50%) rotate(-1.5deg); width: 120px; height: 22px; background: rgba(139,26,26,0.16); border: 1px dashed rgba(139,26,26,0.4); z-index: 2; }
 .issue-card-cover { position: relative; width: 100%; aspect-ratio: 16 / 9; background: var(--dark-brown); overflow: hidden; }
 .issue-card-img { object-fit: cover; }
 .issue-card-wm { position: absolute; bottom: 8px; right: 10px; font-family: var(--serif); font-weight: 800; font-size: 0.7rem; letter-spacing: 1px; color: rgba(255,255,255,0.82); text-shadow: 0 1px 3px rgba(0,0,0,0.6); }
@@ -7551,7 +7555,9 @@ html.dark .search-school-mascot {
 .issue-card-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
 .issue-card-cta { font-family: var(--sans); font-size: 0.8rem; font-weight: 700; color: var(--crimson); white-space: nowrap; text-decoration: none; }
 .issue-card-cta:hover { text-decoration: underline; }
-.dark .post-card.post-issue .issue-card-title { color: var(--cream); }
+.dark .post-card.post-issue .issue-card-title { color: var(--ink); }
+html.dark .issue-card-eyebrow { color: var(--gold); }
+html.dark .issue-card-cta { color: var(--gold); }
 
 /* Composer modal */
 .gr-modal-backdrop { position: fixed; inset: 0; background: rgba(20,12,8,0.6); display: flex; align-items: center; justify-content: center; z-index: 200; padding: 20px; }
@@ -7649,6 +7655,28 @@ html.dark .search-school-mascot {
 .gr-issue-del:hover { background: var(--crimson); color: #fff; }
 .gr-issue-del:disabled { opacity: 0.4; cursor: default; }
 @media (max-width: 700px) { .gr-im-cols { grid-template-columns: 1fr; } .gr-im-cover-fields { grid-template-columns: 1fr; } }
+/* ===== Newsstand — public magazine cover wall ===== */
+.gr-news-intro { font-family: var(--serif); font-style: italic; color: var(--faded-ink); margin: 2px 0 16px; font-size: 0.95rem; }
+.gr-news-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 20px; }
+.gr-news-card { display: flex; flex-direction: column; text-decoration: none; }
+.gr-news-cover { position: relative; width: 100%; aspect-ratio: 3 / 4; border-radius: 4px; overflow: hidden; background: var(--dark-brown); box-shadow: 0 8px 22px rgba(59,47,30,0.22); transition: transform 0.18s ease, box-shadow 0.18s ease; }
+.gr-news-card:hover .gr-news-cover { transform: translateY(-4px); box-shadow: 0 14px 30px rgba(59,47,30,0.3); }
+.gr-news-img { object-fit: cover; }
+.gr-news-veil { position: absolute; inset: 0; background: linear-gradient(0deg, rgba(15,8,28,0.92), rgba(15,8,28,0.04) 50%, rgba(15,8,28,0.45)); }
+.gr-news-tag { position: absolute; top: 9px; left: 9px; font-family: var(--sans); font-size: 0.5rem; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; color: #fff; background: var(--cm, var(--crimson)); padding: 3px 9px 3px 6px; clip-path: polygon(0 0,100% 0,90% 50%,100% 100%,0 100%); z-index: 2; }
+.gr-news-plate { position: absolute; left: 0; right: 0; bottom: 0; padding: 12px 12px 14px; z-index: 2; }
+.gr-news-masthead { font-family: var(--serif); font-weight: 900; font-size: 1rem; line-height: 1.1; color: #fff; text-transform: uppercase; letter-spacing: 0.5px; text-shadow: 0 2px 8px rgba(0,0,0,0.6); display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; overflow: hidden; }
+.gr-news-issue { font-family: var(--mono); font-size: 0.56rem; letter-spacing: 1.5px; text-transform: uppercase; color: var(--gold); margin-top: 5px; }
+.gr-news-meta { display: flex; justify-content: space-between; align-items: center; margin-top: 8px; font-family: var(--mono); font-size: 0.66rem; }
+.gr-news-by { color: var(--crimson); font-weight: 700; }
+.gr-news-pages { color: var(--faded-ink); }
+.gr-link-inline { background: none; border: none; padding: 0; font: inherit; color: var(--crimson); font-weight: 700; cursor: pointer; text-decoration: underline; }
+.gr-back-link { display: inline-block; font-family: var(--mono); font-size: 0.7rem; letter-spacing: 1px; text-transform: uppercase; color: var(--faded-ink); text-decoration: none; margin-bottom: 6px; }
+.gr-back-link:hover { color: var(--crimson); }
+html.dark .gr-news-by, html.dark .gr-link-inline { color: var(--gold); }
+@media (max-width: 560px) {
+  .gr-news-grid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 14px; }
+}
 .gr-mag-stage { display: flex; justify-content: center; padding: 8px 0 4px; }
 /* Cover — a single portrait page */
 .gr-mag-single { position: relative; width: 420px; max-width: 100%; aspect-ratio: 3 / 4; border-radius: 3px; overflow: hidden; cursor: pointer; background: var(--cream); box-shadow: 0 14px 38px rgba(59,47,30,0.26); animation: gr-mag-in 0.35s ease; }
@@ -7732,6 +7760,10 @@ html.dark .search-school-mascot {
 .gr-error { margin-top: 12px; font-family: var(--sans); font-size: 0.8rem; color: var(--crimson); }
 .gr-btn-ghost { font-family: var(--sans); font-size: 0.82rem; color: var(--faded-ink); background: none; border: 1.5px solid var(--tan); padding: 10px 18px; border-radius: 3px; cursor: pointer; }
 .gr-btn-primary { font-family: var(--serif); font-weight: 700; font-size: 0.82rem; text-transform: uppercase; letter-spacing: 0.5px; background: var(--crimson); color: var(--cream); border: none; padding: 11px 24px; border-radius: 3px; cursor: pointer; }
+/* In dark mode --cream flips dark; keep these crimson/school buttons legible */
+html.dark .gr-btn-primary,
+html.dark .gr-upload-btn { color: #fff; }
+html.dark .gr-upload-btn:hover { background: var(--gold); color: #1a1714; }
 
 @media (max-width: 700px) {
   .gr-grid { grid-template-columns: 1fr; }

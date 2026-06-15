@@ -77,6 +77,19 @@ export interface RequestItem {
   applicant: { username: string; display_name: string | null; dynasty_tier: string | null } | null;
 }
 
+/** A lightweight public-magazine cover card for the Newsstand grid. */
+export interface NewsstandIssue {
+  id: string;
+  issueNumber: number;
+  title: string;
+  ownerUsername: string | null;
+  ownerName: string | null;
+  coverUrl: string | null;
+  coverAccent: string | null;
+  school: string | null;
+  pageCount: number;
+}
+
 export const issueHasPages = (e: IssueEntry) =>
   e.items.some((it) => it.post && (it.post.media_urls?.length ?? 0) > 0);
 
