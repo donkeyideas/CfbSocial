@@ -5,6 +5,7 @@ import { SchoolHub } from './SchoolHub';
 import { SportsTeamJsonLd, BreadcrumbJsonLd } from '@/components/seo/JsonLd';
 import { searchHighlights } from '@/lib/providers/youtube';
 import { GAME } from '@/lib/constants/game';
+import { matchupSlug, CURATED_RIVALRIES } from '@/lib/seo/matchups';
 
 export const revalidate = 60;
 
@@ -58,7 +59,7 @@ export default async function SchoolPage({ params }: SchoolPageProps) {
 
   // Fetch all remaining data in PARALLEL (was 5 sequential queries)
   const { getMoments } = await import('@cfb-social/api');
-  const [fanCountRes, postCountRes, postsRes, topFansRes, portalCountRes, momentsData] = await Promise.all([
+  const [fanCountRes, postCountRes, postsRes, topFansRes, portalCountRes, momentsData, topTakesRes, confPeersRes] = await Promise.all([
     supabase
       .from('profiles')
       .select('id', { count: 'exact', head: true })
@@ -94,6 +95,24 @@ export default async function SchoolPage({ params }: SchoolPageProps) {
       .select('id', { count: 'exact', head: true })
       .or(`previous_school_id.eq.${school.id},committed_school_id.eq.${school.id}`),
     getMoments(supabase, { schoolId: school.id, limit: 12 }).catch(() => []),
+    // Evergreen "top takes of all time" — ordered by engagement, not recency,
+    // so the highest-value content becomes a permanent, crawlable hub section.
+    supabase
+      .from('posts')
+      .select('id, content, touchdown_count, reply_count, created_at')
+      .eq('school_id', school.id)
+      .eq('status', 'PUBLISHED')
+      .is('parent_id', null)
+      .order('touchdown_count', { ascending: false })
+      .order('reply_count', { ascending: false })
+      .limit(8),
+    // Conference peers for internal rivalry/matchup links.
+    supabase
+      .from('schools')
+      .select('name, slug')
+      .eq('conference', school.conference)
+      .neq('id', school.id)
+      .limit(12),
   ]);
 
   const fanCount = fanCountRes.count;
@@ -111,6 +130,30 @@ export default async function SchoolPage({ params }: SchoolPageProps) {
     post: { id: string; media_urls: string[]; content: string } | null;
   };
   const moments = ((momentsData as GMItem[]) ?? []).filter((m) => m.post && m.post.media_urls?.length > 0).slice(0, 8);
+
+  // Internal rivalry/matchup links: curated rivalries involving this school
+  // first, then fill with conference peers. These links let Google discover the
+  // matchup hubs (and the auto-grow ones) and tie the hub graph together.
+  type Peer = { name: string; slug: string };
+  const confPeers = ((confPeersRes.data as Peer[] | null) ?? []);
+  const curatedForSchool = CURATED_RIVALRIES
+    .filter((r) => r.a === slug || r.b === slug)
+    .map((r) => (r.a === slug ? r.b : r.a));
+  const opponentSlugs = Array.from(
+    new Set([...curatedForSchool, ...confPeers.map((p) => p.slug)]),
+  ).slice(0, 8);
+  const peerName = (s: string) => confPeers.find((p) => p.slug === s)?.name
+    ?? s.split('-').map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+  const matchupLinks = opponentSlugs.map((opp) => ({
+    href: `/matchup/${matchupSlug(slug, opp)}`,
+    label: `${school.short_name || school.name} vs ${peerName(opp)}`,
+  }));
+
+  // Evergreen top takes (only render ones with real substance/engagement).
+  type TopTake = { id: string; content: string; touchdown_count: number | null; reply_count: number | null };
+  const topTakes = ((topTakesRes.data as TopTake[] | null) ?? [])
+    .filter((t) => (t.content?.trim().length ?? 0) > 0 && ((t.touchdown_count ?? 0) > 0 || (t.reply_count ?? 0) > 0))
+    .slice(0, 6);
 
   return (
     <>
@@ -188,6 +231,44 @@ export default async function SchoolPage({ params }: SchoolPageProps) {
               );
             })}
           </div>
+        </section>
+      )}
+
+      {matchupLinks.length > 0 && (
+        <section style={{ marginTop: 28 }}>
+          <h2 style={{ fontFamily: 'var(--serif)', color: 'var(--dark-brown)', fontSize: '1.25rem', marginBottom: 4 }}>
+            {school.name} Rivalries &amp; Matchups
+          </h2>
+          <p style={{ color: 'var(--faded-ink)', fontSize: '0.9rem', lineHeight: 1.55, marginBottom: 14, maxWidth: '52rem' }}>
+            Pick a side in {school.name}&apos;s biggest rivalries. Each matchup hub aggregates the takes, history, and live debate between the two fan bases.
+          </p>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10 }}>
+            {matchupLinks.map((m) => (
+              <Link key={m.href} href={m.href} className="content-card" style={{ padding: '7px 12px', textDecoration: 'none', color: 'var(--ink-dark)', fontFamily: 'var(--serif)', fontSize: '0.9rem' }}>
+                {m.label}
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {topTakes.length > 0 && (
+        <section style={{ marginTop: 28 }}>
+          <h2 style={{ fontFamily: 'var(--serif)', color: 'var(--dark-brown)', fontSize: '1.25rem', marginBottom: 4 }}>
+            Top {school.name} Takes of All Time
+          </h2>
+          <p style={{ color: 'var(--faded-ink)', fontSize: '0.9rem', lineHeight: 1.55, marginBottom: 14, maxWidth: '52rem' }}>
+            The most-debated {school.name} takes on CFB Social, ranked by reaction.
+          </p>
+          <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {topTakes.map((t) => (
+              <li key={t.id}>
+                <Link href={`/post/${t.id}`} className="content-card" style={{ display: 'block', padding: '10px 14px', textDecoration: 'none', color: 'var(--ink)', fontFamily: 'var(--serif)', fontSize: '0.92rem', lineHeight: 1.45 }}>
+                  {t.content.length > 160 ? `${t.content.slice(0, 160)}…` : t.content}
+                </Link>
+              </li>
+            ))}
+          </ul>
         </section>
       )}
     </>

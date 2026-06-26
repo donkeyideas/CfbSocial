@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { PostCard } from '@/components/feed/PostCard';
 import { ReplyComposer } from '@/components/feed/ReplyComposer';
 import { DiscussionPostJsonLd, ImageObjectJsonLd } from '@/components/seo/JsonLd';
+import { isPostIndexable, NOINDEX_ROBOTS } from '@/lib/seo/indexable';
 import { GAME } from '@/lib/constants/game';
 import { PostDwellTracker } from './PostDwellTracker';
 
@@ -21,8 +22,8 @@ export async function generateMetadata({ params }: PostPageProps) {
   const { data: post } = await supabase
     .from('posts')
     .select(`
-      content, post_type, media_urls,
-      author:profiles!posts_author_id_fkey(username),
+      content, post_type, media_urls, status, removed_at, reply_count, view_count,
+      author:profiles!posts_author_id_fkey(username, is_bot),
       school:schools!posts_school_id_fkey(name, abbreviation),
       game_moment:game_moments(title, opponent, our_score, opp_score, week)
     `)
@@ -31,7 +32,22 @@ export async function generateMetadata({ params }: PostPageProps) {
 
   if (!post) return { title: 'Post Not Found' };
 
-  const author = post.author as unknown as { username: string } | null;
+  const author = post.author as unknown as { username: string; is_bot: boolean | null } | null;
+
+  // Shared indexability policy: thin / bot takes are crawlable but noindex so
+  // crawl budget concentrates on the durable hubs. Moments stay indexable.
+  const robots = isPostIndexable({
+    status: post.status,
+    removed_at: post.removed_at,
+    post_type: post.post_type,
+    content: post.content,
+    media_urls: post.media_urls as string[] | null,
+    reply_count: post.reply_count,
+    view_count: post.view_count,
+    author,
+  })
+    ? undefined
+    : NOINDEX_ROBOTS;
 
   // Moments get image-rich, video-game-keyworded metadata so they surface in
   // Google Images / Lens and answer engines for "[school] College Football 26" queries.
@@ -58,6 +74,7 @@ export async function generateMetadata({ params }: PostPageProps) {
       },
       twitter: { card: 'summary_large_image' as const, title, description, images: img ? [img] : undefined },
       alternates: { canonical: `https://www.cfbsocial.com/post/${id}` },
+      ...(robots ? { robots } : {}),
     };
   }
 
@@ -71,6 +88,7 @@ export async function generateMetadata({ params }: PostPageProps) {
     openGraph: { title, description, type: 'article' },
     twitter: { card: 'summary' as const, title, description },
     alternates: { canonical: `https://www.cfbsocial.com/post/${id}` },
+    ...(robots ? { robots } : {}),
   };
 }
 
