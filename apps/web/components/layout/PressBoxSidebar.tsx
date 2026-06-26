@@ -225,6 +225,13 @@ export function PressBoxSidebar() {
     setSelectedArticle(article);
   }
 
+  // Only surface roster claims from the last 21 days as "dispatches" — older
+  // ones read as stale/hardcoded when CFBD data is unavailable.
+  const CLAIM_MAX_AGE_MS = 21 * 24 * 60 * 60 * 1000;
+  const recentClaims = claims.filter(
+    (c) => c.created_at && Date.now() - new Date(c.created_at).getTime() < CLAIM_MAX_AGE_MS,
+  );
+
   // Rotate vault moment by day-of-year so adjacent days never collide
   const now = new Date();
   const startOfYear = new Date(now.getFullYear(), 0, 0);
@@ -268,9 +275,10 @@ export function PressBoxSidebar() {
           </div>
         ))}
 
-        {/* Fallback: user roster claims when no CFBD data */}
-        {recruits.length === 0 && transfers.length === 0 && claims.length > 0 && (
-          claims.map((claim, i) => (
+        {/* Fallback: user roster claims when no CFBD data — but only RECENT
+            ones, so a months-old claim never masquerades as a fresh dispatch. */}
+        {recruits.length === 0 && transfers.length === 0 && recentClaims.length > 0 && (
+          recentClaims.map((claim, i) => (
             <div key={`claim-${i}`} className="dispatch bulletin" style={{ marginBottom: 6 }}>
               <div className="dispatch-label">Dispatch</div>
               <div className="dispatch-text">
@@ -305,7 +313,7 @@ export function PressBoxSidebar() {
         ))}
 
         {/* Empty state */}
-        {recruits.length === 0 && transfers.length === 0 && claims.length === 0 && recruitingNews.length === 0 && (
+        {recruits.length === 0 && transfers.length === 0 && recentClaims.length === 0 && recruitingNews.length === 0 && (
           <div className="dispatch bulletin">
             <div className="dispatch-label">Bulletin</div>
             <div className="dispatch-text">
