@@ -103,9 +103,10 @@ export function PostComposer() {
         setPendingImages((prev) =>
           prev.map((p) => (p.id === img.id ? { ...p, publicUrl, uploading: false } : p))
         );
-      } catch {
+      } catch (err) {
+        const message = err instanceof Error ? err.message : 'Upload failed';
         setPendingImages((prev) =>
-          prev.map((p) => (p.id === img.id ? { ...p, uploading: false, error: 'Upload failed' } : p))
+          prev.map((p) => (p.id === img.id ? { ...p, uploading: false, error: message } : p))
         );
       }
     }
@@ -429,7 +430,7 @@ export function PostComposer() {
                 </div>
               )}
               {img.error && (
-                <div className="composer-image-error">!</div>
+                <div className="composer-image-error" title={img.error}>!</div>
               )}
               <button
                 type="button"
@@ -441,6 +442,12 @@ export function PostComposer() {
               </button>
             </div>
           ))}
+        </div>
+      )}
+
+      {pendingImages.find((img) => img.error) && (
+        <div className="composer-image-error-text">
+          {pendingImages.find((img) => img.error)?.error}
         </div>
       )}
 
