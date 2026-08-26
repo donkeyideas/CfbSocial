@@ -1,0 +1,1455 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+<!-- ============ PRIMARY SEO ============ -->
+<title>CFB Social — College Football Takes, Rivalries &amp; Transfer Portal</title>
+<meta name="description" content="Join CFB Social, the college football community for all 653 schools. File hot takes, debate rivalries, track the transfer portal, make predictions, and build your dynasty. Free to join." />
+<link rel="canonical" href="https://www.cfbsocial.com/" />
+<meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+<meta name="theme-color" content="#8b1a1a" />
+<meta name="author" content="CFB Social" />
+<meta name="application-name" content="CFB Social" />
+
+<!-- ============ OPEN GRAPH (Facebook / LinkedIn / iMessage) ============ -->
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content="CFB Social" />
+<meta property="og:locale" content="en_US" />
+<meta property="og:url" content="https://www.cfbsocial.com/" />
+<meta property="og:title" content="CFB Social — College Football's Social Home" />
+<meta property="og:description" content="File hot takes, debate rivalries, track the transfer portal, and build your dynasty across all 653 college football programs. Free to join." />
+<meta property="og:image" content="https://www.cfbsocial.com/og/home.jpg" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta property="og:image:alt" content="CFB Social — the college football social network front page." />
+
+<!-- ============ TWITTER / X CARD ============ -->
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:site" content="@cfbsocial" />
+<meta name="twitter:creator" content="@cfbsocial" />
+<meta name="twitter:title" content="CFB Social — College Football's Social Home" />
+<meta name="twitter:description" content="Takes, rivalries, transfer portal, predictions, and dynasty building across all 653 programs. Free to join." />
+<meta name="twitter:image" content="https://www.cfbsocial.com/og/home.jpg" />
+<meta name="twitter:image:alt" content="CFB Social — the college football social network." />
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,700;0,800;0,900;1,600&family=Zilla+Slab:wght@500;600;700&family=Spectral:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --paper: #f4efe3;
+    --paper-2: #efe7d6;
+    --paper-deep: #e8dfc9;
+    --ink: #1a1712;
+    --ink-2: #211c15;
+    --ink-soft: #4a4235;
+    --ink-faint: #6b6151;
+    --rule: #cabfa6;
+    --rule-soft: #d9cfb7;
+    --crimson: #8b1a1a;
+    --crimson-2: #a01e1e;
+    --crimson-deep: #6e1414;
+    --navy: #2b3a4a;
+    --gold: #b8892b;
+    --gold-deep: #8f6a1f;
+    --td: #2f6b3a;
+    --shadow: 0 1px 0 rgba(26,23,18,.05), 0 18px 40px -28px rgba(26,23,18,.55);
+    --font-display: "Playfair Display", Georgia, serif;
+    --font-slab: "Zilla Slab", Georgia, serif;
+    --font-body: "Spectral", Georgia, serif;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: var(--font-body);
+    color: var(--ink);
+    background-color: var(--paper);
+    background-image:
+      radial-gradient(circle at 20% 15%, rgba(0,0,0,.018) 0 1px, transparent 1px),
+      radial-gradient(circle at 70% 60%, rgba(0,0,0,.016) 0 1px, transparent 1px),
+      repeating-linear-gradient(0deg, rgba(0,0,0,.012) 0 1px, transparent 1px 4px),
+      linear-gradient(135deg, #f6f1e6 0%, #efe7d6 55%, #ebe2cf 100%);
+    background-size: 7px 7px, 11px 11px, 100% 100%, 100% 100%;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    overflow-x: hidden;
+  }
+
+  a { color: inherit; text-decoration: none; }
+  img, svg { display: block; }
+
+  .wrap { width: min(1200px, 92vw); margin-inline: auto; }
+
+  /* ---------- shared type ---------- */
+  .eyebrow {
+    font-family: var(--font-slab);
+    text-transform: uppercase;
+    letter-spacing: .22em;
+    font-size: .68rem;
+    font-weight: 700;
+    color: var(--crimson);
+    display: inline-flex;
+    align-items: center;
+    gap: .55em;
+  }
+  .eyebrow::before {
+    content: "";
+    width: 1.6em; height: 2px;
+    background: var(--crimson);
+    display: inline-block;
+  }
+
+  .section-head { max-width: 720px; }
+  .section-title {
+    font-family: var(--font-display);
+    font-weight: 800;
+    line-height: 1.02;
+    letter-spacing: -.01em;
+    font-size: clamp(1.9rem, 4vw, 3rem);
+    margin: .35em 0 .3em;
+  }
+  .section-sub { color: var(--ink-soft); font-size: 1.05rem; max-width: 62ch; }
+
+  .rule-x { height: 2px; background: var(--ink); }
+  .rule-thin { height: 1px; background: var(--rule); }
+
+  /* =========================================================
+     MASTHEAD
+  ==========================================================*/
+  .masthead {
+    position: sticky; top: 0; z-index: 100;
+    background: linear-gradient(180deg, #f6f2e8, #f1eadb);
+    border-bottom: 2px solid var(--ink);
+    box-shadow: 0 10px 24px -20px rgba(26,23,18,.7);
+  }
+  .masthead-top {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 1.5rem; padding: .7rem 0 .55rem;
+  }
+  .brand { display: flex; align-items: baseline; gap: .7rem; min-width: 0; }
+  .wordmark {
+    font-family: var(--font-display);
+    font-weight: 900;
+    font-size: clamp(1.35rem, 2.6vw, 2rem);
+    letter-spacing: .01em;
+    line-height: 1;
+    color: var(--ink);
+    white-space: nowrap;
+  }
+  .kicker {
+    font-family: var(--font-slab);
+    text-transform: uppercase;
+    letter-spacing: .28em;
+    font-size: .58rem;
+    font-weight: 700;
+    color: var(--crimson);
+    border-left: 2px solid var(--rule);
+    padding-left: .7rem;
+  }
+  .nav { display: flex; align-items: center; gap: 1.4rem; }
+  .nav-links { display: flex; gap: 1.35rem; }
+  .nav-links a {
+    font-family: var(--font-slab);
+    text-transform: uppercase;
+    letter-spacing: .12em;
+    font-size: .72rem;
+    font-weight: 600;
+    color: var(--ink-soft);
+    position: relative;
+    padding: .2rem 0;
+    transition: color .18s ease;
+  }
+  .nav-links a::after {
+    content: ""; position: absolute; left: 0; bottom: -1px;
+    width: 0; height: 2px; background: var(--crimson);
+    transition: width .2s ease;
+  }
+  .nav-links a:hover { color: var(--ink); }
+  .nav-links a:hover::after { width: 100%; }
+
+  .nav-auth { display: flex; align-items: center; gap: 1rem; }
+  .login-link {
+    font-family: var(--font-slab);
+    text-transform: uppercase;
+    letter-spacing: .1em;
+    font-size: .74rem;
+    font-weight: 600;
+    color: var(--ink);
+    border-bottom: 2px solid transparent;
+    transition: border-color .18s;
+  }
+  .login-link:hover { border-color: var(--ink); }
+
+  .btn {
+    font-family: var(--font-slab);
+    text-transform: uppercase;
+    letter-spacing: .1em;
+    font-weight: 700;
+    font-size: .76rem;
+    display: inline-flex; align-items: center; gap: .5em;
+    padding: .62em 1.2em;
+    border: 2px solid var(--crimson-deep);
+    background: var(--crimson);
+    color: #fdf6e9;
+    cursor: pointer;
+    transition: transform .12s ease, background .18s ease, box-shadow .18s;
+    box-shadow: 3px 3px 0 var(--crimson-deep);
+  }
+  .btn:hover { background: var(--crimson-2); transform: translate(-1px,-1px); box-shadow: 4px 4px 0 var(--crimson-deep); }
+  .btn:active { transform: translate(2px,2px); box-shadow: 1px 1px 0 var(--crimson-deep); }
+
+  .btn-ghost {
+    background: transparent; color: var(--ink);
+    border-color: var(--ink); box-shadow: 3px 3px 0 rgba(26,23,18,.3);
+  }
+  .btn-ghost:hover { background: var(--ink); color: var(--paper); }
+
+  .btn-lg { font-size: .9rem; padding: .85em 1.6em; }
+
+  .masthead-dateline {
+    display: flex; align-items: center; justify-content: space-between;
+    border-top: 1px solid var(--rule);
+    padding: .3rem 0;
+    font-family: var(--font-slab);
+    text-transform: uppercase;
+    letter-spacing: .18em;
+    font-size: .58rem;
+    font-weight: 600;
+    color: var(--ink-faint);
+  }
+  .masthead-dateline .mid { color: var(--crimson); letter-spacing: .22em; }
+
+  .menu-toggle { display: none; }
+
+  /* =========================================================
+     TICKER
+  ==========================================================*/
+  .ticker {
+    background: var(--ink);
+    color: var(--paper);
+    border-bottom: 2px solid var(--crimson);
+    overflow: hidden;
+    position: relative;
+  }
+  .ticker::before {
+    content: "LIVE WIRE";
+    position: absolute; left: 0; top: 0; bottom: 0; z-index: 2;
+    display: flex; align-items: center;
+    padding: 0 1rem 0 max(1rem, calc((100vw - 1200px)/2 + 1rem));
+    background: var(--crimson);
+    font-family: var(--font-slab);
+    letter-spacing: .16em; font-size: .66rem; font-weight: 700;
+    color: #fdf6e9;
+    box-shadow: 8px 0 14px -6px rgba(0,0,0,.5);
+  }
+  .ticker-track {
+    display: flex; gap: 2.5rem;
+    white-space: nowrap;
+    padding: .5rem 0;
+    padding-left: 8rem;
+    animation: ticker 42s linear infinite;
+    font-family: var(--font-slab);
+    font-size: .78rem; letter-spacing: .03em;
+  }
+  .ticker:hover .ticker-track { animation-play-state: paused; }
+  .ticker-item { display: inline-flex; align-items: center; gap: .55rem; color: #e9e1cf; }
+  .ticker-item .tag { color: var(--gold); font-weight: 700; letter-spacing: .08em; }
+  .ticker-item .live-dot {
+    width: 7px; height: 7px; border-radius: 50%; background: #d64545;
+    box-shadow: 0 0 0 3px rgba(214,69,69,.25);
+    animation: pulse 1.4s ease-in-out infinite;
+  }
+  @keyframes ticker { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+  @keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:.35; } }
+
+  /* =========================================================
+     HERO
+  ==========================================================*/
+  .hero { padding: 3.2rem 0 2.6rem; position: relative; }
+  .hero-grid {
+    display: grid;
+    grid-template-columns: 1.55fr 1fr;
+    gap: 2.6rem;
+    align-items: start;
+  }
+  .hero-eyebrow-row {
+    display: flex; align-items: center; justify-content: space-between;
+    border-bottom: 3px double var(--ink);
+    padding-bottom: .6rem; margin-bottom: 1.3rem;
+    flex-wrap: wrap; gap: .5rem;
+  }
+  .hero-credibility {
+    font-family: var(--font-slab);
+    text-transform: uppercase; letter-spacing: .16em;
+    font-size: .66rem; font-weight: 600; color: var(--ink-faint);
+    display: inline-flex; align-items: center; gap: .5rem;
+  }
+  .hero-credibility .live-dot {
+    width: 7px; height: 7px; border-radius: 50%; background: var(--crimson);
+    box-shadow: 0 0 0 3px rgba(139,26,26,.18); animation: pulse 1.4s ease-in-out infinite;
+  }
+
+  .hero-headline {
+    font-family: var(--font-display);
+    font-weight: 900;
+    font-size: clamp(2.9rem, 7.4vw, 6rem);
+    line-height: .93;
+    letter-spacing: -.02em;
+    color: var(--ink);
+  }
+  .hero-headline .crimson { color: var(--crimson); }
+  .hero-headline .line { display: block; overflow: hidden; }
+  .hero-headline .line > span {
+    display: block;
+    animation: rise .8s cubic-bezier(.2,.7,.2,1) both;
+  }
+  .hero-headline .line:nth-child(1) > span { animation-delay: .05s; }
+  .hero-headline .line:nth-child(2) > span { animation-delay: .16s; }
+  .hero-headline .line:nth-child(3) > span { animation-delay: .27s; }
+  @keyframes rise { from { transform: translateY(105%); opacity:0; } to { transform: translateY(0); opacity:1; } }
+
+  .hero-deck {
+    font-size: 1.18rem;
+    color: var(--ink-soft);
+    max-width: 46ch;
+    margin: 1.4rem 0 0;
+    border-left: 3px solid var(--crimson);
+    padding-left: 1.1rem;
+    animation: fade .9s ease both .5s;
+  }
+  .hero-deck .drop {
+    float: left;
+    font-family: var(--font-display);
+    font-weight: 900;
+    font-size: 3.3rem;
+    line-height: .72;
+    padding: .1rem .18rem 0 0;
+    color: var(--crimson);
+  }
+  @keyframes fade { from { opacity:0; transform: translateY(10px);} to { opacity:1; transform: none; } }
+
+  .hero-cta { display: flex; gap: 1rem; margin-top: 1.8rem; flex-wrap: wrap; animation: fade .9s ease both .62s; }
+
+  .hero-meta {
+    margin-top: 1.7rem; display: flex; gap: 1.5rem; flex-wrap: wrap;
+    font-family: var(--font-slab); font-size: .72rem; letter-spacing: .1em;
+    text-transform: uppercase; color: var(--ink-faint);
+    border-top: 1px solid var(--rule); padding-top: 1rem;
+    animation: fade .9s ease both .7s;
+  }
+  .hero-meta b { color: var(--ink); font-weight: 700; }
+
+  /* Box score card */
+  .boxscore {
+    background: linear-gradient(180deg, #fbf7ec, #f3ecdb);
+    border: 2px solid var(--ink);
+    box-shadow: var(--shadow);
+    position: relative;
+    animation: fade .9s ease both .4s;
+  }
+  .boxscore::before {
+    content: ""; position: absolute; inset: 5px; border: 1px solid var(--rule); pointer-events: none;
+  }
+  .boxscore-head {
+    display: flex; align-items: center; justify-content: space-between;
+    background: var(--ink); color: var(--paper);
+    padding: .5rem .85rem;
+    font-family: var(--font-slab); text-transform: uppercase;
+    letter-spacing: .16em; font-size: .62rem; font-weight: 700;
+  }
+  .boxscore-head .live { color: #ff9a9a; display: inline-flex; align-items: center; gap: .4rem; }
+  .boxscore-head .live .live-dot { width:6px;height:6px;border-radius:50%;background:#ff6b6b;animation:pulse 1.4s infinite; }
+  .boxscore-body { padding: .9rem 1rem 1rem; position: relative; z-index: 1; }
+
+  .score-row {
+    display: grid; grid-template-columns: 1.6rem 1fr auto; align-items: center;
+    gap: .7rem; padding: .55rem 0;
+  }
+  .score-row + .score-row { border-top: 1px dashed var(--rule); }
+  .team-badge {
+    width: 1.6rem; height: 1.6rem; border-radius: 3px;
+    display: grid; place-items: center;
+    font-family: var(--font-slab); font-weight: 700; font-size: .7rem; color: #fff;
+    border: 1px solid rgba(0,0,0,.25);
+  }
+  .team-name { font-family: var(--font-display); font-weight: 700; font-size: 1.05rem; }
+  .team-name small { display:block; font-family: var(--font-slab); font-size:.58rem; letter-spacing:.14em; text-transform:uppercase; color: var(--ink-faint); font-weight:600; }
+  .team-score { font-family: var(--font-display); font-weight: 900; font-size: 1.7rem; letter-spacing: -.02em; }
+  .team-score.win { color: var(--crimson); }
+
+  .boxscore-foot {
+    margin-top: .6rem; border-top: 2px solid var(--ink); padding-top: .6rem;
+    display: flex; justify-content: space-between; align-items: center;
+    font-family: var(--font-slab); text-transform: uppercase; letter-spacing: .12em;
+    font-size: .6rem; color: var(--ink-faint); font-weight: 600;
+  }
+  .quarter-clock { color: var(--crimson); }
+
+  /* mini take under boxscore */
+  .hero-take {
+    margin-top: 1rem;
+    border: 2px solid var(--ink);
+    background: #fbf7ec;
+    padding: .8rem .9rem;
+    animation: fade .9s ease both .55s;
+    position: relative;
+  }
+  .hero-take .stamp {
+    position: absolute; top: -12px; right: 12px;
+  }
+  .hero-take .avatar {
+    width: 1.9rem; height: 1.9rem; border-radius: 50%;
+    background: var(--navy); color: #fff; display: grid; place-items: center;
+    font-family: var(--font-slab); font-weight: 700; font-size: .75rem;
+    border: 1px solid rgba(0,0,0,.25);
+  }
+  .hero-take .row { display: flex; align-items: center; gap: .55rem; }
+  .hero-take .meta { font-family: var(--font-slab); font-size: .64rem; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-faint); font-weight: 600; }
+  .hero-take .meta b { color: var(--ink); }
+  .hero-take p { font-family: var(--font-display); font-weight: 600; font-size: .98rem; line-height: 1.2; margin: .5rem 0 .2rem; }
+
+  .vote-widget { display: flex; gap: .5rem; margin-top: .55rem; }
+  .vote-btn {
+    flex: 1; display: flex; align-items: center; justify-content: center; gap: .4rem;
+    font-family: var(--font-slab); text-transform: uppercase; letter-spacing: .08em;
+    font-size: .62rem; font-weight: 700; padding: .4rem;
+    border: 1.5px solid var(--ink); background: transparent; cursor: pointer;
+    transition: background .15s, color .15s;
+  }
+  .vote-btn.td:hover { background: var(--td); color: #fff; border-color: var(--td); }
+  .vote-btn.fumble:hover { background: var(--crimson); color: #fff; border-color: var(--crimson); }
+  .vote-btn .count { color: var(--ink-faint); font-weight: 700; }
+  .vote-btn:hover .count { color: inherit; }
+
+  /* =========================================================
+     STAT BAND
+  ==========================================================*/
+  .statband {
+    background: var(--ink);
+    color: var(--paper);
+    border-top: 2px solid var(--crimson);
+    border-bottom: 2px solid var(--crimson);
+    padding: 2rem 0;
+  }
+  .stat-grid {
+    display: grid; grid-template-columns: repeat(4, 1fr);
+  }
+  .stat {
+    text-align: center; padding: .3rem 1rem;
+    border-right: 1px solid rgba(255,255,255,.14);
+  }
+  .stat:last-child { border-right: 0; }
+  .stat .num {
+    font-family: var(--font-display); font-weight: 900;
+    font-size: clamp(2.2rem, 4.5vw, 3.4rem); line-height: 1;
+    color: #fbf3e2;
+  }
+  .stat .num .accent { color: var(--gold); }
+  .stat .label {
+    font-family: var(--font-slab); text-transform: uppercase;
+    letter-spacing: .18em; font-size: .64rem; font-weight: 600;
+    color: #c9bfa9; margin-top: .55rem;
+  }
+  .stat-note {
+    text-align: center; margin-top: 1.3rem;
+    font-family: var(--font-slab); font-size: .58rem; letter-spacing: .16em;
+    text-transform: uppercase; color: #8f8672;
+  }
+
+  /* =========================================================
+     FEATURES — editorial grid
+  ==========================================================*/
+  .features { padding: 3.4rem 0 1rem; }
+  .features-masthead {
+    display: flex; align-items: flex-end; justify-content: space-between;
+    border-bottom: 3px double var(--ink); padding-bottom: .8rem; margin-bottom: 2rem;
+    flex-wrap: wrap; gap: 1rem;
+  }
+  .features-masthead .biglabel {
+    font-family: var(--font-display); font-weight: 900;
+    font-size: clamp(1.8rem, 4vw, 2.8rem); line-height: 1;
+  }
+  .features-masthead .edition {
+    font-family: var(--font-slab); text-transform: uppercase; letter-spacing: .16em;
+    font-size: .64rem; color: var(--ink-faint); font-weight: 600; text-align: right;
+  }
+
+  /* lead 2x2 grid */
+  .lead-grid {
+    display: grid; grid-template-columns: repeat(2, 1fr); gap: 0;
+    border: 2px solid var(--ink);
+    background: var(--ink);
+    box-shadow: var(--shadow);
+  }
+  .feat {
+    background: linear-gradient(180deg,#faf6ea,#f2ebda);
+    padding: 1.6rem 1.7rem 1.7rem;
+    position: relative;
+    transition: background .2s;
+  }
+  .feat:hover { background: linear-gradient(180deg,#fdf9ee,#f5eedd); }
+  .lead-grid .feat { border: 1px solid rgba(26,23,18,.12); margin: 0; }
+  .feat .num-tag {
+    position: absolute; top: 1.2rem; right: 1.4rem;
+    font-family: var(--font-display); font-weight: 900; font-size: 2.4rem;
+    color: rgba(26,23,18,.08); line-height: 1;
+  }
+  .feat h3 {
+    font-family: var(--font-display); font-weight: 800;
+    font-size: 1.6rem; line-height: 1.02; margin: .4rem 0 .5rem; letter-spacing: -.01em;
+  }
+  .feat p { color: var(--ink-soft); font-size: .98rem; max-width: 40ch; }
+
+  /* mock UI blocks inside features */
+  .mock { margin-top: 1.1rem; }
+
+  /* Feed mock take card */
+  .m-take {
+    border: 1.5px solid var(--ink); background: #fbf7ec; padding: .7rem .8rem;
+  }
+  .m-take .row { display:flex; align-items:center; gap:.5rem; }
+  .m-avatar {
+    width:1.7rem;height:1.7rem;border-radius:50%;display:grid;place-items:center;
+    font-family:var(--font-slab);font-weight:700;font-size:.66rem;color:#fff;border:1px solid rgba(0,0,0,.25);
+  }
+  .m-meta { font-family:var(--font-slab);font-size:.6rem;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-faint);font-weight:600; }
+  .m-meta b { color: var(--ink); }
+  .m-take .quote { font-family:var(--font-display);font-weight:600;font-size:.98rem;line-height:1.2;margin:.5rem 0; }
+  .m-votes { display:flex; gap:.45rem; }
+  .m-vote {
+    flex:1; display:flex; align-items:center; justify-content:center; gap:.35rem;
+    font-family:var(--font-slab);text-transform:uppercase;letter-spacing:.07em;
+    font-size:.58rem;font-weight:700;padding:.35rem;border:1.5px solid var(--ink);
+    background:transparent; cursor:pointer; transition:background .15s,color .15s;
+  }
+  .m-vote.td { color: var(--td); }
+  .m-vote.td:hover { background: var(--td); color:#fff; border-color:var(--td); }
+  .m-vote.fm { color: var(--crimson); }
+  .m-vote.fm:hover { background: var(--crimson); color:#fff; border-color:var(--crimson); }
+  .m-vote .n { color: var(--ink-faint); }
+  .m-vote:hover .n { color: inherit; }
+
+  /* War room live strip */
+  .m-scores { border:1.5px solid var(--ink); background:#fbf7ec; }
+  .m-scores .head {
+    background: var(--crimson); color:#fdf6e9; padding:.35rem .7rem;
+    font-family:var(--font-slab);text-transform:uppercase;letter-spacing:.14em;
+    font-size:.58rem;font-weight:700; display:flex; align-items:center; gap:.4rem;
+  }
+  .m-scores .head .live-dot { width:6px;height:6px;border-radius:50%;background:#ffd0d0;animation:pulse 1.4s infinite; }
+  .m-sc-row {
+    display:flex; align-items:center; justify-content:space-between;
+    padding:.4rem .7rem; font-family:var(--font-slab); font-size:.72rem;
+  }
+  .m-sc-row + .m-sc-row { border-top:1px dashed var(--rule); }
+  .m-sc-team { display:flex; align-items:center; gap:.45rem; font-weight:600; }
+  .m-sc-team .dot { width:.85rem;height:.85rem;border-radius:2px;border:1px solid rgba(0,0,0,.25); }
+  .m-sc-score { font-family:var(--font-display); font-weight:900; font-size:1.05rem; }
+  .m-sc-score.win { color: var(--crimson); }
+  .m-sc-foot { padding:.35rem .7rem; border-top:1px solid var(--rule);
+    font-family:var(--font-slab);text-transform:uppercase;letter-spacing:.1em;
+    font-size:.56rem;color:var(--ink-faint);font-weight:600; display:flex;justify-content:space-between; }
+
+  /* Rivalry vote bar */
+  .m-rivalry { border:1.5px solid var(--ink); background:#fbf7ec; padding:.75rem .8rem; }
+  .m-riv-head { display:flex; justify-content:space-between; align-items:center;
+    font-family:var(--font-display); font-weight:800; font-size:.95rem; }
+  .m-riv-head .vs { font-family:var(--font-slab); font-size:.6rem; letter-spacing:.16em; color:var(--crimson); font-weight:700; }
+  .m-bar { height:1.7rem; display:flex; margin:.6rem 0 .35rem; border:1.5px solid var(--ink); overflow:hidden; }
+  .m-bar .side {
+    display:grid; place-items:center; font-family:var(--font-slab); font-weight:700;
+    font-size:.68rem; color:#fff;
+  }
+  .m-bar .a { background: var(--crimson); }
+  .m-bar .b { background: var(--navy); }
+  .m-riv-foot { font-family:var(--font-slab); font-size:.58rem; letter-spacing:.08em;
+    text-transform:uppercase; color:var(--ink-faint); font-weight:600; text-align:center; }
+
+  /* Receipt / aging take */
+  .m-receipt { border:1.5px solid var(--ink); background:#fbf7ec; padding:.75rem .8rem; position:relative; }
+  .m-receipt .quote { font-family:var(--font-display); font-weight:600; font-size:.95rem; line-height:1.2; padding-right: 3rem; }
+  .m-timer {
+    margin-top:.6rem; display:flex; align-items:center; gap:.55rem;
+    font-family:var(--font-slab); font-size:.62rem; letter-spacing:.06em;
+    text-transform:uppercase; color:var(--ink-faint); font-weight:600;
+  }
+  .m-timer .track { flex:1; height:6px; background: var(--paper-deep); border:1px solid var(--rule); position:relative; }
+  .m-timer .fill { position:absolute; inset:0; width:72%; background: linear-gradient(90deg,var(--gold),var(--gold-deep)); }
+
+  /* Receipt stamp (SVG) */
+  .stamp { transform: rotate(-11deg); }
+  .stamp-svg { filter: drop-shadow(0 1px 0 rgba(0,0,0,.1)); }
+
+  /* ---- secondary grid: more in every edition ---- */
+  .more-head {
+    margin: 2.6rem 0 1.2rem;
+    border-bottom: 2px solid var(--ink); padding-bottom: .6rem;
+    display:flex; align-items:baseline; justify-content:space-between; gap:1rem; flex-wrap:wrap;
+  }
+  .more-head h3 { font-family: var(--font-display); font-weight: 800; font-size: 1.5rem; }
+  .more-head .k { font-family: var(--font-slab); text-transform:uppercase; letter-spacing:.16em; font-size:.62rem; color:var(--ink-faint); font-weight:600; }
+
+  .more-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    border: 2px solid var(--ink); background: var(--ink); box-shadow: var(--shadow);
+  }
+  .mcard {
+    background: linear-gradient(180deg,#faf6ea,#f2ebda);
+    border: 1px solid rgba(26,23,18,.12);
+    padding: 1.2rem 1.3rem 1.35rem;
+    transition: background .2s, transform .2s;
+  }
+  .mcard:hover { background: linear-gradient(180deg,#fdf9ee,#f5eedd); }
+  .mcard .eyebrow { font-size: .6rem; }
+  .mcard h4 { font-family: var(--font-display); font-weight: 800; font-size: 1.28rem; margin: .45rem 0 .4rem; line-height:1.05; }
+  .mcard p { color: var(--ink-soft); font-size: .9rem; }
+  .mcard .mock { margin-top: .95rem; }
+
+  /* bracket motif */
+  .bracket { width:100%; height:auto; }
+  .bracket line, .bracket path { stroke: var(--ink); stroke-width: 1.4; fill:none; }
+  .bracket rect { fill:#fbf7ec; stroke: var(--ink); stroke-width:1.4; }
+  .bracket .win rect { fill: var(--crimson); }
+  .bracket text { font-family: var(--font-slab); font-size: 7px; font-weight:700; fill: var(--ink); letter-spacing:.03em; }
+  .bracket .win text { fill:#fff; }
+
+  /* magazine cover */
+  .mag {
+    width: 92px; aspect-ratio: 3/4; border: 2px solid var(--ink);
+    background: linear-gradient(160deg, var(--navy), #1e2a35);
+    color:#f0e9d8; padding:.5rem; position:relative; box-shadow: 4px 4px 0 rgba(26,23,18,.35);
+  }
+  .mag .m-t { font-family:var(--font-display); font-weight:900; font-size:.8rem; line-height:.94; letter-spacing:-.01em; word-break:break-word; overflow-wrap:anywhere; }
+  .mag .m-k { font-family:var(--font-slab); font-size:.42rem; letter-spacing:.2em; text-transform:uppercase; color: var(--gold); margin-bottom:.25rem; }
+  .mag .m-photo { position:absolute; left:.5rem; right:.5rem; bottom:1.1rem; height:38%;
+    background: repeating-linear-gradient(-45deg, rgba(255,255,255,.08) 0 4px, transparent 4px 8px), rgba(255,255,255,.06);
+    border:1px solid rgba(255,255,255,.2); }
+  .mag .m-issue { position:absolute; bottom:.4rem; right:.55rem; font-family:var(--font-slab); font-size:.4rem; letter-spacing:.14em; color:rgba(255,255,255,.65); }
+  .mag-wrap { display:flex; gap:1rem; align-items:center; }
+  .mag-cap { font-family:var(--font-slab); font-size:.66rem; letter-spacing:.08em; color:var(--ink-faint); text-transform:uppercase; font-weight:600; }
+
+  /* portal card */
+  .m-portal { border:1.5px solid var(--ink); background:#fbf7ec; padding:.7rem .75rem; }
+  .m-portal .top { display:flex; align-items:center; gap:.55rem; }
+  .m-portal .badge {
+    font-family:var(--font-slab); font-size:.52rem; letter-spacing:.1em; text-transform:uppercase;
+    font-weight:700; padding:.15rem .4rem; color:#fff; background:var(--gold-deep);
+  }
+  .m-portal h5 { font-family:var(--font-display); font-weight:800; font-size:1rem; }
+  .m-portal .sub { font-family:var(--font-slab); font-size:.58rem; letter-spacing:.06em; text-transform:uppercase; color:var(--ink-faint); font-weight:600; }
+  .m-portal .move { margin-top:.5rem; display:flex; align-items:center; gap:.4rem;
+    font-family:var(--font-slab); font-size:.66rem; font-weight:600; }
+  .m-portal .arrow { color: var(--crimson); font-weight:700; }
+  .stars { color: var(--gold); letter-spacing:.05em; font-size:.75rem; }
+
+  /* heat map bars */
+  .heat-row { display:flex; align-items:center; gap:.55rem; margin:.4rem 0; }
+  .heat-row .nm { width:2.4rem; font-family:var(--font-slab); font-size:.6rem; font-weight:700; letter-spacing:.06em; }
+  .heat-track { flex:1; height:.7rem; background: var(--paper-deep); border:1px solid var(--rule); overflow:hidden; }
+  .heat-fill { display:block; height:100%; background: linear-gradient(90deg, var(--gold), var(--crimson)); }
+
+  /* xp / level */
+  .m-xp { border:1.5px solid var(--ink); background:#fbf7ec; padding:.7rem .8rem; }
+  .m-xp .tier {
+    display:inline-flex; align-items:center; gap:.4rem;
+    font-family:var(--font-slab); text-transform:uppercase; letter-spacing:.1em;
+    font-size:.6rem; font-weight:700; color: var(--crimson);
+    border:1.5px solid var(--crimson); padding:.15rem .45rem;
+  }
+  .m-xp .lvl { font-family:var(--font-slab); font-size:.58rem; letter-spacing:.08em; text-transform:uppercase; color:var(--ink-faint); font-weight:600; margin-top:.5rem; display:flex; justify-content:space-between; }
+  .xp-track { height:.6rem; margin-top:.35rem; background: var(--paper-deep); border:1px solid var(--rule); overflow:hidden; }
+  .xp-fill { display:block; height:100%; width:64%; background: linear-gradient(90deg, var(--crimson), var(--crimson-2)); }
+
+  /* school hubs mini */
+  .hubs { display:flex; flex-wrap:wrap; gap:.35rem; margin-top:.3rem; }
+  .hub-pill {
+    font-family:var(--font-slab); font-size:.56rem; letter-spacing:.06em; text-transform:uppercase;
+    font-weight:700; padding:.22rem .5rem; border:1.5px solid var(--ink); background:#fbf7ec; color:var(--ink);
+  }
+
+  /* =========================================================
+     HOW IT WORKS
+  ==========================================================*/
+  .how { padding: 3rem 0; }
+  .how-grid { display:grid; grid-template-columns: repeat(3,1fr); gap:0; border:2px solid var(--ink); background:var(--ink); box-shadow:var(--shadow); }
+  .step { background: linear-gradient(180deg,#faf6ea,#f2ebda); border:1px solid rgba(26,23,18,.12); padding:1.6rem 1.6rem 1.8rem; position:relative; }
+  .step .n {
+    width:2.4rem;height:2.4rem;border:2px solid var(--crimson); color:var(--crimson);
+    display:grid;place-items:center;font-family:var(--font-display);font-weight:900;font-size:1.2rem;
+    border-radius:50%; margin-bottom:.9rem;
+  }
+  .step h4 { font-family:var(--font-display); font-weight:800; font-size:1.3rem; margin-bottom:.35rem; }
+  .step p { color: var(--ink-soft); font-size:.94rem; }
+  .step .arrow-x {
+    position:absolute; right:-14px; top:2.4rem; z-index:2; color: var(--crimson);
+    background: var(--paper); border-radius:50%;
+  }
+
+  /* =========================================================
+     FINAL CTA
+  ==========================================================*/
+  .finalcta {
+    background: var(--crimson);
+    background-image:
+      repeating-linear-gradient(0deg, rgba(0,0,0,.06) 0 1px, transparent 1px 5px),
+      radial-gradient(circle at 15% 20%, rgba(255,255,255,.08), transparent 40%),
+      linear-gradient(160deg, var(--crimson-2), var(--crimson-deep));
+    color:#fdf6e9; border-top:3px solid var(--ink); border-bottom:3px solid var(--ink);
+    padding: 3.6rem 0; text-align:center; position:relative;
+  }
+  .finalcta .eyebrow { color:#f3cf9e; }
+  .finalcta .eyebrow::before { background:#f3cf9e; }
+  .finalcta h2 {
+    font-family: var(--font-display); font-weight:900;
+    font-size: clamp(2.6rem, 6.5vw, 5rem); line-height:.95; letter-spacing:-.02em;
+    margin:.4rem 0 .5rem;
+  }
+  .finalcta p { color:#f2ddc8; font-size:1.1rem; max-width:52ch; margin:0 auto 1.7rem; }
+  .finalcta .btn-cream {
+    background:#fbf3e2; color:var(--crimson-deep); border-color: var(--ink);
+    box-shadow: 4px 4px 0 var(--ink);
+  }
+  .finalcta .btn-cream:hover { background:#fff; }
+  .finalcta .reassure { margin-top:1.1rem; font-family:var(--font-slab); text-transform:uppercase; letter-spacing:.14em; font-size:.62rem; color:#f0cfa9; }
+
+  /* =========================================================
+     FOOTER
+  ==========================================================*/
+  .colophon { background: var(--ink); color:#d9cfb7; padding: 2.8rem 0 1.6rem; }
+  .colo-top { display:grid; grid-template-columns: 1.4fr repeat(3, 1fr); gap:2rem; padding-bottom:1.8rem; border-bottom:1px solid rgba(255,255,255,.14); }
+  .colo-brand .wordmark { color:#fbf3e2; }
+  .colo-brand .kicker { color: var(--gold); border-color: rgba(255,255,255,.2); }
+  .colo-brand p { margin-top:.9rem; color:#b3a98f; font-size:.9rem; max-width:34ch; }
+  .colo-brand .tag { margin-top:.9rem; font-family:var(--font-display); font-style:italic; font-weight:600; color:#f0e6cf; font-size:1.05rem; }
+  .colo-col h5 { font-family:var(--font-slab); text-transform:uppercase; letter-spacing:.16em; font-size:.64rem; color: var(--gold); font-weight:700; margin-bottom:.8rem; }
+  .colo-col a { display:block; padding:.28rem 0; font-size:.9rem; color:#c9bfa9; transition:color .15s; }
+  .colo-col a:hover { color:#fff; }
+  .colo-bottom { display:flex; justify-content:space-between; align-items:center; padding-top:1.2rem; flex-wrap:wrap; gap:.6rem;
+    font-family:var(--font-slab); text-transform:uppercase; letter-spacing:.14em; font-size:.58rem; color:#8f8672; }
+
+  /* =========================================================
+     RESPONSIVE
+  ==========================================================*/
+  @media (max-width: 960px) {
+    .hero-grid { grid-template-columns: 1fr; gap: 2rem; }
+    .hero-aside { max-width: 420px; }
+    .stat-grid { grid-template-columns: repeat(2, 1fr); }
+    .stat:nth-child(2) { border-right:0; }
+    .stat:nth-child(1), .stat:nth-child(2) { border-bottom:1px solid rgba(255,255,255,.14); padding-bottom:1.2rem; }
+    .stat:nth-child(3), .stat:nth-child(4) { padding-top:1.2rem; }
+    .lead-grid { grid-template-columns: 1fr; }
+    .more-grid { grid-template-columns: repeat(2, 1fr); }
+    .how-grid { grid-template-columns: 1fr; }
+    .step .arrow-x { display:none; }
+    .colo-top { grid-template-columns: 1fr 1fr; }
+  }
+
+  @media (max-width: 760px) {
+    .nav-links { display: none; }
+    .menu-toggle {
+      display: inline-flex; flex-direction: column; gap:4px; background:none; border:0; cursor:pointer; padding:.4rem;
+    }
+    .menu-toggle span { width:22px; height:2px; background: var(--ink); display:block; }
+    .nav-auth .login-link { display:none; }
+    .masthead-dateline .side-r { display:none; }
+    .ticker::before { padding-left: 1rem; }
+    .ticker-track { padding-left: 6.5rem; }
+    .more-grid { grid-template-columns: 1fr; }
+    .colo-top { grid-template-columns: 1fr; gap:1.4rem; }
+    .hero-headline { font-size: clamp(2.6rem, 12vw, 4rem); }
+  }
+
+  @media (max-width: 460px) {
+    .stat-grid { grid-template-columns: 1fr; }
+    .stat { border-right:0 !important; border-bottom:1px solid rgba(255,255,255,.14); padding:1rem; }
+    .stat:last-child { border-bottom:0; }
+    .kicker { display:none; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration: .001ms !important; animation-iteration-count: 1 !important; scroll-behavior: auto !important; }
+    .ticker-track { animation: none; }
+  }
+
+  /* ============ FAQ / THE RULEBOOK ============ */
+  .faq { background: var(--paper-2); border-top: 2px solid var(--ink); border-bottom: 2px solid var(--ink); padding: 4.5rem 0; }
+  .faq .faq-head { text-align: center; margin-bottom: 2.5rem; }
+  .faq-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 3.5rem; }
+  .faq-item { border-top: 1px solid var(--rule); padding: 1.4rem 0; }
+  .faq-item h3 { font-family: var(--font-display); font-weight: 700; font-size: 1.28rem; line-height: 1.2; color: var(--ink); margin: 0 0 .5rem; }
+  .faq-item p { font-family: var(--font-body); color: var(--ink-soft); font-size: 1rem; line-height: 1.6; margin: 0; }
+  @media (max-width: 760px) {
+    .faq { padding: 3rem 0; }
+    .faq-grid { grid-template-columns: 1fr; gap: 0; }
+  }
+
+  /* ============ EXPLORE / INTERNAL LINK CLUSTER ============ */
+  .explore { padding: 3.5rem 0; background: var(--paper); }
+  .explore .col-head { display: flex; align-items: baseline; justify-content: space-between; border-bottom: 2px solid var(--ink); padding-bottom: .5rem; margin-bottom: 1.6rem; gap: 1rem; }
+  .explore-cols { display: grid; grid-template-columns: repeat(4, 1fr); gap: 2rem; }
+  .explore-cols h4 { font-family: var(--font-slab); text-transform: uppercase; letter-spacing: .08em; font-size: .78rem; color: var(--crimson); margin: 0 0 .7rem; }
+  .explore-cols a { display: block; font-family: var(--font-body); color: var(--ink-soft); text-decoration: none; font-size: .95rem; padding: .28rem 0; border-bottom: 1px dotted var(--rule-soft); transition: color .15s; }
+  .explore-cols a:hover { color: var(--crimson); }
+  @media (max-width: 760px) { .explore-cols { grid-template-columns: 1fr 1fr; gap: 1.4rem; } }
+  @media (max-width: 460px) { .explore-cols { grid-template-columns: 1fr; } }
+</style>
+
+<!-- ============ STRUCTURED DATA (JSON-LD) ============ -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "name": "CFB Social",
+  "alternateName": "CFB Social - College Football Community",
+  "url": "https://www.cfbsocial.com",
+  "description": "College football's social home. Stake claims, debate rivalries, track the transfer portal, and build your dynasty across 653 schools.",
+  "potentialAction": {
+    "@type": "SearchAction",
+    "target": {
+      "@type": "EntryPoint",
+      "urlTemplate": "https://www.cfbsocial.com/feed?q={search_term_string}"
+    },
+    "query-input": "required name=search_term_string"
+  }
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "name": "CFB Social",
+  "alternateName": "CFB Social - College Football Community",
+  "url": "https://www.cfbsocial.com",
+  "logo": "https://www.cfbsocial.com/logo.png",
+  "description": "The college football fan community. Debates, predictions, transfer portal tracking, and dynasty building across 653 schools.",
+  "foundingDate": "2026",
+  "sameAs": [
+    "https://x.com/cfbsocial",
+    "https://www.instagram.com/cfbsocial",
+    "https://www.tiktok.com/@cfbsocial",
+    "https://www.facebook.com/cfbsocial"
+  ],
+  "contactPoint": {
+    "@type": "ContactPoint",
+    "contactType": "customer support",
+    "url": "https://www.cfbsocial.com/contact"
+  }
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "What is CFB Social?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "CFB Social is a free social network built for college football fans. File your takes, debate rivalries, track the transfer portal, make predictions, and build a dynasty across all 653 college football programs."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Is CFB Social free to join?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Yes. Creating an account is completely free. Pick your school, file your first take, and start building your dynasty in seconds. No credit card required."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "How do rivalry challenges work?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Challenge any user head-to-head on a college football debate. Both sides make their case, then the community votes to decide the winner and the result is kept on the record forever."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Can I track the college football transfer portal?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Yes. The Portal Wire tracks every transfer entry. Filter by position, star rating, and status, then file a claim on where you think each player will land."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "What are predictions and receipts?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "File a prediction and it locks in with a timestamp. As it ages it becomes a receipt that proves whether you called it, so everyone can see who was right first."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Which schools does CFB Social cover?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "All 653 college football programs across every conference get their own hub, with a fan feed, top fans leaderboard, rivalries, and recruiting activity."
+      }
+    }
+  ]
+}
+</script>
+</head>
+<body>
+
+<!-- ============ MASTHEAD ============ -->
+<header class="masthead">
+  <div class="wrap">
+    <div class="masthead-top">
+      <a class="brand" href="#top" aria-label="CFB Social home">
+        <span class="wordmark">CFB&nbsp;SOCIAL</span>
+        <span class="kicker">Est. 2026</span>
+      </a>
+      <nav class="nav" aria-label="Primary">
+        <div class="nav-links">
+          <a href="#feed">Feed</a>
+          <a href="#warroom">War Room</a>
+          <a href="#rivalry">Rivalry Ring</a>
+          <a href="#portal">Portal</a>
+          <a href="#gameroom">Game Room</a>
+        </div>
+        <div class="nav-auth">
+          <a class="login-link" href="#login">Log In</a>
+          <a class="btn" href="#signup">Sign Up</a>
+          <button class="menu-toggle" aria-label="Menu"><span></span><span></span><span></span></button>
+        </div>
+      </nav>
+    </div>
+    <div class="masthead-dateline">
+      <span>Vol. I &middot; No. 1 &middot; Est. 2026</span>
+      <span class="mid">All Football &middot; All The Time</span>
+      <span class="side-r">Wednesday, August 26, 2026 &middot; 653 Programs</span>
+    </div>
+  </div>
+</header>
+
+<!-- ============ TICKER ============ -->
+<div class="ticker" aria-hidden="true">
+  <div class="ticker-track">
+    <span class="ticker-item"><span class="live-dot"></span><span class="tag">WAR ROOM</span> Georgia 24 &mdash; Alabama 21 &middot; 4Q 2:11</span>
+    <span class="ticker-item"><span class="tag">PORTAL</span> 5-star QB enters the wire &middot; 41 schools circling</span>
+    <span class="ticker-item"><span class="tag">TAKE</span> "Playoff expansion ruined December" &middot; 1,204 TD</span>
+    <span class="ticker-item"><span class="tag">RIVALRY</span> Ohio St. fan challenges Michigan fan &middot; judging now</span>
+    <span class="ticker-item"><span class="tag">RECEIPT</span> Filed 214 days ago &middot; aged into a receipt</span>
+    <span class="ticker-item"><span class="tag">MASCOT WARS</span> Sweet 16 voting closes at midnight</span>
+    <span class="ticker-item"><span class="live-dot"></span><span class="tag">WAR ROOM</span> Georgia 24 &mdash; Alabama 21 &middot; 4Q 2:11</span>
+    <span class="ticker-item"><span class="tag">PORTAL</span> 5-star QB enters the wire &middot; 41 schools circling</span>
+    <span class="ticker-item"><span class="tag">TAKE</span> "Playoff expansion ruined December" &middot; 1,204 TD</span>
+    <span class="ticker-item"><span class="tag">RIVALRY</span> Ohio St. fan challenges Michigan fan &middot; judging now</span>
+    <span class="ticker-item"><span class="tag">RECEIPT</span> Filed 214 days ago &middot; aged into a receipt</span>
+    <span class="ticker-item"><span class="tag">MASCOT WARS</span> Sweet 16 voting closes at midnight</span>
+  </div>
+</div>
+
+<main id="top">
+<!-- ============ HERO ============ -->
+<section class="hero">
+  <div class="wrap">
+    <div class="hero-eyebrow-row">
+      <span class="eyebrow">The Front Page of College Football</span>
+      <span class="hero-credibility"><span class="live-dot"></span>653 Schools &middot; Live Now</span>
+    </div>
+    <div class="hero-grid">
+      <div class="hero-main">
+        <h1 class="hero-headline">
+          <span class="line"><span>STAKE YOUR CLAIM.</span></span>
+          <span class="line"><span class="crimson">CALL YOUR SHOTS.</span></span>
+          <span class="line"><span>BUILD YOUR DYNASTY.</span></span>
+        </h1>
+        <p class="hero-deck">
+          <span class="drop">C</span>FB Social is the college football social network &mdash; the home field for takes, receipts, and rivalries across all 653 programs. File your opinions, let the community vote them Touchdown or Fumble, track the transfer portal, and watch your predictions age into receipts that prove you called it first.
+        </p>
+        <div class="hero-cta">
+          <a class="btn btn-lg" href="#signup">Start Your Dynasty &mdash; Free
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M1 7h11M8 3l4 4-4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </a>
+          <a class="btn btn-ghost btn-lg" href="#feed">Read the Feed</a>
+        </div>
+        <div class="hero-meta">
+          <span><b>10,000+</b> takes filed</span>
+          <span><b>Live</b> game threads nightly</span>
+          <span><b>Receipts</b> kept forever</span>
+        </div>
+      </div>
+
+      <aside class="hero-aside">
+        <!-- Box score card -->
+        <div class="boxscore" role="figure" aria-label="Live box score, Georgia versus Alabama">
+          <div class="boxscore-head">
+            <span>War Room &middot; Game Thread</span>
+            <span class="live"><span class="live-dot"></span>Live</span>
+          </div>
+          <div class="boxscore-body">
+            <div class="score-row">
+              <span class="team-badge" style="background:#ba0c2f">UGA</span>
+              <span class="team-name">Georgia <small>Bulldogs (11-1)</small></span>
+              <span class="team-score win">24</span>
+            </div>
+            <div class="score-row">
+              <span class="team-badge" style="background:#9e1b32">BAMA</span>
+              <span class="team-name">Alabama <small>Crimson Tide (10-2)</small></span>
+              <span class="team-score">21</span>
+            </div>
+            <div class="boxscore-foot">
+              <span class="quarter-clock">4th &middot; 02:11</span>
+              <span>1,942 fans in thread</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- mini take with vote widget -->
+        <div class="hero-take">
+          <div class="stamp" aria-hidden="true">
+            <svg class="stamp-svg" width="70" height="70" viewBox="0 0 70 70">
+              <circle cx="35" cy="35" r="32" fill="none" stroke="#8b1a1a" stroke-width="2"/>
+              <circle cx="35" cy="35" r="27" fill="none" stroke="#8b1a1a" stroke-width="1"/>
+              <text x="35" y="30" text-anchor="middle" fill="#8b1a1a" font-family="Zilla Slab, serif" font-weight="700" font-size="9" letter-spacing="1">HOT</text>
+              <text x="35" y="42" text-anchor="middle" fill="#8b1a1a" font-family="Zilla Slab, serif" font-weight="700" font-size="9" letter-spacing="1">TAKE</text>
+              <path d="M12 35a23 23 0 0 1 46 0" fill="none" stroke="#8b1a1a" stroke-width="1" stroke-dasharray="2 2"/>
+            </svg>
+          </div>
+          <div class="row">
+            <span class="avatar">JD</span>
+            <span class="meta"><b>@dawgpound_jd</b> &middot; Georgia &middot; 12m</span>
+          </div>
+          <p>"Georgia's defense is the best unit in the sport and it isn't close. Book it."</p>
+          <div class="vote-widget">
+            <button class="vote-btn td">
+              <svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><path d="M6 1v10M2 5l4-4 4 4" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              Touchdown <span class="count">842</span>
+            </button>
+            <button class="vote-btn fumble">
+              <svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><path d="M6 11V1M2 7l4 4 4-4" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              Fumble <span class="count">137</span>
+            </button>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </div>
+</section>
+
+<!-- ============ STAT BAND ============ -->
+<section class="statband" aria-label="By the numbers">
+  <div class="wrap">
+    <div class="stat-grid">
+      <div class="stat"><div class="num">653</div><div class="label">Schools</div></div>
+      <div class="stat"><div class="num">Live</div><div class="label">Game Threads</div></div>
+      <div class="stat"><div class="num">10,000<span class="accent">+</span></div><div class="label">Takes Filed</div></div>
+      <div class="stat"><div class="num">&infin;</div><div class="label">Receipts Kept Forever</div></div>
+    </div>
+    <p class="stat-note">Figures illustrative &middot; a mock front page of the community box score</p>
+  </div>
+</section>
+
+<!-- ============ FEATURES ============ -->
+<section class="features" id="feed">
+  <div class="wrap">
+    <div class="features-masthead">
+      <div>
+        <span class="eyebrow">Inside This Edition</span>
+        <div class="biglabel">Sections of the Paper</div>
+      </div>
+      <div class="edition">Everything a college<br>football fan does &mdash; in one paper</div>
+    </div>
+
+    <!-- LEAD 2x2 -->
+    <div class="lead-grid">
+      <!-- The Feed -->
+      <article class="feat">
+        <span class="num-tag">01</span>
+        <span class="eyebrow">The Feed</span>
+        <h3>File Your Takes.<br>Let The Room Vote.</h3>
+        <p>Post your hottest opinions and the community rules on every one &mdash; Touchdown if you nailed it, Fumble if you whiffed.</p>
+        <div class="mock">
+          <div class="m-take">
+            <div class="row">
+              <span class="m-avatar" style="background:#154733">DK</span>
+              <span class="m-meta"><b>@quackattack</b> &middot; Oregon &middot; 4m</span>
+            </div>
+            <p class="quote">"The Ducks have the deepest receiver room in the country. Period."</p>
+            <div class="m-votes">
+              <button class="m-vote td"><svg width="10" height="10" viewBox="0 0 12 12" aria-hidden="true"><path d="M6 1v10M2 5l4-4 4 4" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg> TD <span class="n">1.2k</span></button>
+              <button class="m-vote fm"><svg width="10" height="10" viewBox="0 0 12 12" aria-hidden="true"><path d="M6 11V1M2 7l4 4 4-4" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg> Fumble <span class="n">288</span></button>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <!-- War Room -->
+      <article class="feat" id="warroom">
+        <span class="num-tag">02</span>
+        <span class="eyebrow">War Room</span>
+        <h3>Live Game-Day<br>Threads, In Real Time.</h3>
+        <p>Every Saturday night gets its own room &mdash; a live scoreboard, real-time chat, and a fanbase reacting play by play.</p>
+        <div class="mock">
+          <div class="m-scores">
+            <div class="head"><span class="live-dot"></span>Live Scoreboard &middot; 4Q</div>
+            <div class="m-sc-row">
+              <span class="m-sc-team"><span class="dot" style="background:#0021a5"></span>Michigan</span>
+              <span class="m-sc-score win">31</span>
+            </div>
+            <div class="m-sc-row">
+              <span class="m-sc-team"><span class="dot" style="background:#bb0000"></span>Ohio State</span>
+              <span class="m-sc-score">28</span>
+            </div>
+            <div class="m-sc-foot"><span>Ball on OSU 34</span><span>2,410 in thread</span></div>
+          </div>
+        </div>
+      </article>
+
+      <!-- Rivalry Ring -->
+      <article class="feat" id="rivalry">
+        <span class="num-tag">03</span>
+        <span class="eyebrow">Rivalry Ring</span>
+        <h3>Settle It.<br>Head To Head.</h3>
+        <p>Challenge any user to a one-on-one debate. State your case, then the community judges who actually won the argument.</p>
+        <div class="mock">
+          <div class="m-rivalry">
+            <div class="m-riv-head">
+              <span>Texas</span><span class="vs">VS</span><span>Oklahoma</span>
+            </div>
+            <div class="m-bar">
+              <span class="side a" style="width:58%">58%</span>
+              <span class="side b" style="width:42%">42%</span>
+            </div>
+            <div class="m-riv-foot">3,117 judges have ruled &middot; closes in 6h</div>
+          </div>
+        </div>
+      </article>
+
+      <!-- Predictions & Receipts -->
+      <article class="feat">
+        <span class="num-tag">04</span>
+        <span class="eyebrow">Predictions &amp; Receipts</span>
+        <h3>Call It Now.<br>Get The Receipt Later.</h3>
+        <p>File a prediction and it starts aging. When it comes true, it turns into a receipt &mdash; permanent proof you called it first.</p>
+        <div class="mock">
+          <div class="m-receipt">
+            <div class="stamp" style="position:absolute;top:-10px;right:8px" aria-hidden="true">
+              <svg class="stamp-svg" width="58" height="58" viewBox="0 0 70 70">
+                <circle cx="35" cy="35" r="32" fill="none" stroke="#b8892b" stroke-width="2"/>
+                <circle cx="35" cy="35" r="27" fill="none" stroke="#b8892b" stroke-width="1"/>
+                <text x="35" y="31" text-anchor="middle" fill="#b8892b" font-family="Zilla Slab, serif" font-weight="700" font-size="9">CALLED</text>
+                <text x="35" y="43" text-anchor="middle" fill="#b8892b" font-family="Zilla Slab, serif" font-weight="700" font-size="9">IT</text>
+              </svg>
+            </div>
+            <p class="quote">"This team makes the Playoff. Screenshot this."</p>
+            <div class="m-timer">
+              <span>Aging</span>
+              <span class="track"><span class="fill"></span></span>
+              <span>214 days</span>
+            </div>
+          </div>
+        </div>
+      </article>
+    </div>
+
+    <!-- MORE IN EVERY EDITION -->
+    <div class="more-head">
+      <h3>More In Every Edition</h3>
+      <span class="k">Six more sections &middot; turn the page</span>
+    </div>
+    <div class="more-grid">
+      <!-- Transfer Portal -->
+      <article class="mcard" id="portal">
+        <span class="eyebrow">Portal Wire</span>
+        <h4>Transfer Portal Wire</h4>
+        <p>Track every entry the moment it hits, and claim where players land.</p>
+        <div class="mock">
+          <div class="m-portal">
+            <div class="top">
+              <span class="badge">In The Portal</span>
+              <span class="stars">&#9733;&#9733;&#9733;&#9733;&#9733;</span>
+            </div>
+            <h5>Marcus Ellery &middot; QB</h5>
+            <div class="sub">6'3" &middot; Jr. &middot; 41 offers</div>
+            <div class="move"><span>Miami</span><span class="arrow">&rarr;</span><span>Undecided</span></div>
+          </div>
+        </div>
+      </article>
+
+      <!-- Mascot Wars -->
+      <article class="mcard">
+        <span class="eyebrow">Mascot Wars</span>
+        <h4>The 64-Team Bracket</h4>
+        <p>Vote your mascot through the rounds all the way to the title.</p>
+        <div class="mock">
+          <svg class="bracket" viewBox="0 0 200 96" role="img" aria-label="Mascot bracket motif">
+            <g class="win">
+              <rect x="4" y="8" width="52" height="14" rx="1"/>
+              <text x="10" y="18">BUCKY</text>
+            </g>
+            <rect x="4" y="28" width="52" height="14" rx="1"/>
+            <text x="10" y="38">SMOKEY</text>
+            <rect x="4" y="56" width="52" height="14" rx="1"/>
+            <text x="10" y="66">RALPHIE</text>
+            <rect x="4" y="76" width="52" height="14" rx="1"/>
+            <text x="10" y="86">TRADITION</text>
+
+            <path d="M56 15 H70 V35 H56 M70 25 H84"/>
+            <path d="M56 63 H70 V83 H56 M70 73 H84"/>
+
+            <g class="win"><rect x="84" y="18" width="52" height="14" rx="1"/><text x="90" y="28">BUCKY</text></g>
+            <rect x="84" y="66" width="52" height="14" rx="1"/>
+            <text x="90" y="76">RALPHIE</text>
+
+            <path d="M136 25 H150 V73 H136 M150 49 H164"/>
+            <g class="win"><rect x="164" y="42" width="32" height="14" rx="1"/><text x="169" y="52">CHAMP</text></g>
+          </svg>
+        </div>
+      </article>
+
+      <!-- Game Room -->
+      <article class="mcard" id="gameroom">
+        <span class="eyebrow">Game Room</span>
+        <h4>Your Dynasty, A Magazine</h4>
+        <p>Turn your EA College Football dynasty into a cover story and find online leagues.</p>
+        <div class="mock">
+          <div class="mag-wrap">
+            <div class="mag" aria-hidden="true">
+              <div class="m-k">Dynasty Illustrated</div>
+              <div class="m-t">THE UNDEFEATED SEASON</div>
+              <div class="m-photo"></div>
+              <div class="m-issue">Issue 12</div>
+            </div>
+            <span class="mag-cap">Publish your season.<br>Recruit real rivals.</span>
+          </div>
+        </div>
+      </article>
+
+      <!-- Recruiting Heat Map -->
+      <article class="mcard">
+        <span class="eyebrow">Heat Map</span>
+        <h4>Recruiting Heat Map</h4>
+        <p>See which programs are actually winning the offseason.</p>
+        <div class="mock">
+          <div class="heat-row"><span class="nm">UGA</span><span class="heat-track"><span class="heat-fill" style="width:92%"></span></span></div>
+          <div class="heat-row"><span class="nm">OSU</span><span class="heat-track"><span class="heat-fill" style="width:81%"></span></span></div>
+          <div class="heat-row"><span class="nm">TEX</span><span class="heat-track"><span class="heat-fill" style="width:74%"></span></span></div>
+          <div class="heat-row"><span class="nm">ORE</span><span class="heat-track"><span class="heat-fill" style="width:63%"></span></span></div>
+        </div>
+      </article>
+
+      <!-- Dynasty Mode -->
+      <article class="mcard">
+        <span class="eyebrow">Dynasty Mode</span>
+        <h4>Walk-On To Hall Of Fame</h4>
+        <p>Earn XP for every take, climb the tiers, and unlock achievements.</p>
+        <div class="mock">
+          <div class="m-xp">
+            <span class="tier"><svg width="10" height="10" viewBox="0 0 12 12" aria-hidden="true"><path d="M6 1l1.5 3.2L11 4.7 8.5 7.2 9.2 11 6 9.1 2.8 11l.7-3.8L1 4.7l3.5-.5z" fill="currentColor"/></svg>All-American</span>
+            <div class="lvl"><span>Level 7</span><span>3,200 / 5,000 XP</span></div>
+            <div class="xp-track"><span class="xp-fill"></span></div>
+          </div>
+        </div>
+      </article>
+
+      <!-- School Hubs -->
+      <article class="mcard">
+        <span class="eyebrow">School Hubs</span>
+        <h4>A Home For All 653</h4>
+        <p>Every program gets a hub &mdash; your school's fans, feed, and rivals in one place.</p>
+        <div class="mock">
+          <div class="hubs">
+            <span class="hub-pill">Georgia</span>
+            <span class="hub-pill">Michigan</span>
+            <span class="hub-pill">LSU</span>
+            <span class="hub-pill">Texas</span>
+            <span class="hub-pill">Oregon</span>
+            <span class="hub-pill">+648 more</span>
+          </div>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ============ HOW IT WORKS ============ -->
+<section class="how">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="eyebrow">The Playbook</span>
+      <h2 class="section-title">Three Steps To The Field</h2>
+    </div>
+    <div class="how-grid" style="margin-top:1.6rem">
+      <div class="step">
+        <span class="n">1</span>
+        <h4>Pick Your School</h4>
+        <p>Claim your program from all 653 and join a fanbase that argues like you do.</p>
+        <span class="arrow-x" aria-hidden="true">
+          <svg width="26" height="26" viewBox="0 0 26 26"><circle cx="13" cy="13" r="12" fill="#f4efe3" stroke="#8b1a1a" stroke-width="1.5"/><path d="M9 13h8M14 9l4 4-4 4" stroke="#8b1a1a" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </span>
+      </div>
+      <div class="step">
+        <span class="n">2</span>
+        <h4>File Takes &amp; Predictions</h4>
+        <p>Post your opinions, call your shots, and let the community vote you Touchdown or Fumble.</p>
+        <span class="arrow-x" aria-hidden="true">
+          <svg width="26" height="26" viewBox="0 0 26 26"><circle cx="13" cy="13" r="12" fill="#f4efe3" stroke="#8b1a1a" stroke-width="1.5"/><path d="M9 13h8M14 9l4 4-4 4" stroke="#8b1a1a" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </span>
+      </div>
+      <div class="step">
+        <span class="n">3</span>
+        <h4>Build Your Dynasty</h4>
+        <p>Rack up receipts, climb from Walk-On to Hall of Fame, and run your fanbase.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FAQ / THE RULEBOOK ============ -->
+<section class="faq" id="faq" aria-labelledby="faq-title">
+  <div class="wrap">
+    <div class="faq-head">
+      <span class="eyebrow">The Rulebook</span>
+      <h2 class="section-title" id="faq-title">Frequently Asked</h2>
+    </div>
+    <div class="faq-grid">
+      <div class="faq-item">
+        <h3>What is CFB Social?</h3>
+        <p>CFB Social is a free social network built for college football fans. File your takes, debate rivalries, track the transfer portal, make predictions, and build a dynasty across all 653 college football programs.</p>
+      </div>
+      <div class="faq-item">
+        <h3>Is CFB Social free to join?</h3>
+        <p>Yes. Creating an account is completely free. Pick your school, file your first take, and start building your dynasty in seconds. No credit card required.</p>
+      </div>
+      <div class="faq-item">
+        <h3>How do rivalry challenges work?</h3>
+        <p>Challenge any user head-to-head on a college football debate. Both sides make their case, then the community votes to decide the winner and the result is kept on the record forever.</p>
+      </div>
+      <div class="faq-item">
+        <h3>Can I track the college football transfer portal?</h3>
+        <p>Yes. The Portal Wire tracks every transfer entry. Filter by position, star rating, and status, then file a claim on where you think each player will land.</p>
+      </div>
+      <div class="faq-item">
+        <h3>What are predictions and receipts?</h3>
+        <p>File a prediction and it locks in with a timestamp. As it ages it becomes a receipt that proves whether you called it, so everyone can see who was right first.</p>
+      </div>
+      <div class="faq-item">
+        <h3>Which schools does CFB Social cover?</h3>
+        <p>All 653 college football programs across every conference get their own hub, with a fan feed, top fans leaderboard, rivalries, and recruiting activity.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ EXPLORE / INTERNAL LINKS ============ -->
+<section class="explore" aria-labelledby="explore-title">
+  <div class="wrap">
+    <div class="col-head">
+      <h2 class="section-title" id="explore-title" style="border:0;margin:0;padding:0">Explore Every Program</h2>
+      <span class="eyebrow">All 653 Schools &middot; Every Conference</span>
+    </div>
+    <div class="explore-cols">
+      <div>
+        <h4>Sections</h4>
+        <a href="/feed">The Feed</a>
+        <a href="/war-room">War Room</a>
+        <a href="/rivalry">Rivalry Ring</a>
+        <a href="/portal">Transfer Portal Wire</a>
+        <a href="/predictions">Predictions</a>
+        <a href="/recruiting">Recruiting Desk</a>
+        <a href="/mascot-wars">Mascot Wars</a>
+        <a href="/game-room">Game Room</a>
+      </div>
+      <div>
+        <h4>Top Programs</h4>
+        <a href="/school/georgia-bulldogs">Georgia Bulldogs</a>
+        <a href="/school/alabama-crimson-tide">Alabama Crimson Tide</a>
+        <a href="/school/ohio-state-buckeyes">Ohio State Buckeyes</a>
+        <a href="/school/texas-longhorns">Texas Longhorns</a>
+        <a href="/school/michigan-wolverines">Michigan Wolverines</a>
+        <a href="/school/oregon-ducks">Oregon Ducks</a>
+        <a href="/schools"><strong>All 653 schools &rarr;</strong></a>
+      </div>
+      <div>
+        <h4>Conferences</h4>
+        <a href="/conferences/sec">SEC</a>
+        <a href="/conferences/big-ten">Big Ten</a>
+        <a href="/conferences/big-12">Big 12</a>
+        <a href="/conferences/acc">ACC</a>
+        <a href="/conferences/pac-12">Pac-12</a>
+        <a href="/conferences/american">American</a>
+      </div>
+      <div>
+        <h4>Rivalry Matchups</h4>
+        <a href="/matchup/ohio-state-vs-michigan">Ohio State vs Michigan</a>
+        <a href="/matchup/alabama-vs-auburn">Alabama vs Auburn (Iron Bowl)</a>
+        <a href="/matchup/texas-vs-oklahoma">Texas vs Oklahoma (Red River)</a>
+        <a href="/matchup/army-vs-navy">Army vs Navy</a>
+        <a href="/matchup/usc-vs-notre-dame">USC vs Notre Dame</a>
+        <a href="/matchup/florida-vs-georgia">Florida vs Georgia</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FINAL CTA ============ -->
+<section class="finalcta" id="signup">
+  <div class="wrap">
+    <span class="eyebrow">The Whistle Just Blew</span>
+    <h2>Kickoff Is Now.</h2>
+    <p>Join the front page of college football. File your first take, claim your school, and start building a dynasty the whole community can see.</p>
+    <a class="btn btn-cream btn-lg" href="#signup">Sign Up &mdash; It's Free
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M1 7h11M8 3l4 4-4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </a>
+    <div class="reassure">Free to join &middot; No credit card &middot; 653 fanbases waiting</div>
+  </div>
+</section>
+</main>
+
+<!-- ============ FOOTER / COLOPHON ============ -->
+<footer class="colophon">
+  <div class="wrap">
+    <div class="colo-top">
+      <div class="colo-brand">
+        <a class="brand" href="#top" style="display:inline-flex; align-items:baseline; gap:.6rem">
+          <span class="wordmark">CFB&nbsp;SOCIAL</span>
+          <span class="kicker">Est. 2026</span>
+        </a>
+        <p>The premium home field for college football takes, receipts, and rivalries across every program in the country.</p>
+        <div class="tag">"All football. All the time."</div>
+      </div>
+      <div class="colo-col">
+        <h5>The Paper</h5>
+        <a href="/feed">The Feed</a>
+        <a href="/war-room">War Room</a>
+        <a href="/portal">Transfer Portal</a>
+        <a href="/predictions">Predictions</a>
+        <a href="/game-room">Game Room</a>
+        <a href="/schools">All Schools</a>
+      </div>
+      <div class="colo-col">
+        <h5>Company</h5>
+        <a href="/about">About</a>
+        <a href="/contact">Contact</a>
+        <a href="/register">Sign Up</a>
+        <a href="/login">Log In</a>
+      </div>
+      <div class="colo-col">
+        <h5>Legal</h5>
+        <a href="/privacy">Privacy</a>
+        <a href="/terms">Terms</a>
+        <a href="/guidelines">Community Rules</a>
+        <a href="/contact">Contact Us</a>
+      </div>
+    </div>
+    <div class="colo-bottom">
+      <span>&copy; 2026 CFB Social &middot; A mock front page</span>
+      <span>Vol. I &middot; No. 1 &middot; Printed on the web, nightly</span>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

@@ -1,0 +1,96 @@
+# CFB Social — Full Reference
+
+> CFB Social (https://www.cfbsocial.com) is a free college football fan community covering all 653 FBS and FCS programs, and the home for EA Sports College Football 27 (CFB 27) players. This is the expanded reference companion to /llms.txt.
+
+CFB Social is not affiliated with or endorsed by EA Sports or Electronic Arts. All College Football 27 content is user-generated.
+
+## What CFB Social is
+
+CFB Social is a social network built specifically for college football. Fans pick their school, post opinions ("takes"), and the community votes each take "Touchdown" (agree) or "Fumble" (disagree). Beyond the feed, the platform includes structured features: rivalry debates, transfer-portal tracking, timestamped predictions, live game-day chat, a mascot-bracket tournament, a recruiting heat map, an XP/level progression system, and a Game Room for EA Sports College Football 27 dynasty content. Every one of the 653 FBS and FCS programs has its own hub page.
+
+## Core features
+
+- Feed (https://www.cfbsocial.com/feed): Community takes; voted Touchdown or Fumble. Post types include standard takes, receipts, sideline reports, predictions, and aging takes.
+- Rivalry Ring (https://www.cfbsocial.com/rivalry): Fans debate school-vs-school rivalries and issue one-on-one challenges that the community judges to a winner.
+- Transfer Portal Wire (https://www.cfbsocial.com/portal): Tracks transfer-portal entries; filter by position, star rating, and status. Fans file "claims" predicting where a player lands.
+- Predictions (https://www.cfbsocial.com/predictions): A prediction locks in with a timestamp. Once it ages past its revisit date it becomes a "receipt" — durable proof of who called an outcome first. See also /receipts.
+- War Room (https://www.cfbsocial.com/war-room): Live game-day threads with a live scoreboard and real-time fan chat for each game.
+- Mascot Wars (https://www.cfbsocial.com/mascot-wars): A 64-team single-elimination mascot bracket decided entirely by fan voting; a new bracket runs each season.
+- Recruiting (https://www.cfbsocial.com/recruiting): A per-program heat map of recruiting and transfer-portal activity.
+- Dynasty Mode (https://www.cfbsocial.com/dynasty): Fans earn XP for posting, winning debates, and correct predictions, climbing tiers from Walk-On to Hall of Fame.
+- Hall of Fame (https://www.cfbsocial.com/hall-of-fame): Leaderboards for top fans, most accurate predictors, and dynasty leaders.
+- Coach's Call (https://www.cfbsocial.com/coaches-call): Community polls and hot-seat debates on coaching and program decisions.
+- Schools (https://www.cfbsocial.com/schools): Directory of all 653 FBS and FCS programs. Each school hub (https://www.cfbsocial.com/school/{slug}) has that school's feed, top fans, rivalries, recruiting activity, and CFB 27 dynasty moments.
+
+## Game Room (EA Sports College Football 27 / CFB 27)
+
+- Game Room (https://www.cfbsocial.com/game-room): Share CFB 27 dynasty screenshots ("moments"), curate them into a flip-magazine of your season, and browse online leagues.
+- Online Dynasty Leagues (https://www.cfbsocial.com/game-room/leagues): Directory of open CFB 27 online dynasty leagues, filterable by platform (PS5, Xbox, PC), cross-play, sim schedule, and open schools. Open a league to get its join code and request a spot.
+- Game Room Guide (https://www.cfbsocial.com/game-room/guide): How to share moments, build a magazine issue, and join an online dynasty.
+- Platforms: PlayStation 5, Xbox Series X|S, and PC. Listing and joining leagues are free.
+
+## Curated rivalry & matchup hubs
+
+Evergreen pages with series history and live fan debate. URLs use alphabetical slug order: /matchup/{schoolA}-vs-{schoolB}.
+
+- The Iron Bowl — Alabama vs Auburn: https://www.cfbsocial.com/matchup/alabama-vs-auburn
+- The Game — Ohio State vs Michigan: https://www.cfbsocial.com/matchup/michigan-vs-ohio-state
+- The Red River Rivalry — Texas vs Oklahoma: https://www.cfbsocial.com/matchup/oklahoma-vs-texas
+- The World's Largest Outdoor Cocktail Party — Florida vs Georgia: https://www.cfbsocial.com/matchup/florida-vs-georgia
+- The Deep South's Oldest Rivalry — Auburn vs Georgia: https://www.cfbsocial.com/matchup/auburn-vs-georgia
+- Bedlam — Oklahoma vs Oklahoma State: https://www.cfbsocial.com/matchup/oklahoma-vs-oklahoma-state
+- Clean, Old-Fashioned Hate — Georgia vs Georgia Tech: https://www.cfbsocial.com/matchup/georgia-vs-georgia-tech
+- The Apple Cup — Washington vs Washington State: https://www.cfbsocial.com/matchup/washington-vs-washington-state
+- The Lone Star Showdown — Texas vs Texas A&M: https://www.cfbsocial.com/matchup/texas-vs-texas-am
+- The Sunshine Showdown — Florida vs Florida State: https://www.cfbsocial.com/matchup/florida-vs-florida-state
+- The Jeweled Shillelagh — USC vs Notre Dame: https://www.cfbsocial.com/matchup/notre-dame-vs-usc
+- Michigan vs Michigan State: https://www.cfbsocial.com/matchup/michigan-vs-michigan-state
+- Oregon vs Oregon State: https://www.cfbsocial.com/matchup/oregon-vs-oregon-state
+- Oregon vs Washington: https://www.cfbsocial.com/matchup/oregon-vs-washington
+- Alabama vs LSU: https://www.cfbsocial.com/matchup/alabama-vs-lsu
+- Florida vs LSU: https://www.cfbsocial.com/matchup/florida-vs-lsu
+- Auburn vs LSU: https://www.cfbsocial.com/matchup/auburn-vs-lsu
+- Clemson vs Florida State: https://www.cfbsocial.com/matchup/clemson-vs-florida-state
+- Texas vs Texas Tech: https://www.cfbsocial.com/matchup/texas-vs-texas-tech
+- Ohio State vs Oregon: https://www.cfbsocial.com/matchup/ohio-state-vs-oregon
+
+Any other valid school pair also has a matchup page that becomes indexable once it accumulates real fan content.
+
+## Conference hubs
+
+- SEC: https://www.cfbsocial.com/conferences/sec
+- Big Ten: https://www.cfbsocial.com/conferences/big-ten
+- Big 12: https://www.cfbsocial.com/conferences/big-12
+- ACC: https://www.cfbsocial.com/conferences/acc
+- Pac-12: https://www.cfbsocial.com/conferences/pac-12
+- American (AAC): https://www.cfbsocial.com/conferences/american
+- Sun Belt: https://www.cfbsocial.com/conferences/sun-belt
+- Conference USA: https://www.cfbsocial.com/conferences/conference-usa
+- MAC: https://www.cfbsocial.com/conferences/mac
+- Mountain West: https://www.cfbsocial.com/conferences/mountain-west
+- Independents: https://www.cfbsocial.com/conferences/independents
+
+## Glossary
+
+- Take: a posted opinion about college football.
+- Touchdown / Fumble: the community's up-vote / down-vote on a take.
+- Receipt: a prediction that has aged past its revisit date, serving as timestamped proof of who called an outcome first.
+- Aging take: a post marked to resurface on a future date so the community can judge whether it aged well.
+- Challenge: a one-on-one rivalry debate between two users that the community votes to a winner.
+- Moment: a College Football 27 dynasty screenshot shared in the Game Room.
+- Issue / Magazine: a curated, flippable collection of a user's dynasty moments.
+- Dynasty tier: a user's rank from Walk-On up to Hall of Fame, earned through XP.
+
+## Frequently asked
+
+- Is CFB Social free? Yes — signing up, posting, listing a league, and joining are all free, with no credit card required.
+- Which teams are covered? All 653 FBS and FCS programs, each with its own hub.
+- Is it affiliated with EA Sports? No. CFB Social is independent; all College Football 27 content is user-generated.
+- How do rivalry challenges work? Challenge any user head-to-head; both make their case and the community votes to decide the winner, which is kept on the record.
+- Can I track the transfer portal? Yes, via the Portal Wire, filterable by position, star rating, and status.
+
+## Policies
+
+- Contact: https://www.cfbsocial.com/contact
+- Privacy: https://www.cfbsocial.com/privacy
+- Terms: https://www.cfbsocial.com/terms

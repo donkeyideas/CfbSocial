@@ -7,6 +7,7 @@ const DISALLOW = ['/settings', '/notifications', '/api/', '/auth/'];
 const AI_AGENTS = [
   'GPTBot', 'OAI-SearchBot', 'ChatGPT-User', 'ClaudeBot', 'Claude-Web', 'anthropic-ai',
   'PerplexityBot', 'Perplexity-User', 'Google-Extended', 'Applebot-Extended', 'CCBot', 'cohere-ai',
+  'meta-externalagent', 'Amazonbot', 'DuckAssistBot', 'Google-CloudVertexBot', 'YouBot', 'MistralAI-User',
 ];
 
 export default function robots(): MetadataRoute.Robots {
