@@ -14,11 +14,15 @@ const playfair = Playfair_Display({
   variable: '--font-display',
   display: 'swap',
 });
+// Zilla + Spectral are used below the fold, so don't preload them — that keeps
+// them from contending with Playfair Display (the hero wordmark = the LCP text)
+// for bandwidth on the initial load.
 const zilla = Zilla_Slab({
   subsets: ['latin'],
   weight: ['500', '600', '700'],
   variable: '--font-slab',
   display: 'swap',
+  preload: false,
 });
 const spectral = Spectral({
   subsets: ['latin'],
@@ -26,6 +30,7 @@ const spectral = Spectral({
   style: ['normal', 'italic'],
   variable: '--font-body',
   display: 'swap',
+  preload: false,
 });
 
 function deriveInitials(username: string, abbr: string): string {

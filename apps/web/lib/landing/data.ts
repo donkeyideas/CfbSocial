@@ -1,3 +1,4 @@
+import { unstable_cache } from 'next/cache';
 import { createClient } from '@supabase/supabase-js';
 import {
   XP_THRESHOLDS,
@@ -990,7 +991,7 @@ async function fetchSchoolHubs(
 
 /* ── Main entry ────────────────────────────────────────────────── */
 
-export async function getLandingData(): Promise<LandingData> {
+async function computeLandingData(): Promise<LandingData> {
   const sb = getAnonSupabase();
 
   const [
@@ -1049,3 +1050,15 @@ export async function getLandingData(): Promise<LandingData> {
     schoolHubs,
   };
 }
+
+/**
+ * Cached entry point. The landing data is identical for every logged-out
+ * visitor, so we compute it at most once per 60s instead of running an ESPN
+ * fetch + ~10 Supabase queries on every request. This keeps the `/` document
+ * response (TTFB) fast, which is what gates the page's LCP.
+ */
+export const getLandingData = unstable_cache(
+  computeLandingData,
+  ['landing-data-v1'],
+  { revalidate: 60, tags: ['landing'] },
+);
