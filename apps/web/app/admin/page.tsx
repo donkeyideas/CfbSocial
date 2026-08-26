@@ -118,7 +118,7 @@ async function RecentSignups() {
           {signups.map((user: Record<string, unknown>) => (
             <div key={user.id as string} className="flex items-center justify-between pb-2" style={{ borderBottom: '1px dotted var(--admin-border)' }}>
               <div>
-                <Link href={`/users/${user.id}`} className="text-sm font-medium hover:text-[var(--admin-accent)]">
+                <Link href={`/admin/users/${user.id}`} className="text-sm font-medium hover:text-[var(--admin-accent)]">
                   {(user.display_name as string) || (user.username as string)}
                 </Link>
                 <p className="text-xs text-[var(--admin-text-muted)]">
@@ -191,12 +191,12 @@ async function SystemEventsFeed() {
 
 function QuickActions() {
   const actions = [
-    { label: 'Users', href: '/users', icon: Users },
-    { label: 'Moderation', href: '/moderation', icon: AlertTriangle },
-    { label: 'Reports', href: '/reports', icon: Flag },
-    { label: 'Schools', href: '/schools', icon: GraduationCap },
-    { label: 'System', href: '/system', icon: Activity },
-    { label: 'Analytics', href: '/analytics', icon: Trophy },
+    { label: 'Users', href: '/admin/users', icon: Users },
+    { label: 'Moderation', href: '/admin/moderation', icon: AlertTriangle },
+    { label: 'Reports', href: '/admin/reports', icon: Flag },
+    { label: 'Schools', href: '/admin/schools', icon: GraduationCap },
+    { label: 'System', href: '/admin/system', icon: Activity },
+    { label: 'Analytics', href: '/admin/analytics', icon: Trophy },
   ];
 
   return (

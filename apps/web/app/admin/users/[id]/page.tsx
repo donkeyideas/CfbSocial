@@ -18,7 +18,7 @@ export default async function UserDetailPage({
   return (
     <div className="space-y-6">
       <Link
-        href="/users"
+        href="/admin/users"
         className="inline-flex items-center gap-1 text-sm text-[var(--admin-text-muted)] hover:text-[var(--admin-text)]"
       >
         &larr; Back to Users
