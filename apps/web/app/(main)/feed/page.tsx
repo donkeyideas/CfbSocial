@@ -11,18 +11,19 @@ import { CollectionPageJsonLd } from '@/components/seo/JsonLd';
 import { FEED_POST_SELECT, FEED_REPOST_SELECT } from '@/lib/queries/feed';
 
 export const metadata = {
-  title: 'College Football Fan Community',
-  description: 'The #1 community for college football fans. Post takes, debate rivals, file predictions, and track the transfer portal across all 653 CFB schools.',
+  // Feed-specific title so the homepage (/) owns the "CFB Social" brand result.
+  title: 'The Feed — Latest College Football Takes & Debates',
+  description: 'The live feed of college football takes. Post your opinions, vote Touchdown or Fumble, debate rivals, and see the hottest takes across all 653 CFB schools.',
   openGraph: {
-    title: 'College Football Fan Community | CFB Social',
-    description: 'The #1 community for college football fans. Post takes, debate rivals, file predictions, and track the transfer portal across all 653 CFB schools.',
+    title: 'The Feed — Latest College Football Takes & Debates | CFB Social',
+    description: 'The live feed of college football takes. Post your opinions, vote Touchdown or Fumble, debate rivals, and see the hottest takes across all 653 CFB schools.',
     type: 'website',
     images: [{ url: 'https://www.cfbsocial.com/logo.png', width: 256, height: 256, alt: 'CFB Social Logo' }],
   },
   twitter: {
     card: 'summary' as const,
-    title: 'College Football Fan Community | CFB Social',
-    description: 'The #1 community for college football fans. Post takes, debate rivals, file predictions, and track the transfer portal across all 653 CFB schools.',
+    title: 'The Feed — Latest College Football Takes & Debates | CFB Social',
+    description: 'The live feed of college football takes. Post your opinions, vote Touchdown or Fumble, debate rivals, and see the hottest takes across all 653 CFB schools.',
     images: ['https://www.cfbsocial.com/logo.png'],
   },
   alternates: {
