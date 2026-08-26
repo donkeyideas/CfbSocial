@@ -184,7 +184,7 @@ export async function LandingPage() {
           <div className="wrap">
             <div className="stat-grid">
               <div className="stat"><div className="num">{data.stats.schools.toLocaleString()}</div><div className="label">Schools</div></div>
-              <div className="stat"><div className="num">{data.stats.liveThreads > 0 ? data.stats.liveThreads.toLocaleString() : 'Live'}</div><div className="label">Game Threads</div></div>
+              <div className="stat"><div className="num">{data.stats.liveThreads > 0 ? data.stats.liveThreads.toLocaleString() : 'Live'}</div><div className="label">Games This Week</div></div>
               <div className="stat"><div className="num">{data.stats.posts.toLocaleString()}<span className="accent">+</span></div><div className="label">Takes Filed</div></div>
               <div className="stat"><div className="num">&infin;</div><div className="label">Receipts Kept Forever</div></div>
             </div>

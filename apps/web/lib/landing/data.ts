@@ -361,7 +361,7 @@ async function fetchHotTakes(sb: ReturnType<typeof getAnonSupabase>): Promise<La
       .eq('status', 'PUBLISHED')
       .not('content', 'is', null)
       .order('created_at', { ascending: false })
-      .limit(15);
+      .limit(40);
 
     if (error || !Array.isArray(data)) return FALLBACK_HOT_TAKES;
 
@@ -389,7 +389,17 @@ async function fetchHotTakes(sb: ReturnType<typeof getAnonSupabase>): Promise<La
         };
       });
 
-    return takes.length > 0 ? takes : FALLBACK_HOT_TAKES;
+    // One take per author so the rotation shows a variety of voices rather
+    // than the same prolific user repeatedly.
+    const seenAuthors = new Set<string>();
+    const varied = takes.filter((t) => {
+      const key = (t.author.username || '').toLowerCase();
+      if (seenAuthors.has(key)) return false;
+      seenAuthors.add(key);
+      return true;
+    }).slice(0, 12);
+
+    return varied.length > 0 ? varied : FALLBACK_HOT_TAKES;
   } catch {
     return FALLBACK_HOT_TAKES;
   }
@@ -442,9 +452,9 @@ async function fetchStats(
     /* keep 0 */
   }
 
-  const liveCount = games.filter((g) => g.statusState === 'in').length;
-  const upcomingCount = games.filter((g) => g.statusState === 'pre').length;
-  const liveThreads = liveCount > 0 ? liveCount : upcomingCount;
+  // Total games on this week's scoreboard — truthful whether any are live yet
+  // or all are still upcoming (labelled "Games This Week" in the UI).
+  const liveThreads = games.length;
 
   return { schools, posts, liveThreads };
 }
@@ -554,17 +564,31 @@ async function fetchRivalry(
       `)
       .order('is_featured', { ascending: false })
       .order('created_at', { ascending: false })
-      .limit(1)
-      .maybeSingle();
+      .limit(12);
 
-    if (error || !data) return FALLBACK_RIVALRY;
+    if (error || !Array.isArray(data) || data.length === 0) return FALLBACK_RIVALRY;
 
-    const s1: any = Array.isArray(data.school_1) ? data.school_1[0] : data.school_1;
-    const s2: any = Array.isArray(data.school_2) ? data.school_2[0] : data.school_2;
+    // Prefer a rivalry whose voting is still OPEN (status ACTIVE or ends_at in
+    // the future), then featured, then the one with the most votes — so the
+    // card doesn't lead with a long-closed debate.
+    const now = Date.now();
+    const ranked = [...(data as any[])].sort((x, y) => {
+      const openX = String(x.status ?? '').toUpperCase() === 'ACTIVE' || !x.ends_at || new Date(x.ends_at).getTime() > now;
+      const openY = String(y.status ?? '').toUpperCase() === 'ACTIVE' || !y.ends_at || new Date(y.ends_at).getTime() > now;
+      if (openX !== openY) return openX ? -1 : 1;
+      if (!!x.is_featured !== !!y.is_featured) return x.is_featured ? -1 : 1;
+      const totX = Number(x.school_1_vote_count ?? 0) + Number(x.school_2_vote_count ?? 0);
+      const totY = Number(y.school_1_vote_count ?? 0) + Number(y.school_2_vote_count ?? 0);
+      return totY - totX;
+    });
+    const chosen: any = ranked[0];
+
+    const s1: any = Array.isArray(chosen.school_1) ? chosen.school_1[0] : chosen.school_1;
+    const s2: any = Array.isArray(chosen.school_2) ? chosen.school_2[0] : chosen.school_2;
     if (!s1 || !s2) return FALLBACK_RIVALRY;
 
-    const votesA = Number(data.school_1_vote_count ?? 0);
-    const votesB = Number(data.school_2_vote_count ?? 0);
+    const votesA = Number(chosen.school_1_vote_count ?? 0);
+    const votesB = Number(chosen.school_2_vote_count ?? 0);
     const total = votesA + votesB;
     const pctA = total > 0 ? Math.round((votesA / total) * 100) : 50;
     const pctB = total > 0 ? 100 - pctA : 50;
@@ -572,7 +596,7 @@ async function fetchRivalry(
     let footLabel: string;
     if (total > 0) {
       const judges = total.toLocaleString();
-      const closing = data.ends_at ? closesLabel(String(data.ends_at)) : '';
+      const closing = chosen.ends_at ? closesLabel(String(chosen.ends_at)) : '';
       footLabel = `${judges} judges have ruled${closing ? ` · ${closing}` : ''}`;
     } else {
       footLabel = 'Be the first to vote in the Rivalry Ring';
