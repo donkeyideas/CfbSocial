@@ -772,3 +772,18 @@
 .lp .explore-cols a:hover { color: var(--crimson); }
 @media (max-width: 760px) { .lp .explore-cols { grid-template-columns: 1fr 1fr; gap: 1.4rem; } }
 @media (max-width: 460px) { .lp .explore-cols { grid-template-columns: 1fr; } }
+
+/* ============ FROM THE WIRE (blog) ============ */
+.lp .wire { padding: 3.5rem 0; background: var(--paper-2); border-top: 2px solid var(--ink); border-bottom: 2px solid var(--ink); }
+.lp .wire .col-head { display: flex; align-items: baseline; justify-content: space-between; border-bottom: 2px solid var(--ink); padding-bottom: .5rem; margin-bottom: 1.6rem; gap: 1rem; }
+.lp .wire-all { text-decoration: none; color: var(--crimson); }
+.lp .wire-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.6rem; }
+.lp .wire-card { display: flex; flex-direction: column; text-decoration: none; border: 1.5px solid var(--ink); background: var(--paper); transition: transform .15s ease, box-shadow .15s ease; }
+.lp .wire-card:hover { transform: translateY(-3px); box-shadow: 0 14px 30px -18px rgba(26,23,18,.55); }
+.lp .wire-cover { width: 100%; aspect-ratio: 1200 / 630; object-fit: cover; display: block; border-bottom: 1.5px solid var(--ink); }
+.lp .wire-cover-fallback { display: flex; align-items: center; justify-content: center; background: var(--ink); }
+.lp .wire-cover-fallback span { font-family: var(--font-slab); letter-spacing: .28em; font-size: .8rem; color: var(--gold); }
+.lp .wire-body { padding: 1rem 1.1rem 1.2rem; }
+.lp .wire-body h3 { font-family: var(--font-display); font-weight: 800; font-size: 1.18rem; line-height: 1.18; color: var(--ink); margin: 0 0 .5rem; }
+.lp .wire-body p { font-family: var(--font-body); color: var(--ink-soft); font-size: .95rem; line-height: 1.5; margin: 0; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+@media (max-width: 760px) { .lp .wire-grid { grid-template-columns: 1fr; } }

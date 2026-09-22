@@ -22,7 +22,7 @@ const COST_PER_1M_OUTPUT = 0.79;
 
 export async function aiChat(
   prompt: string,
-  opts?: { feature?: string; subType?: string; temperature?: number; maxTokens?: number; timeout?: number; systemPrompt?: string },
+  opts?: { feature?: string; subType?: string; temperature?: number; maxTokens?: number; timeout?: number; systemPrompt?: string; model?: string; jsonMode?: boolean },
 ): Promise<string> {
   if (!process.env.GROQ_API_KEY) {
     throw new Error('GROQ_API_KEY is not set');
@@ -31,7 +31,9 @@ export async function aiChat(
   // Shared daily cap with DeepSeek (counts toward same ai_interactions ledger)
   await enforceDailyCap(opts?.feature);
 
-  const model = process.env.GROQ_MODEL ?? 'llama-3.3-70b-versatile';
+  // Per-call model override (e.g. the blog generator uses gpt-oss-120b) falls
+  // back to the global GROQ_MODEL, then the bots' default Llama model.
+  const model = opts?.model ?? process.env.GROQ_MODEL ?? 'llama-3.3-70b-versatile';
   const start = Date.now();
   let success = true;
   let errorMessage: string | null = null;
@@ -55,6 +57,7 @@ export async function aiChat(
         messages,
         temperature: opts?.temperature ?? 0.7,
         max_tokens: opts?.maxTokens ?? 600,
+        ...(opts?.jsonMode ? { response_format: { type: 'json_object' as const } } : {}),
       },
       { timeout: timeoutMs },
     );

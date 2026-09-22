@@ -129,6 +129,85 @@ export async function getBettingLines(year: number, week?: number): Promise<Cfbd
   return data ?? [];
 }
 
+export interface CfbdMatchupGame {
+  season: number;
+  week?: number;
+  date?: string;
+  neutralSite?: boolean;
+  homeTeam: string;
+  homeScore?: number | null;
+  awayTeam: string;
+  awayScore?: number | null;
+  winner?: string | null;
+}
+
+export interface CfbdMatchup {
+  team1: string;
+  team2: string;
+  startYear?: number;
+  endYear?: number;
+  team1Wins: number;
+  team2Wins: number;
+  ties: number;
+  games?: CfbdMatchupGame[];
+}
+
+/** All-time head-to-head series between two programs. Cached 24h. */
+export async function getMatchupHistory(team1: string, team2: string): Promise<CfbdMatchup | null> {
+  const h = authHeaders();
+  if (!h) return null;
+  const qs = new URLSearchParams({ team1, team2 });
+  const data = await cached(`cfbd:matchup:${team1}:${team2}`, 24 * 60 * 60_000, () =>
+    getJson<CfbdMatchup>(`${BASE}/teams/matchup?${qs.toString()}`, { headers: h, timeoutMs: 8000 }),
+  );
+  return data ?? null;
+}
+
+export interface CfbdGame {
+  id: number;
+  season: number;
+  week?: number;
+  seasonType?: string;
+  startDate?: string;
+  neutralSite?: boolean;
+  homeTeam: string;
+  homePoints?: number | null;
+  awayTeam: string;
+  awayPoints?: number | null;
+}
+
+/** All games for a season (optionally a single team). Cached 24h. */
+export async function getGames(year: number, team?: string): Promise<CfbdGame[]> {
+  const h = authHeaders();
+  if (!h) return [];
+  const qs = new URLSearchParams({ year: String(year), seasonType: 'both' });
+  if (team) qs.set('team', team);
+  const data = await cached(`cfbd:games:${year}:${team ?? 'all'}`, 24 * 60 * 60_000, () =>
+    getJson<CfbdGame[]>(`${BASE}/games?${qs.toString()}`, { headers: h, timeoutMs: 10000 }),
+  );
+  return data ?? [];
+}
+
+export interface CfbdRecord {
+  year: number;
+  team: string;
+  conference?: string;
+  total?: { games: number; wins: number; losses: number; ties: number };
+  conferenceGames?: { games: number; wins: number; losses: number; ties: number };
+}
+
+/** Season win-loss records. Cached 6h. */
+export async function getRecords(year: number, team?: string): Promise<CfbdRecord[]> {
+  const h = authHeaders();
+  if (!h) return [];
+  const qs = new URLSearchParams({ year: String(year) });
+  if (team) qs.set('team', team);
+  const data = await cached(`cfbd:records:${year}:${team ?? 'all'}`, 6 * 60 * 60_000, () =>
+    getJson<CfbdRecord[]>(`${BASE}/records?${qs.toString()}`, { headers: h, timeoutMs: 8000 }),
+  );
+  return data ?? [];
+}
+
 /**
  * Get a quick 1-line summary for a team: SP+ rank + recruiting class rank.
  * Returns null when CFBD key is missing or data unavailable.

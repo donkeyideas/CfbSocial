@@ -38,6 +38,7 @@ const navSections: NavSection[] = [
     label: 'Content',
     items: [
       { href: '/admin/content', label: 'Content' },
+      { href: '/admin/blog', label: 'The Wire (Blog)' },
       { href: '/admin/engagement', label: 'Engagement' },
       { href: '/admin/bots', label: 'AI Bots' },
     ],

@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { Playfair_Display, Zilla_Slab, Spectral } from 'next/font/google';
 import { getLandingData } from '@/lib/landing/data';
+import { getPublishedPosts } from '@/lib/blog/queries';
 import { LandingHeroLive } from './LandingHeroLive';
 import { LandingTicker } from './LandingTicker';
 import { LandingMagazineRotator } from './LandingMagazineRotator';
@@ -43,6 +44,7 @@ function deriveInitials(username: string, abbr: string): string {
 
 export async function LandingPage() {
   const data = await getLandingData();
+  const wirePosts = await getPublishedPosts({ limit: 3 }).catch(() => []);
 
   /* ── Feed take card ── */
   const feedTake = data.featureTake;
@@ -120,6 +122,7 @@ export async function LandingPage() {
                 <Link href="/rivalry">Rivalry Ring</Link>
                 <Link href="/portal">Portal</Link>
                 <Link href="/game-room">Game Room</Link>
+                <Link href="/blog">Blog</Link>
               </div>
               <div className="nav-auth">
                 <Link className="login-link" href="/login">Log In</Link>
@@ -440,6 +443,34 @@ export async function LandingPage() {
           </div>
         </section>
 
+        {/* ============ FROM THE WIRE (latest blog posts) ============ */}
+        {wirePosts.length > 0 && (
+          <section className="wire" aria-labelledby="wire-title">
+            <div className="wrap">
+              <div className="col-head">
+                <h2 className="section-title" id="wire-title" style={{ border: 0, margin: 0, padding: 0 }}>From The Wire</h2>
+                <Link className="eyebrow wire-all" href="/blog">Previews &amp; Analysis &rarr;</Link>
+              </div>
+              <div className="wire-grid">
+                {wirePosts.map((p) => (
+                  <Link key={p.id} href={`/blog/${p.slug}`} className="wire-card">
+                    {p.cover_image_url ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img className="wire-cover" src={p.cover_image_url} alt={p.title} loading="lazy" />
+                    ) : (
+                      <div className="wire-cover wire-cover-fallback"><span>THE WIRE</span></div>
+                    )}
+                    <div className="wire-body">
+                      <h3>{p.title}</h3>
+                      {p.excerpt ? <p>{p.excerpt}</p> : null}
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          </section>
+        )}
+
         {/* ============ FAQ / THE RULEBOOK ============ */}
         <section className="faq" id="faq" aria-labelledby="faq-title">
           <div className="wrap">
@@ -494,6 +525,7 @@ export async function LandingPage() {
                 <Link href="/recruiting">Recruiting Desk</Link>
                 <Link href="/mascot-wars">Mascot Wars</Link>
                 <Link href="/game-room">Game Room</Link>
+                <Link href="/blog">Blog (The Wire)</Link>
               </div>
               <div>
                 <h4>Top Programs</h4>
@@ -560,6 +592,7 @@ export async function LandingPage() {
               <Link href="/portal">Transfer Portal</Link>
               <Link href="/predictions">Predictions</Link>
               <Link href="/game-room">Game Room</Link>
+              <Link href="/blog">Blog (The Wire)</Link>
               <Link href="/schools">All Schools</Link>
             </div>
             <div className="colo-col">

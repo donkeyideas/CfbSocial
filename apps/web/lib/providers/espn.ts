@@ -83,6 +83,17 @@ export async function getScoreboard(): Promise<ESPNEvent[]> {
   return data?.events ?? [];
 }
 
+/**
+ * Fetch the FULL current-week FBS slate (default scoreboard caps at ~18 games;
+ * `groups=80&limit=200` returns the whole FBS schedule, ~70 games). Cached 5 min.
+ */
+export async function getWeekScoreboard(): Promise<ESPNEvent[]> {
+  const data = await cached('espn:scoreboard:week', 5 * 60_000, () =>
+    getJson<ESPNScoreboardResponse>(`${BASE}/scoreboard?groups=80&limit=200`, { timeoutMs: 8000 }),
+  );
+  return data?.events ?? [];
+}
+
 // ============================================================
 // News
 // ============================================================
@@ -150,6 +161,41 @@ export async function getNews(limit = 20): Promise<ESPNArticle[]> {
       source: 'ESPN',
     };
   });
+}
+
+// ============================================================
+// Rankings (AP / Coaches / CFP) — free, no key
+// ============================================================
+
+export interface ESPNRankEntry {
+  current: number;
+  team: string;
+  abbreviation?: string;
+  record?: string;
+}
+
+/**
+ * Fetch the current AP Top 25 (falls back to the first available poll).
+ * Cached 30 min. Returns null when unavailable.
+ */
+export async function getRankings(): Promise<{ poll: string; entries: ESPNRankEntry[] } | null> {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const data = await cached('espn:rankings', 30 * 60_000, () =>
+    getJson<any>(`${BASE}/rankings`, { timeoutMs: 8000 }),
+  );
+  const polls = data?.rankings ?? [];
+  if (!polls.length) return null;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const ap = polls.find((p: any) => /ap/i.test(p.shortName || p.name || '')) || polls[0];
+  if (!ap) return null;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const entries: ESPNRankEntry[] = (ap.ranks ?? []).slice(0, 25).map((r: any) => ({
+    current: r.current,
+    team: r.team?.location || r.team?.nickname || r.team?.name || r.team?.abbreviation || '',
+    abbreviation: r.team?.abbreviation,
+    record: r.recordSummary,
+  }));
+  return { poll: ap.name || ap.shortName || 'Top 25', entries };
 }
 
 // ============================================================
